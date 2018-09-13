@@ -8,10 +8,10 @@ try:
     repo = Repo(os.getcwd())
     branch = repo.active_branch
     branch = branch.name
-    if branch == 'develop':
-        DATABASE = 'comp_test'
-    else:
+    if branch == 'master':
         DATABASE = 'competitions'
+    else:
+        DATABASE = 'comp_test'
 except ImportError:
     pass
 
