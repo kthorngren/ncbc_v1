@@ -137,6 +137,10 @@ class Entrys:
 
 
     def inventory_status(self):
+        """
+        Get inventory status
+        :return: {'num_entries': 136, 'inventory': 0, 'location_0': 136, 'location_1': 136}
+        """
 
         sql = 'select sum(fk_competitions = "{active}") as num_entries, ' \
               'sum(inventory = "1") as inventory, ' \
