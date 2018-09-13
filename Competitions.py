@@ -1,6 +1,7 @@
 
 
 DATABASE = ''
+#https://gist.github.com/igniteflow/1760854
 try:
     # use the develop database if we are using develop
     import os
