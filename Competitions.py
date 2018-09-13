@@ -1,11 +1,23 @@
 
 
+DATABASE = ''
+try:
+    # use the develop database if we are using develop
+    import os
+    from git import Repo
+    repo = Repo(os.getcwd())
+    branch = repo.active_branch
+    branch = branch.name
+    if branch == 'master':
+        DATABASE = 'competitions'
+    else:
+        DATABASE = 'comp_test'
+except ImportError:
+    pass
+
 
 from Styles import Style
 from Email import Email
-
-#DATABASE = 'comp_test'
-DATABASE = 'competitions'
 
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
@@ -51,6 +63,7 @@ from MySql import local_host
 from Database import Database
 from Database import escape_sql
 
+logger.info('Starting competition using database: {}'.format(DATABASE))
 db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
 
