@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "kev-ncbc",
+  "private_key_id": "c9452ffb4476f06bd0e769ec3f2bd2af691bc856",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDZo9t8o+lbDVgW\nhiRwKwUM1/6tcY61O68jGUvbERuVdCgc63gVf8PwXSUV+VIHOg97cnyD75qx085P\ncyznZ3KiRfQ3v8pcCkRN4wo+L8xdbTvSHmuJNbntSnCORJtyFnxD0QKYY8EOixLV\n6cj5DjmNZfC5YTzsteswPNEAKxhQjeCgPIZGsFgLKI6qALJbLnph8dIE6j/CNo4x\nfHAvE+rIBvL3/DN093Bbr5Gb3UPm2Ke4wXAcmrCS5e/WyHADvOGdwVZkuh2rKVt1\nUqYoE2OsLhyFaGCaQ60V9LeCv8FtiTbHmvXnZllhSM/3RIsSnlBMPjGC/v2B1I0O\nPvk1LIvfAgMBAAECggEAOReq9D9rb99IRGBcHrCqWnwu6wDnFtPZVbPFGmqaedJG\n049RqRIjLGLC38jPo+WvOgsGbvXj9tJBRMZJ+UpB4B/JuPYu94YZ9PSiMz4Gtlt5\nXd1tCEl3xK/KZwfIX11Wq9Oggqloc5A4GLWDaxI4NsePJpJDkTUHxVeu3ARyFG8n\nrgMMrYyho39SpEjmzk/6Z1qwYowzJcCfZiUMfRJBCh4KVkH0oTIA1zOM4uNgFtA+\nvKwtnXIr8SAyFuWIodQFIqOYnuh6ZcbqARabMPJ9mamD7hB4MHgUv4PP95W/SpO4\njxeJzgyJJfK9Q8lN1JaMXoFT4bj2lqbzhBordmHkgQKBgQDtU98LopOGw/nkEy/i\neZH3SCP5mJUbDCdzXtgFr8vJl83WktzxUbO0nC177n5kGeEeFOE3kZufA78eqnBQ\n5YatzHAmSJ9mzSXNcvXqOomJXQsvl/aYhWI/BewuiugxshzXHAoLpr6Q6ECJvZOd\nHREYo6W6Mx2Rcr3tCbO8AZHI+QKBgQDqw3MequIZ0shdlJ5gRdBSJnmCN7rpHphC\noQUbP1SL+oLm9oKQ1SOKDhC8W0oaI69iX+5c2hlBZf3oxgV0qM3dO83dCtCZWaVy\n98BCTsd2TR/dNZGdLroKeuFZvnUuSGw1OEBfgfXw8Df+5C45opNHTs86ZMZBxnVq\nmq0TvOBJlwKBgQCafL8zjrfjwQyY59iC30oiIwawAiAFhErl8fZC9WV9q+Ck7eL+\n/4Uwa328L8p8lNASydq1VoZr4390kdQdBNw/pFXYxetleuNBsrTbrRE8pqGScKRo\nMmN6zPsqbOeq+duGN01eukNQhq8EOrCtVG99j4FhDMcRmBSECY3DM25X2QKBgBWN\nxkb9h265hH3bBENwhXTVZXiIJ1f54B7V68MZqGiFonkUDt6/QtkM+4pfk0kdF6Af\nkKHjwEfZ1lsFu0B/sw7py7fMo2RA78jDaFpuIzAAWrmTjn/w51HJAGGd8+JA8fZc\n6MQcCXmKhImZZ4kRHRaB7NK+p9koIGWeN9/FCo6XAoGBAKTcj7U6qX3uRh6SXAP5\nnQxLeNG3ZE5vD3acgO1k9wM3g0Q2Td/p2l7IGfCPkhsQ56Zbh8PWxBPmSi6Gn5pr\ngboW2HHqz1GQH4HD8IXOL8aZRFvZpv5A+soQfZN2tgcnklIVKerqJxtQnxJ+CURO\nlMQoqbngjpdFmdcni9F6Meuf\n-----END PRIVATE KEY-----\n",
+  "client_email": "ncbc-service@kev-ncbc.iam.gserviceaccount.com",
+  "client_id": "102479272298407191751",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ncbc-service%40kev-ncbc.iam.gserviceaccount.com"
+}
