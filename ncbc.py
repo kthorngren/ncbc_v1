@@ -18,6 +18,8 @@ from Email import Email
 from Import import Import
 from Volunteers import Volunteers
 
+from Competitions import DATABASE
+
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
 """
@@ -1379,7 +1381,12 @@ def email_status(pkid=1, test=False):
                                                'NCBC Commercial Competition Status',
                                                msg,
                                                )
-    result = e.send_message(message)
+
+    if DATABASE != 'competitions':
+        logger.info('Skipping email due to using test DB')
+        result = False
+    else:
+        result = e.send_message(message)
 
 
 def process_new_entries(pkid=1):
@@ -1457,6 +1464,9 @@ def process_new_entries(pkid=1):
                                                        )
 
             if validation_errors:
+                result = False
+            elif DATABASE != 'competitions':
+                logger.info('Skipping email due to using test DB')
                 result = False
             else:
                 result = False

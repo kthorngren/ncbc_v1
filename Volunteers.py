@@ -238,7 +238,11 @@ class Volunteers:
                                                        'NC Brewers Cup Welcome',
                                                        msg,
                                                        )
-            result = e.send_message(message)
+            if DATABASE != 'competitions':
+                logger.info('Skipping email due to using test DB')
+                result = False
+            else:
+                result = e.send_message(message)
 
 
             if result:
@@ -328,7 +332,11 @@ class Volunteers:
                                                        'NC Brewers Cup Schedule Change Confirmation',
                                                        msg,
                                                        )
-            result = e.send_message(message)
+            if DATABASE != 'competitions':
+                logger.info('Skipping email due to using test DB')
+                result = False
+            else:
+                result = e.send_message(message)
 
 
             if result:
