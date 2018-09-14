@@ -1,7 +1,7 @@
 from Competitions import DATABASE
 from Competitions import Competitions
 
-
+import json
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
 """
@@ -136,7 +136,33 @@ class Entrys:
         return success
 
 
+    def inventory_status(self):
+        """
+        Get inventory status
+        :return: {'num_entries': 136, 'inventory': 0, 'location_0': 136, 'location_1': 136}
+        """
+
+        sql = 'select sum(fk_competitions = "{active}") as num_entries, ' \
+              'sum(inventory = "1") as inventory, ' \
+              'sum(location_0 is NULL or location_0 = "") as location_0, ' \
+              'sum(location_1 is NULL or location_0 = "") as location_1 ' \
+              'from entries where ' \
+              'fk_competitions = "{active}"'.format(active=Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        #result = {'num_entries': Decimal('136'), 'inventory': Decimal('0'), 'location_0': Decimal('136'), 'location_1': Decimal('136')}
+        #remove the Decimal object to allow for JSON serialization
+        for r in result:
+            result[r] = int(result[r])
+
+        return result
+
 
 if __name__ == '__main__':
+
+    print(Entrys().inventory_status())
+
 
     pass
