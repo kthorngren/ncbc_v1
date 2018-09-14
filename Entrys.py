@@ -230,6 +230,24 @@ class Entrys:
 
         return result['pkid']
 
+    def get_inventory(self, all=False, inventory=False, wo_location=False):
+
+        where = 'fk_competitions ="{}"'.format(Competitions().get_active_competition())
+
+        if not all:
+            where += ' and inventory = "{}"'.format('1' if inventory else '0')
+
+        if wo_location:
+            where += ' and ((location_0 is NULL or location_0 = "") or ' \
+                     '(location_1 is NULL or location_1 = ""))'
+
+        sql = 'select * from entries where {}'.format(where)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
 
 def test_add_inventory():
     print(Entrys().inventory_status())
@@ -256,7 +274,39 @@ def test_remove_inventory():
     print(Entrys().inventory_status())
 
 
+def test_inventory_report(**kwargs):
+
+    result = Entrys().get_inventory(**kwargs)
+
+    for r in result:
+        print('Entry ID:{d[entry_id]}, Inv: {d[inventory]}, Loc0: "{d[location_0]}", '
+              'Loc1: "{d[location_1]}"'.format(d=r))
+
+    print('Number of returned inventory items: {}'.format(len(result)))
+
+
+def test_get_inv():
+
+    print('Inventory')
+    test_inventory_report(inventory=True)
+
+    print('\nInventory without locations')
+    test_inventory_report(inventory=True, wo_location=True)
+
+
+    #print('\nAll')
+    #test_inventory_report(all=True)
+
+
 
 if __name__ == '__main__':
+
+    #test_add_inventory()
+    #test_get_inv()
+
+    #test_remove_inventory()
+    #test_get_inv()
+
+
 
     pass
