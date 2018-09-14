@@ -100,7 +100,12 @@ class Volunteers:
             pkid = result['pkid']
             fk_sessions_list = result['fk_sessions_list'].split(',')
 
+        #appned new sessions to original sessions
+        #fk_sessions is the session PKID from NCBC import if attendee_id
         fk_sessions_list.append(str(record['fk_sessions']))
+
+        #use set to remove duplicates the return a sorted list
+        fk_sessions_list = sorted(list(set(fk_sessions_list)))
 
         del record['fk_sessions']
 
@@ -140,6 +145,34 @@ class Volunteers:
                 success = False
 
         return success
+
+
+    def remove_duplicate_sessions(self):
+
+        logger.info('Checking for duplicate sessions for all volunteers')
+
+        sql = 'select pkid, firstname, lastname, fk_sessions_list ' \
+              'from volunteers where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        for r in result:
+            sessions = r['fk_sessions_list'].split(',')
+
+            sessions_check = list(set(sessions))
+
+            #do nothing if the lnegths are the same - no duplicates
+            if len(sessions) == len(sessions_check):
+                continue
+
+            logger.info('Removing duplicate sessions for {d[firstname]} {d[lastname]}'.format(d=r))
+
+            sql = 'update volunteers set fk_sessions_list = "{}" ' \
+                  'where pkid = "{}"'.format(','.join(sorted(sessions_check)), r['pkid'])
+
+            db.db_command(sql=sql)
+
 
 
     def get_sessions(self, pkid):
@@ -367,9 +400,16 @@ def test_get_sessions():
     print('Total session registratin count: {}'.format(count))
 
 
+def test_remove_dup_sessions():
+
+    Volunteers().remove_duplicate_sessions()
+
+
 if __name__ == '__main__':
 
-    test_get_sessions()
+    #test_get_sessions()
+
+    test_remove_dup_sessions()
 
     #email_new()
 

@@ -698,6 +698,15 @@ class Ncbc:
         return result.get('pkid', 0)
 
 
+    def find_brewer(self, email):
+
+        sql = 'select pkid from people where email = "{}"'.format(email)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        return result.get('pkid', 0)
+
+
     def get_person_fields(self):
 
         db = ['salutation', 'last_name', 'first_name', 'organization', 'title',
@@ -903,11 +912,14 @@ class Ncbc:
                 #self.get_person()
                 logger.info('Inserting raw_data for attendee_id: {}'.format(attendee_id))
 
+                #removed finding brewer with firstname and last name
                 fk_people = self.find_person(self.get_field(row, 'first_name'),
                                              self.get_field(row, 'last_name'),
                                              self.get_field(row, 'email')
                                              )
 
+                #just find the brewer using email
+                fk_people = self.find_brewer(self.get_field(row, 'email'))
 
                 if fk_people == 0:
                     fk_people = self.insert_person(row, attendee_id)

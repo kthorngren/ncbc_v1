@@ -165,7 +165,7 @@ def list_specialty_wo_desc():
         for entry in entries:
 
             if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'], entry['sub_category']) and not re.sub(r'\s', '', entry['description']):
-                print('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}: No descrption for Entry ID: '
+                print('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}: No description for specialty Entry ID: '
                       '{e[entry_id]:05}: {e[category]}{e[sub_category]} {cat_name}'.format(d=r, e=entry,
                                             cat_name=Style(Competitions().get_style_guidelines()).get_style_name(entry['category'], entry['sub_category'])))
 
