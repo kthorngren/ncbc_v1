@@ -3,7 +3,7 @@
   <head>
     
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
-    <title id="page-title">Title</title>
+    <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
     <!-- DataTables Editor -->
@@ -33,9 +33,11 @@
         <div class="col-md-3 left_col">
           <div class="left_col scroll-view">
             <div class="navbar nav_title" style="border: 0;">
-              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> Finesse Load</span></a>
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
             </div>
             <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
 
           </div>
         </div>
@@ -49,7 +51,14 @@
               <div class="nav toggle">
                 <a id="menu_toggle"><i class="fa fa-bars"></i></a>
               </div>
-              <h3 style="text-align:center">SVS Finesse Load</h3>
+              <!-- Testbed selector -->
+              <form id="bootstrapSelectForm" method="post" class="form-horizontal">
+                <div class="form-group">
+                  <label class="col-md-3 control-label " >Competition</label>
+                    <div class="col-md-5 selectContainer" id="select-comp">
+                    </div>
+                </div>
+              </form>
             </nav>
           </div>
         </div>                
@@ -66,6 +75,9 @@
           <div class="clearfix"></div>
 
 
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
 
 
         	<!-- col-md-12 -->
@@ -110,7 +122,7 @@
         <!-- footer content -->
         <footer class="right_col_background">
           <div class="pull-right right_col_background">
-            SVS Finesse Load
+            NC Brewers Cup
           </div>
           <div class="clearfix right_col_background"></div>
         </footer>
@@ -153,9 +165,12 @@ function uniq(a) {
     })
 }
 
-function drawEmailTable() {
-	emails_table = $('#emails').DataTable({
-		ajax: 'dt_emails',
+
+
+
+function draStatusTable() {
+	emails_table = $('#status').DataTable({
+		ajax: 'dt_status',
 		dom: 'Blftirp',
 		pageLength: 2000,
 		scrollY: true,
@@ -215,10 +230,44 @@ function drawEmailTable() {
 }
 
 
+function get_competitions() {
+    $.ajax({
+      	url: "/get_comp_names",
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+            var select = $('<select><option value="">Select Competition</option></select>')
+                .appendTo( $('#select-comp').empty() )
+                .on( 'change', function () {
+                	console.log('change');
+ 				} );
+ 
+                $.each( data, function(i, obj) {
+            		select.append( 
+                		$('<option></option>')
+                    		.val(obj['pkid'])
+                    		.html(obj['name']));
+            		if (obj['active'] == '1') {
+                		$('select').val(obj['pkid']);
+            		};
+
+      			})
+      	},
+      	error: function (jqXHR, exception) {
+      		console.log('error')
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+
+}
+
+
 
 $(document).ready(function() {
 
-	drawEmailTable();
+	get_competitions();
+	
+	
 
 });
 </script>
