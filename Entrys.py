@@ -160,9 +160,43 @@ class Entrys:
         return result
 
 
+    def add_inventory(self, entry_id, location_0='', location_1=''):
+
+        sql = 'select pkid from entries ' \
+              'where entry_id = "{}" and fk_competitions = "{}"'.format(entry_id, Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        if not result:
+            return 0
+
+        sql = 'update entries set inventory = "1", location_0 = "{}", location_1 = "{}" ' \
+              'where pkid = "{}"'.format(location_0, location_1, result['pkid'])
+
+        db.db_command(sql=sql)
+
+        if db.sql_error:
+            return 0
+
+        return result['pkid']
+
+
 if __name__ == '__main__':
 
+
+
     print(Entrys().inventory_status())
+
+    print(Entrys().add_inventory(2))
+
+    print(Entrys().inventory_status())
+
+    print(Entrys().add_inventory(3, 'Cooler1', 'Box5'))
+
+    print(Entrys().inventory_status())
+
+
 
 
     pass
