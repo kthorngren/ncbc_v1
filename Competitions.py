@@ -103,6 +103,68 @@ class Competitions:
 
         return result.get('name', '')
 
+    def get_comp_status(self):
+
+        status = {'entries': {}, 'sessions': []}
+
+        sql = 'select count(*) as brewers from brewers where fk_competitions = "{}"'.format(self.get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        status['entries']['brewers'] = result.get('brewers', 0)
+
+
+        sql = 'select sum(fk_competitions = "{pkid}") as entries, sum(inventory = "1") as checked_in ' \
+              'from entries where fk_competitions = "{pkid}"'.format(pkid=self.get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        status['entries']['entries'] = int(result.get('entries', 0))
+        status['entries']['checked_in'] = int(result.get('checked_in', 0))
+
+
+
+        sql = 'select * from sessions where judging = "1" or setup = "1" and ' \
+              'fk_competitions = "{}" '.format(self.get_active_competition())
+
+        uid = gen_uid()
+        sessions = db.db_command(sql=sql, uid=uid).all(uid)
+
+        sql = 'select fk_sessions_list, judge from volunteers where fk_competitions = "{}"'.format(self.get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        sessions_list = {0: [], 1 : [], 2: []}
+        for r in result:
+            sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
+
+        for r in sorted(sessions, key = lambda k:k['session_number']):
+
+            session_type = []
+            if r['setup'] == 1:
+                session_type.append('Setup')
+            if r['judging'] == 1:
+                session_type.append('Judging')
+
+
+            status['sessions'].append({
+                'name': r['name'],
+                'type': '/'.join(session_type),
+                'stewards': sessions_list[0].count(r['pkid']),
+                'judges': sessions_list[1].count(r['pkid']),
+                'other': sessions_list[2].count(r['pkid']),
+            })
+
+
+        #for s in status['sessions']:
+        #    print(s)
+
+
+        return status
+
 
 if __name__ == '__main__':
 
@@ -110,7 +172,8 @@ if __name__ == '__main__':
 
     name = c.get_active_competition()
 
+    result = c.get_comp_status()
 
-    print(name)
+    print(result)
 
     pass

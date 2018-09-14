@@ -9,6 +9,8 @@ from MySql import local_host
 from Database import Database, gen_uid
 from Datatables import Datatables
 
+from Competitions import Competitions
+
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
 try:
@@ -100,6 +102,26 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
+        order = ['entries', 'checked_in', 'brewers']
+
+        mapping = {
+            'checked_in': 'Entries Checked In',
+            'entries': 'Total Entries',
+            'brewers': 'Brewers'
+        }
+
+        result = Competitions().get_comp_status()
+
+        entries = result['entries']
+
+        temp = []
+        for k in order:
+            temp.append({'name': mapping.get(k, k), 'value': entries[k]})
+
+        result['entries'] = temp
+
+
+        return json.dumps(result)
 
 
 
@@ -120,6 +142,13 @@ class Website:
         return form
 
 
+    @cherrypy.expose
+    def dt_competitions(self, *args, **kwargs):
+
+        sql = 'select * from competitions'
+
+        result = self.dt.parse_request(sql=sql, table='competitions', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
 
