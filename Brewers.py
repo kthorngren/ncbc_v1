@@ -156,6 +156,7 @@ def print_entries(order_by=''):
 
 def list_specialty_wo_desc():
 
+    print('Specialty entries without descriptions')
     result = Brewers().get_brewers(order_by='organization')
 
     for r in result:
@@ -171,7 +172,7 @@ def list_specialty_wo_desc():
 
 if __name__ == '__main__':
 
-    #print_entries(order_by='organization')
+    print_entries(order_by='organization')
 
     list_specialty_wo_desc()
 

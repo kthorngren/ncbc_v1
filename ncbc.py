@@ -755,7 +755,8 @@ class Ncbc:
 
     def insert_person(self, entry, attendee_id):
         db_fields = ['salutation', 'last_name', 'first_name', 'organization', 'title',
-              'address', 'address_2', 'city', 'state', 'zip', 'phone', 'email', 'created', 'updated', 'attendee_id_list', 'send_labels']
+              'address', 'address_2', 'city', 'state', 'zip', 'phone', 'email', 'created',
+                     'updated', 'attendee_id_list', 'send_labels', 'fk_competitions']
 
         logger.info('Attenpting to insert person: {} {}, {}'.format(self.get_field(entry, 'first_name'),
                                              self.get_field(entry, 'last_name'),
@@ -764,7 +765,11 @@ class Ncbc:
 
         attendee_id_list = escape_sql(json.dumps([attendee_id]))
 
-        sql = 'insert ignore into people ({}) values ("{}", NOW(), "{}", "0")'.format(','.join(db_fields), '","'.join(values), attendee_id_list)
+        sql = 'insert ignore into people ({}) values ("{}", NOW(), "{}", "0", {})'.format(','.join(db_fields),
+                                                                                      '","'.join(values),
+                                                                                      attendee_id_list,
+                                                                                      self.pkid
+                                                                                      )
         db.db_command(sql=sql)
 
         fk_people = self.find_person(self.get_field(entry, 'first_name'),
@@ -810,7 +815,7 @@ class Ncbc:
         temp[self.entry_fields['BJCP Subcategory']] = sub_cat
 
 
-        desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')))  #.strip('\"'))
+        desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"'))
 
         temp[self.entry_fields['Entry Notes']] = desc
 
@@ -1358,7 +1363,7 @@ def email_status(pkid=1, test=False):
 
     msg = 'Good Morning,<br/>' \
           '<br/>' \
-          'The latest and greatest competition stats.' \
+          'Wow, 28 beers from one brewery.  Erik, are you entering?.' \
           '<h3>Entry Info:</h3>' \
           'Number of entries: {}<br/>' \
           'Number of brewers: {}<br/>' \
