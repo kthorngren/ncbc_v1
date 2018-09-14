@@ -404,15 +404,27 @@ class InvoiceFPDF(FPDF, HTMLMixin):
 
         self.set_font('Times', '', 10.0)
 
+        printed_lines = 0
+
         # Here we add more padding by passing 2*th as height
         for entry in data:
-            self.cell(col_widths[0], 2 * th, entry[0], border='LRB', align='L')
+            self.cell(col_widths[0], 2 * th, entry[0], border='LRTB', align='L')
             self.cell(col_widths[1], 2 * th, entry[1], border='RTB', align='L')
-            self.cell(col_widths[2], 2 * th, entry[2], border='RTB', align='L')
+            self.cell(col_widths[2], 2 * th, entry[2][:35], border='RTB', align='L')
             self.cell(col_widths[3], 2 * th, entry[3], border='RTB', align='L')
             self.cell(col_widths[4], 2 * th, entry[4], border='RTB', align='L')
             self.ln(2 * th)
 
+            printed_lines += 1
+
+            if printed_lines % 25 == 0:
+                for i in range(0,4):
+                    self.cell(col_widths[0], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[1], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[2], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[3], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[4], 2 * th, '', border='', align='L')
+                    self.ln(2 * th)
 
         total_lines = 25 - len(data)
 
@@ -1711,7 +1723,7 @@ def fix_descriptions(pkid=1):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=1)
+    process_new_entries(pkid=1)
 
     #process_import_volunteers(pkid=3)
 
