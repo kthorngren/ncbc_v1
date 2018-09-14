@@ -100,7 +100,12 @@ class Volunteers:
             pkid = result['pkid']
             fk_sessions_list = result['fk_sessions_list'].split(',')
 
+        #appned new sessions to original sessions
+        #fk_sessions is the session PKID from NCBC import if attendee_id
         fk_sessions_list.append(str(record['fk_sessions']))
+
+        #use set to remove duplicates the return a sorted list
+        fk_sessions_list = sorted(list(set(fk_sessions_list)))
 
         del record['fk_sessions']
 
