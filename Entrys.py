@@ -161,6 +161,49 @@ class Entrys:
 
 
     def add_inventory(self, entry_id, location_0='', location_1=''):
+        """
+        Update entry by marking it as inventoried and adding location info
+
+        returns 0 if entry not found, entry id if updated and negative entry id if found but nothing updated
+        :param entry_id: entry id
+        :param location_0: location of entry 1
+        :param location_1: location of entry 2
+        :return:
+        """
+        sql = 'select pkid from entries ' \
+              'where entry_id = "{}" and fk_competitions = "{}"'.format(entry_id, Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        if not result:
+            logger.error('Entry ID {}  not found in database'.format(entry_id))
+            return 0
+
+        sql = 'update entries set inventory = "1", location_0 = "{}", location_1 = "{}" ' \
+              'where pkid = "{}"'.format(location_0, location_1, result['pkid'])
+
+        db.db_command(sql=sql)
+
+        if db.row_count() == 0:
+            logger.info('No changes made for Entry ID {}'.format(entry_id))
+            return -result['pkid']
+
+        if db.sql_error:
+            logger.error('Error updating Entry ID {}, error: {}'.format(entry_id, db.sql_error))
+            return 0
+
+        return result['pkid']
+
+
+    def remove_inventory(self, entry_id):
+        """
+        Update entry by marking it as not in inventory
+
+        returns 0 if entry not found, entry id if updated and negative entry id if found but nothing updated
+        :param entry_id: entry id
+        :return:
+        """
 
         sql = 'select pkid from entries ' \
               'where entry_id = "{}" and fk_competitions = "{}"'.format(entry_id, Competitions().get_active_competition())
@@ -169,34 +212,51 @@ class Entrys:
         result = db.db_command(sql=sql, uid=uid).one(uid)
 
         if not result:
+            logger.error('Entry ID {}  not found in database'.format(entry_id))
             return 0
 
-        sql = 'update entries set inventory = "1", location_0 = "{}", location_1 = "{}" ' \
-              'where pkid = "{}"'.format(location_0, location_1, result['pkid'])
+        sql = 'update entries set inventory = "0", location_0 = "", location_1 = "" ' \
+              'where pkid = "{}"'.format(result['pkid'])
 
         db.db_command(sql=sql)
 
+        if db.row_count() == 0:
+            logger.info('No changes made for Entry ID {}'.format(entry_id))
+            return -result['pkid']
+
         if db.sql_error:
+            logger.error('Error updating Entry ID {}, error: {}'.format(entry_id, db.sql_error))
             return 0
 
         return result['pkid']
 
 
-if __name__ == '__main__':
-
-
-
+def test_add_inventory():
+    print(Entrys().inventory_status())
+    print(Entrys().add_inventory(2))
     print(Entrys().inventory_status())
 
     print(Entrys().add_inventory(2))
-
     print(Entrys().inventory_status())
 
     print(Entrys().add_inventory(3, 'Cooler1', 'Box5'))
+    print(Entrys().inventory_status())
 
+    print(Entrys().add_inventory(1))
+    print(Entrys().inventory_status())
+
+def test_remove_inventory():
+    print(Entrys().remove_inventory(2))
+    print(Entrys().inventory_status())
+
+    print(Entrys().remove_inventory(2))
+    print(Entrys().inventory_status())
+
+    print(Entrys().remove_inventory(3))
     print(Entrys().inventory_status())
 
 
 
+if __name__ == '__main__':
 
     pass
