@@ -151,6 +151,44 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
 
+    ######################
+    #
+    # Inventory
+    #
+    ######################
+    @cherrypy.expose
+    def inventory(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='inventory.html')
+        return form
+
+    @cherrypy.expose
+    def dt_inventory(self, *args, **kwargs):
+
+        sql = 'select * from entries'
+
+        result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    ######################
+    #
+    # Description
+    #
+    ######################
+    @cherrypy.expose
+    def descriptions(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='descriptions.html')
+        return form
+
+    @cherrypy.expose
+    def dt_descriptions(self, *args, **kwargs):
+
+        sql = 'select pkid, entry_id, description from entries'
+
+        result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
     ######################

@@ -101,8 +101,8 @@
                               <tr>
                                 <th>pkid</th>
                                 <th></th>
-                                <th>Name</th>
-                                <th>Instructions</th>
+                                <th>Entry ID</th>
+                                <th>Description</th>
                               </tr>
                             </thead>
                           </table>
@@ -170,7 +170,7 @@ function initMainEditor() {
 editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
-	ajax: "dt_instructions",
+	ajax: "dt_descriptions",
 	idSrc: 'pkid',
     fields: [
         {
@@ -179,12 +179,8 @@ editor = new $.fn.dataTable.Editor(
             type: "hidden"
         },
         {
-            name: "name",
-            label: "Name:"
-        },
-        {
-            name: "instructions",
-            label: "Instructions:",
+            name: "description",
+            label: "Description:",
             type: "quill_text"
         }
     ]
@@ -219,9 +215,9 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_instructions',
+		ajax: 'dt_descriptions',
 		dom: 'Blftirp',
-		pageLength: 2000,
+		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 		rowId: 'pkid',
 		scrollY: true,
 	    select: {
@@ -230,7 +226,7 @@ function drawMainTable() {
    		},
 		columns: [
 	        {
-	        	data: 'name',
+	        	data: 'pkid',
 	        	visible: false
 	        },
 	        {
@@ -240,10 +236,10 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'name',
+	        	data: 'entry_id',
 	        },
 	        {
-	        	data: 'instructions',
+	        	data: 'description',
 	        },
 	    ],
 	    buttons: [
