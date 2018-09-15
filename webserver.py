@@ -10,6 +10,7 @@ from Database import Database, gen_uid
 from Datatables import Datatables
 
 from Competitions import Competitions
+from Styles import Style
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -98,6 +99,54 @@ class Website:
         result = self.db.db_command(sql=sql, uid=uid).all(uid)
 
         return json.dumps(result)
+
+    @cherrypy.expose
+    def get_entry_id(self, entry_id):
+
+        sql = 'select name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+              'b.firstname, b.lastname, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entry_id = "{}" and entries.fk_competitions = "{}"'.format(entry_id, Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).one(uid)
+
+        if result:
+            result['inventory'] = 'Yes' if result['inventory'] == 1 else 'No'
+            result['cat'] = Style('BJCP2015').get_style_name(result['category'], result['sub_category'])
+
+        return json.dumps(result)
+
+
+    @cherrypy.expose
+    def update_entry_id(self, **kwargs):
+
+        if 'entry_id' in kwargs and 'location_0' in kwargs and 'location_0' in kwargs:
+
+            sql = 'update entries set inventory = "1", location_0 = "{d[location_0]}", location_1 = "{d[location_1]}" ' \
+                  'where entry_id = "{d[entry_id]}" and fk_competitions = "{pkid}"'.format(d=kwargs, pkid=Competitions().get_active_competition())
+
+            self.db.db_command(sql=sql)
+
+            sql = 'select name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+                  'b.firstname, b.lastname, b.organization from entries ' \
+                  'inner join brewers as b on b.pkid = fk_brewers ' \
+                  'where entry_id = "{}" and entries.fk_competitions = "{}"'.format(kwargs['entry_id'], Competitions().get_active_competition())
+
+            uid = gen_uid()
+            result = self.db.db_command(sql=sql, uid=uid).one(uid)
+
+            if result:
+                result['inventory'] = 'Yes' if result['inventory'] == 1 else 'No'
+                result['cat'] = Style('BJCP2015').get_style_name(result['category'], result['sub_category'])
+
+        else:
+            result = {'error': 'Error updating entry'}
+
+        return json.dumps(result)
+
+
+
 
     @cherrypy.expose
     def get_comp_stats(self):
@@ -190,6 +239,29 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+
+
+    ######################
+    #
+    # Chekcin entries
+    #
+    ######################
+    @cherrypy.expose
+    def checkin(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='checkin.html')
+        return form
+
+
+
+    @cherrypy.expose
+    def dt_checkin(self, *args, **kwargs):
+
+        sql = 'select pkid, entry_id, description from entries'
+
+        result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
     ######################
     #
