@@ -188,17 +188,32 @@ class Website:
     @cherrypy.expose
     def find_person(self, *args, **kwargs):
 
+        names = []
+
         email = kwargs.get('email', '')
         if email == '':
             return json.dumps({'data': {}})
 
-        display_name = kwargs.get('display_name')
+        firstname = kwargs.get('firstname', '')
+        lastname = kwargs.get('lastname', '')
 
-        match = re.search(r'^(.*)<.*>', display_name)
+        if firstname:
+            names.append(firstname)
 
-        if match:
-            names = match.group(1).split(' ')
+        if lastname:
+            names.append(lastname)
 
+        display_name = kwargs.get('display_name', '')
+
+        if display_name:
+
+            match = re.search(r'^(.*)<.*>', display_name)
+
+            if match:
+                names = match.group(1).split(' ')
+
+
+        if names:
             where = ' firstname in ("{names}") or lastname in ("{names}") or '.format(names='","'.join(names))
         else:
             where = ''
@@ -214,6 +229,38 @@ class Website:
 
 
         return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def add_person(self, *args, **kwargs):
+
+        fields = []
+        values = []
+
+        for k, v in kwargs.items():
+
+            fields.append(k)
+            values.append(v)
+
+        sql = 'insert into people ({}, updated) values ("{}", NOW())'.format(','.join(fields), '","'.join(values))
+        self.db.db_command(sql=sql)
+
+
+        result = {}
+
+        if not self.db.sql_error:
+
+            where = [' {} = "{}" '.format(k, v) for k, v in kwargs.items()]
+
+
+            sql = 'select pkid from people where {}'.format(' and '.join(where))
+
+            uid = gen_uid()
+            result = self.db.db_command(sql=sql, uid=uid).one(uid)
+
+
+
+        return json.dumps(result.get('pkid', 0))
+
 
 
     @cherrypy.expose
@@ -247,6 +294,24 @@ class Website:
             return json.dumps(self.db.row_count())
 
         return json.dumps(0)
+
+
+    @cherrypy.expose
+    def update_volunteer_person(self, *args, **kwargs):
+
+        fk_people = kwargs.get('fk_people', 0)
+        pkid = kwargs.get('pkid', 0)
+
+        if pkid and fk_people:
+            sql = 'update volunteers set fk_people = "{}" where pkid = "{}"'.format(fk_people, pkid)
+            self.db.db_command(sql=sql)
+
+            print(self.db.row_count())
+
+            return json.dumps(self.db.row_count())
+
+        return json.dumps(0)
+
 
 
     ######################
@@ -402,7 +467,63 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
 
+    ######################
+    #
+    # People Editor
+    #
+    ######################
+    @cherrypy.expose
+    def people(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='people.html')
+        return form
 
+    @cherrypy.expose
+    def dt_people(self, *args, **kwargs):
+
+        sql = 'select * from people'
+
+        result = self.dt.parse_request(sql=sql, table='people', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    ######################
+    #
+    # Volunteer Editor
+    #
+    ######################
+    @cherrypy.expose
+    def volunteers(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='volunteers.html')
+        return form
+
+    @cherrypy.expose
+    def dt_volunteers(self, *args, **kwargs):
+
+        sql = 'select * from volunteers'
+
+        result = self.dt.parse_request(sql=sql, table='volunteers', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    ######################
+    #
+    # Brewer Editor
+    #
+    ######################
+    @cherrypy.expose
+    def brewers(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='brewers.html')
+        return form
+
+    @cherrypy.expose
+    def dt_brewers(self, *args, **kwargs):
+
+        sql = 'select * from brewers'
+
+        result = self.dt.parse_request(sql=sql, table='brewers', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
 
