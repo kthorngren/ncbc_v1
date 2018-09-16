@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Inventory Editor</h4>
+                <h4 id='main-title'>Volunteer Confirmation Email Editor</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Inventory</h2>
+                    <h2 id="table-title">Volunteer Emails</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -99,28 +99,12 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
-                                <th colspan="3">Entry</th>
-
-
-                                <th colspan="7" style="text-align:center">Editable Fields</th>
-                                <th colspan="3" style="text-align:center">Use Receive Entries Page</th>
-                              </tr>
-                              <tr>
                                 <th>pkid</th>
                                 <th></th>
-                                <th>ID</th>
-                                <th>Category</th>
-                                <th>Sub Category</th>
-                                <th>Beer Name</th>
-                                <th>Judged</th>
-                                <th>Place</th>
-                                <th>Judged BOS</th>
-                                <th>Overall Place</th>
-                                <th>Checked In</th>
-                                <th>Location 0</th>
-                                <th>Location 1</th>
+                                <th>Name</th>
+                                <th>Message</th>
                               </tr>
-	                        </thead>
+                            </thead>
                           </table>
                 </div>
                 <!-- /x_panel -->
@@ -186,7 +170,7 @@ function initMainEditor() {
 editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
-	ajax: "dt_inventory",
+	ajax: "dt_confirmation",
 	idSrc: 'pkid',
     fields: [
         {
@@ -195,87 +179,31 @@ editor = new $.fn.dataTable.Editor(
             type: "hidden"
         },
         {
-            name: "entry_id",
-            label: "Entry ID:"
-        },
-        {
-            name: "category",
-            label: "Category:",
-        },
-        {
-            name: "sub_category",
-            label: "Sub Category:",
-        },
-        {
             name: "name",
-            label: "Beer Name:",
+            label: "Name:",
         },
         {
-            name: "judged",
-            label: "Judged:",
-	            type: "toggle",
-    	        separator: "|",
-        	    unselectedValue: [
-            	    0
-	            ],
-    	        options: [
-        	        {
-            	        label: "",
-                	    value: 1
-	                }
-    	        ]
+            name: "message",
+            label: "Message:",
+            type: "quill_text"
         },
         {
-            name: "place",
-            label: "Place:",
-        },
-        {
-            name: "bos",
-            label: "Judged BOS:",
-	            type: "toggle",
-    	        separator: "|",
-        	    unselectedValue: [
-            	    0
-	            ],
-    	        options: [
-        	        {
-            	        label: "",
-                	    value: 1
-	                }
-    	        ]
-        },
-        {
-            name: "overall_place",
-            label: "Overall Place:",
+            name: "type",
+            label: "type:",
+            type: "hidden"
         },
     ]
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2), :nth-child(6), :nth-child(8), :nth-child(10), :nth-child(11))', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
     } );
 
-    $('#main-table').on( 'change', 'input.judged-enabled', function () {
-    	//console.log('change');
-        editor
-            .edit( $(this).closest('tr'), false )
-            .set( 'judged', $(this).prop( 'checked' ) ? 1 : 0 )
-            .submit();
-    } );
 
  
-     $('#main-table').on( 'change', 'input.bos-enabled', function () {
-    	//console.log('change');
-        editor
-            .edit( $(this).closest('tr'), false )
-            .set( 'bos', $(this).prop( 'checked' ) ? 1 : 0 )
-            .submit();
-    } );
-
-
     editor
         .on( 'postCreate postRemove', function () {
             // After create or edit, a number of other rows might have been effected -
@@ -284,6 +212,7 @@ editor = new $.fn.dataTable.Editor(
         } )
         .on( 'initCreate', function () {
             // Enable order for create
+            editor.set( 'type', 'volunteer' )
             editor.field( 'pkid' ).disable();
         } )
         .on( 'initEdit', function () {
@@ -296,7 +225,7 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_inventory',
+		ajax: 'dt_confirmation',
 		dom: 'Blftirp',
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 		rowId: 'pkid',
@@ -305,7 +234,6 @@ function drawMainTable() {
     	    style: "multi+shift",
         	selector: "td:first-child"
    		},
-   		order: [[2, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -318,71 +246,12 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'entry_id',
-	        },
-	        {
-	        	data: 'category',
-	        },
-	        {
-	        	data: 'sub_category',
-	        },
-	        {
 	        	data: 'name',
 	        },
 	        {
-	        	data: 'judged',
-	        	render: function ( data, type, row ) 
-	        		{
-	        			if ( type === 'display' ) {  
-	        				return '<input type="checkbox" class="judged-enabled">';
-	        			}  
-	        			return data;
-	        		},
-            	className: "dt-body-center"
-	        },
-	        {
-	        	data: 'place',
-	        },
-	        {
-	        	data: 'bos',
-	        	render: function ( data, type, row ) 
-	        		{
-	        			if ( type === 'display' ) {  
-	        				return '<input type="checkbox" class="bos-enabled">';
-	        			}  
-	        			return data;
-	        		},
-            	className: "dt-body-center"
-	        },
-	        {
-	        	data: 'overall_place',
-	        },
-	        {
-	        	data: 'inventory',
-	        	render: function ( data, type, row ) 
-	        		{
-	        			if ( type === 'display' ) {  
-	        				return '<input type="checkbox" class="inventory-enabled">';
-	        			}  
-	        			return data;
-	        		},
-            	className: "dt-body-center"
-	        },
-	        {
-	        	data: 'location_0',
-	        },
-	        {
-	        	data: 'location_1',
+	        	data: 'message',
 	        },
 	    ],
-	    
-	    rowCallback: function ( row, data ) 
-	    	{ 
-	    		$('input.judged-enabled', row).prop( 'checked', data.judged == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'});
-	    		$('input.bos-enabled', row).prop( 'checked', data.bos == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'});
-	    		$('input.inventory-enabled', row).prop( 'checked', data.inventory == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'}).bootstrapToggle('disable');
-	    	},
-	    
 	    buttons: [
         { extend: "create", editor: editor },
         { extend: "edit",   editor: editor },
@@ -412,7 +281,6 @@ function drawMainTable() {
     ] 
 
 	});
-
 
 }
 

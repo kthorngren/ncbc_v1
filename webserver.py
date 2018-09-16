@@ -88,8 +88,18 @@ class Website:
 
         return form
 
+    def get_pkid(self, data):
+        pkid = 0
 
+        for field in data:
+            match = re.findall(r'\[([A-Za-z0-9_\-]+)\]', field)
 
+            # todo might need to fix loop to get multiple records
+            if match:
+                pkid = int(match.pop(0))
+                break
+
+        return pkid
 
     @cherrypy.expose
     def get_comp_names(self):
@@ -266,7 +276,6 @@ class Website:
         return form
 
 
-
     @cherrypy.expose
     def dt_checkin_brewer(self, *args, **kwargs):
 
@@ -298,6 +307,40 @@ class Website:
             r['cat'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
 
         return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    # Volunteer Emails
+    #
+    ######################
+    @cherrypy.expose
+    def confirmation(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='confirmation.html')
+        return form
+
+    @cherrypy.expose
+    def dt_confirmation(self, *args, **kwargs):
+
+        sql = 'select * from emails where type = "volunteer"'
+
+        if kwargs.get('action', '') == 'edit':
+
+            pkid = self.get_pkid(kwargs)
+
+
+            sql = 'select * from emails where type = "volunteer" and pkid = "{}"'.format(pkid)
+
+
+
+        result = self.dt.parse_request(sql=sql, table='emails', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+
 
     ######################
     #
