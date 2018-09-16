@@ -245,6 +245,10 @@ function drawMainTable() {
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 		rowId: 'pkid',
 		scrollY: true,
+	    select: {
+    	    style: "multi+shift",
+        	selector: "td:first-child"
+   		},
    		order: [[2, 'asc']],
 		columns: [
 	        {
