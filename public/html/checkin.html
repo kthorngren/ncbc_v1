@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css">
+    <!-- Quill -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.quilljs.com/1.2.2/quill.snow.css">
+    <link rel="stylesheet" type="text/css" href="static/css/editor.quill.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+    
+  </head>
+
+  <style>
+  .qrcode-text-btn {
+  display: inline-block;
+  vertical-align:middle;
+  height: 1em;
+  width: 1em;
+  background: url('/static/images/qr_icon.svg') 50% 50% no-repeat;
+  cursor: pointer;
+}
+
+.qrcode-text-btn > input[type=file] {
+  position: absolute;
+  vertical-align:middle;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.qrcode-text {
+  padding-right: 1.7em;
+  margin-right: 0;
+  vertical-align: middle;
+}
+
+.qrcode-text + .qrcode-text-btn {
+  width: 1.7em;
+  margin-left: -1.7em;
+  vertical-align: middle;
+}
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>                
+                
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Entry Check In</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+
+
+<span>Entry ID:<br></span>
+<input type="number" pattern="[0-9]*" class=qrcode-text id=e-id>
+<label class=qrcode-text-btn>
+   <input type=file
+   		id=file-id
+         accept="image/*"
+         capture=environment
+       	 onclick="return showQRIntro();"
+       	 onchange="openQRCamera(this);"
+         tabindex=-1>
+</label>
+
+<span><br>Entry ID: </span><span id="entry-id"></span><br>
+<span>Category: </span><span id="cat"></span><br>
+<span>Brewer: </span><span id="brewer"></span><br>
+<span>Beer Name: </span><span id="beer-name"></span><br>
+<span>Previously Checked In: </span><span id="previous"></span><br>
+<span><br>First Round Location:<br></span>
+<input type=text class=qrcode-text id=loc0>
+<label class=qrcode-text-btn>
+   <input type=file
+         accept="image/*"
+   		id=file-loc0
+         capture=environment
+       	 onclick="return showQRIntro();"
+       	 onchange="openQRCamera(this);"
+         tabindex=-1>
+</label>
+<span><br>BOS Round Location:<br></span>
+<input type=text class=qrcode-text id=loc1>
+<label class=qrcode-text-btn>
+   <input type=file
+         accept="image/*"
+   		id=file-loc1
+         capture=environment
+       	 onclick="return showQRIntro();"
+       	 onchange="openQRCamera(this);"
+         tabindex=-1>
+</label>
+<hr>
+      <button class="btn btn-primary" id="save" name="update">
+        Update Entry
+      </button>
+      <button class="btn btn-primary" id="cancel" name="clear">
+        Cancel/Clear
+      </button>
+
+              </div>
+            </div>
+            <!-- /row -->
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Quill -->
+    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- QR Scripts -->
+    <script src="/static/js/qr_packed.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+
+var element = document.getElementById('e-id');
+var event = new Event('change');
+
+function buttonEnable(btn_id) {
+	$(btn_id).removeClass('disabled');
+}
+
+function buttonDisable(btn_id) {
+	$(btn_id).addClass('disabled');
+}
+
+function clearForm() {
+		buttonDisable('#save');
+            $('#e-id').val('');
+            $('#entry-id').html('');
+            $('#cat').html('');
+            $('#brewer').html('');
+            $('#beer-name').html('');
+            $('#previous').html('');
+            
+            $('#loc0').val('');
+            $('#loc1').val('');
+
+}
+
+$('#e-id').on('change', function () {
+	entryId = $(this).val();
+	
+	if (entryId.length === 0) {
+		clearForm();
+ 		return;
+	}
+    $.ajax({
+      	url: "/get_entry_id",
+      	type: 'post',
+      	data: {entry_id: entryId},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            if ($.isEmptyObject(data)) {
+            	alert('Entry ID ' + entryId + ' not found');
+            	clearForm();
+            	return;
+            }
+            $('#entry-id').html(data.entry_id);
+            $('#cat').html(data.category + data.sub_category + ' - ' + data.cat);
+            $('#brewer').html(data.organization + ': ' + data.firstname + ' ' + data.lastname);
+            $('#beer-name').html(data.name);
+            $('#previous').html(data.inventory);
+            
+            $('#loc0').val(data.location_0);
+            $('#loc1').val(data.location_1);
+            buttonEnable('#save');
+      	},
+      	error: function (jqXHR, exception) {
+      		$('cat').html('Unable to retrieve data!!');
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+
+})
+
+
+//https://www.sitepoint.com/create-qr-code-reader-mobile-website/
+
+function openQRCamera(node) {
+  var reader = new FileReader();
+  reader.onload = function() {
+    node.value = "";
+    qrcode.callback = function(res) {
+
+      if(res instanceof Error) {
+        alert("No QR code found. Please make sure the QR code is within the camera's frame and try again.");
+      } else {
+        node.parentNode.previousElementSibling.value = res;
+        
+        if (node.id === 'file-id') {
+			element.dispatchEvent(event);
+        
+        }
+
+      }
+    };
+    qrcode.decode(reader.result);
+  };
+  reader.readAsDataURL(node.files[0]);
+
+}
+
+function showQRIntro() {
+	return;
+  return confirm("Use your camera to take a picture of a QR code.");
+}
+
+
+$(document).ready(function() {
+
+	buttonDisable('#save');
+
+	$('#save').on('click', function () {
+		if ($('#save').hasClass('disabled')) {
+			return
+		}
+		
+		var data = {}
+		
+		data.entry_id = $('#e-id').val();
+		data.location_0 = $('#loc0').val();
+		data.location_1 = $('#loc1').val();
+		
+    	$.ajax({
+      		url: "/update_entry_id",
+      		type: 'post',
+      		data: data,
+      		success: function(json) {
+            	var data = JSON.parse(json);
+            	if ($.isEmptyObject(data)) {
+            		alert('Entry ID ' + data.entry_id + ' not found');
+            		clearForm();
+            		return;
+            	}
+            	$('#entry-id').html(data.entry_id);
+            	$('#cat').html(data.category + data.sub_category + ' - ' + data.cat);
+            	$('#brewer').html(data.organization + ': ' + data.firstname + ' ' + data.lastname);
+            	$('#beer-name').html(data.name);
+            	$('#previous').html(data.inventory);
+            
+            	$('#loc0').val(data.location_0);
+            	$('#loc1').val(data.location_1);
+            	buttonEnable('#save');
+            	alert('Update of entry ' + data.entry_id + ' is successful!')
+      		},
+      		error: function (jqXHR, exception) {
+      			$('cat').html('Unable to retrieve data!!');
+      			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+            	alert('ERROR: Update of entry ' + data.entry_id + ' failed!')
+      		},
+    	});
+	});
+
+
+
+	$('#cancel').on('click', function () {
+		clearForm();
+	});
+
+});
+</script>
+
+</body>
+</html>
+

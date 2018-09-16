@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css">
+    <!-- Quill -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.quilljs.com/1.2.2/quill.snow.css">
+    <link rel="stylesheet" type="text/css" href="static/css/editor.quill.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+    
+  </head>
+
+  <style>
+  
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>                
+                
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Volunteer Confirmation Email Editor</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2 id="table-title">Volunteer Emails</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <!--
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      -->
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+                          <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Message</th>
+                              </tr>
+                            </thead>
+                          </table>
+                </div>
+                <!-- /x_panel -->
+
+              </div>
+            </div>
+            <!-- /row -->
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Quill -->
+    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+var editor;
+
+
+
+function initMainEditor() {
+
+editor = new $.fn.dataTable.Editor(
+{
+    table: "#main-table",
+	ajax: "dt_confirmation",
+	idSrc: 'pkid',
+    fields: [
+        {
+            name: "pkid",
+            label: "pkid:",
+            type: "hidden"
+        },
+        {
+            name: "name",
+            label: "Name:",
+        },
+        {
+            name: "message",
+            label: "Message:",
+            type: "quill_text"
+        },
+        {
+            name: "type",
+            label: "type:",
+            type: "hidden"
+        },
+    ]
+});
+
+    // Activate an inline edit on click of a table cell
+    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+        editor.inline( this, {
+            onBlur: 'submit'
+        } );
+    } );
+
+
+ 
+    editor
+        .on( 'postCreate postRemove', function () {
+            // After create or edit, a number of other rows might have been effected -
+            // so we need to reload the table, keeping the paging in the current position
+            table.ajax.reload( null, false );
+        } )
+        .on( 'initCreate', function () {
+            // Enable order for create
+            editor.set( 'type', 'volunteer' )
+            editor.field( 'pkid' ).disable();
+        } )
+        .on( 'initEdit', function () {
+            // Disable for edit (re-ordering is performed by click and drag)
+            editor.field( 'pkid' ).disable();
+        } );
+
+}
+
+
+function drawMainTable() {
+	table = $('#main-table').DataTable({
+		ajax: 'dt_confirmation',
+		dom: 'Blftirp',
+		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+		rowId: 'pkid',
+		scrollY: true,
+	    select: {
+    	    style: "multi+shift",
+        	selector: "td:first-child"
+   		},
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	visible: false
+	        },
+	        {
+    	        data: null,
+        	    defaultContent: "",
+            	className: "select-checkbox",
+	            orderable: false
+    	    },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'message',
+	        },
+	    ],
+	    buttons: [
+        { extend: "create", editor: editor },
+        { extend: "edit",   editor: editor },
+            {
+                extend: "selectedSingle",
+                text: 'Duplicate',
+                action: function ( e, dt, node, config ) {
+                    // Place the selected row into edit mode (but hidden),
+                    // then get the values for all fields in the form
+                    var values = editor.edit(
+                            table.row( { selected: true } ).index(),
+                            false
+                        )
+                        .val();
+ 
+                    // Create a new entry (discarding the previous edit) and
+                    // set the values from the read values
+                    editor
+                        .create( {
+                            title: 'Duplicate record',
+                            buttons: 'Create from existing'
+                        } )
+                        .set( values );
+                }
+            },        
+        { extend: "remove", editor: editor }
+    ] 
+
+	});
+
+}
+
+
+
+
+
+
+$(document).ready(function() {
+	initMainEditor();
+	drawMainTable();
+	
+	
+
+});
+</script>
+
+</body>
+</html>
+
