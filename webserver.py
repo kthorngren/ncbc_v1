@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import sys
+import re
 
 import cherrypy
 
@@ -244,7 +245,7 @@ class Website:
 
     ######################
     #
-    # Chekcin entries
+    # Check in entries
     #
     ######################
     @cherrypy.expose
@@ -253,14 +254,47 @@ class Website:
         form = self.build_page(page_name, html_page='checkin.html')
         return form
 
+    ######################
+    #
+    # Check in entries by brewer
+    #
+    ######################
+    @cherrypy.expose
+    def checkin_brewer(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='checkin_brewer.html')
+        return form
+
 
 
     @cherrypy.expose
-    def dt_checkin(self, *args, **kwargs):
+    def dt_checkin_brewer(self, *args, **kwargs):
 
-        sql = 'select pkid, entry_id, description from entries'
+        sql = 'select entries.pkid, name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+              'b.firstname, b.lastname, b.organization, b.email from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        if kwargs.get('action', '') == 'edit':
+
+            for field in kwargs:
+                match = re.findall(r'\[([A-Za-z0-9_\-]+)\]', field)
+
+                #todo might need to fix loop to get multiple records
+                if match:
+                    pkid = int(match.pop(0))
+                    break
+
+            sql = 'select entries.pkid, name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+                  'b.firstname, b.lastname, b.organization, b.email from entries ' \
+                  'inner join brewers as b on b.pkid = fk_brewers ' \
+                  'where entries.pkid = "{}" and entries.fk_competitions = "{}"'.format(pkid, Competitions().get_active_competition())
 
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+
+        for r in result['data']:
+            r['cat'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
+
         return json.dumps(result, cls=DatetimeEncoder)
 
     ######################
