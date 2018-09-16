@@ -185,6 +185,70 @@ class Website:
 
 
 
+    @cherrypy.expose
+    def find_person(self, *args, **kwargs):
+
+        email = kwargs.get('email', '')
+        if email == '':
+            return json.dumps({'data': {}})
+
+        display_name = kwargs.get('display_name')
+
+        match = re.search(r'^(.*)<.*>', display_name)
+
+        if match:
+            names = match.group(1).split(' ')
+
+            where = ' firstname in ("{names}") or lastname in ("{names}") or '.format(names='","'.join(names))
+        else:
+            where = ''
+
+
+        where += ' email like "%{prefix}%" or email = "{email}" or firstname like "%{prefix}%"  or lastname like "%{prefix}%" ' \
+                 ' or locate(lastname, "{prefix}")>0 or locate(firstname, "{prefix}")>0'.format(prefix=email.split('@')[0], email=email)
+
+        sql = 'select * from people where {}'.format(where)
+        
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def add_as_alias(self, *args, **kwargs):
+
+        fields = []
+        values = []
+
+        for k, v in kwargs.items():
+
+            fields.append(k)
+            values.append(v)
+
+        sql = 'insert into people ({}, updated) values ("{}", NOW())'.format(','.join(fields), '","'.join(values))
+        self.db.db_command(sql=sql)
+
+        return json.dumps(self.db.row_count())
+
+
+    @cherrypy.expose
+    def remove_ncbc_email(self, *args, **kwargs):
+
+        pkid = kwargs.get('pkid', 0)
+
+        if pkid:
+            sql = 'delete from ncbc_email_list where pkid = "{}"'.format(pkid)
+            self.db.db_command(sql=sql)
+
+            print(self.db.row_count())
+
+            return json.dumps(self.db.row_count())
+
+        return json.dumps(0)
+
+
     ######################
     #
     # Index
@@ -309,6 +373,38 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
 
+    ######################
+    #
+    #
+    # ** People section **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # NCBC Email List
+    #
+    ######################
+    @cherrypy.expose
+    def ncbc_email_list(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='ncbc_email_list.html')
+        return form
+
+    @cherrypy.expose
+    def dt_ncbc_email_list(self, *args, **kwargs):
+
+        sql = 'select * from ncbc_email_list'
+
+        result = self.dt.parse_request(sql=sql, table='ncbc_email_list', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+
+
 
     ######################
     #
@@ -324,21 +420,19 @@ class Website:
     @cherrypy.expose
     def dt_confirmation(self, *args, **kwargs):
 
-        sql = 'select * from emails where type = "volunteer"'
+        sql = 'select * from email_text where type = "volunteer"'
 
         if kwargs.get('action', '') == 'edit':
 
             pkid = self.get_pkid(kwargs)
 
 
-            sql = 'select * from emails where type = "volunteer" and pkid = "{}"'.format(pkid)
+            sql = 'select * from email_text where type = "volunteer" and pkid = "{}"'.format(pkid)
 
 
 
-        result = self.dt.parse_request(sql=sql, table='emails', debug=True, *args, **kwargs)
+        result = self.dt.parse_request(sql=sql, table='email_text', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
-
-
 
 
 
