@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Check In</h2>
+                    <h2 id="table-title">Entry Check In</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -105,6 +105,8 @@
                                 <th>Checked In</th>
                                 <th>First Round Loc</th>
                                 <th>BOS Round Loc</th>
+                                <th>One Bottle</th>
+                                <th>Comments</th>
                                 <th>Category</th>
                                 <th>Beer Name</th>
                                 <th>Brewer</th>
@@ -201,11 +203,30 @@ editor = new $.fn.dataTable.Editor(
             name: "location_1",
             label: "BOS Round Location:",
         },
+        {
+            name: "one_bottle",
+            label: "One Bottle:",
+	            type: "toggle",
+    	        separator: "|",
+        	    unselectedValue: [
+            	    0
+	            ],
+    	        options: [
+        	        {
+            	        label: "",
+                	    value: 1
+	                }
+    	        ]
+        },
+        {
+            name: "comments",
+            label: "Comments:"
+        },
     ]
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2), :nth-child(3), :nth-child(6), :nth-child(7), :nth-child(8), :nth-child(9))', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2), :nth-child(3), :nth-child(6), :nth-child(8), :nth-child(9), :nth-child(10))', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -220,6 +241,14 @@ editor = new $.fn.dataTable.Editor(
     } );
 
  
+    $('#main-table').on( 'change', 'input.one-enabled', function () {
+    	//console.log('change');
+        editor
+            .edit( $(this).closest('tr'), false )
+            .set( 'one_bottle', $(this).prop( 'checked' ) ? 1 : 0 )
+            .submit();
+    } );
+
 
 
     editor
@@ -280,6 +309,20 @@ function drawMainTable() {
 	        	data: 'location_1',
 	        },
 	        {
+	        	data: 'one_bottle',
+	        	render: function ( data, type, row ) 
+	        		{
+	        			if ( type === 'display' ) {  
+	        				return '<input type="checkbox" class="one-enabled">';
+	        			}  
+	        			return data;
+	        		},
+            	className: "dt-body-center"
+	        },
+	        {
+	        	data: 'comments',
+	        },
+	        {
 	        	data: 'cat',
 	        	render: function ( data, type, row ) 
 	        		{
@@ -301,6 +344,7 @@ function drawMainTable() {
 	    rowCallback: function ( row, data ) 
 	    	{ 
 	    		$('input.inventory-enabled', row).prop( 'checked', data.inventory == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'});
+	    		$('input.one-enabled', row).prop( 'checked', data.one_bottle == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'});
 	    	},
 	    
 

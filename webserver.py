@@ -271,6 +271,7 @@ class Website:
     def dt_checkin_brewer(self, *args, **kwargs):
 
         sql = 'select entries.pkid, name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+              'one_bottle, comments, ' \
               'b.firstname, b.lastname, b.organization, b.email from entries ' \
               'inner join brewers as b on b.pkid = fk_brewers ' \
               'where entries.fk_competitions = "{}"'.format(Competitions().get_active_competition())
@@ -286,6 +287,7 @@ class Website:
                     break
 
             sql = 'select entries.pkid, name, entry_id, category, sub_category, inventory, location_0, location_1, ' \
+                  'one_bottle, comments, ' \
                   'b.firstname, b.lastname, b.organization, b.email from entries ' \
                   'inner join brewers as b on b.pkid = fk_brewers ' \
                   'where entries.pkid = "{}" and entries.fk_competitions = "{}"'.format(pkid, Competitions().get_active_competition())
