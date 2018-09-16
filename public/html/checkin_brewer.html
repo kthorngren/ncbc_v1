@@ -256,9 +256,7 @@ function drawMainTable() {
 	        	visible: false
 	        },
 	        {
-    	        data: null,
         	    defaultContent: "",
-            	className: "select-checkbox",
 	            orderable: false
     	    },
 	        {
@@ -305,33 +303,6 @@ function drawMainTable() {
 	    		$('input.inventory-enabled', row).prop( 'checked', data.inventory == 1 ).bootstrapToggle({size: 'mini', on: 'Yes', off: 'No'});
 	    	},
 	    
-	    buttons: [
-        { extend: "create", editor: editor },
-        { extend: "edit",   editor: editor },
-            {
-                extend: "selectedSingle",
-                text: 'Duplicate',
-                action: function ( e, dt, node, config ) {
-                    // Place the selected row into edit mode (but hidden),
-                    // then get the values for all fields in the form
-                    var values = editor.edit(
-                            table.row( { selected: true } ).index(),
-                            false
-                        )
-                        .val();
- 
-                    // Create a new entry (discarding the previous edit) and
-                    // set the values from the read values
-                    editor
-                        .create( {
-                            title: 'Duplicate record',
-                            buttons: 'Create from existing'
-                        } )
-                        .set( values );
-                }
-            },        
-        { extend: "remove", editor: editor }
-    ] 
 
 	});
 
