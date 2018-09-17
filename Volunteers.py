@@ -86,7 +86,8 @@ class Volunteers:
 
         success = True
 
-        sql = 'select pkid, fk_sessions_list from volunteers where email = "{d[email]}" and ' \
+        sql = 'select pkid, fk_sessions_list from volunteers where firstname = "{d[firstname]}" and ' \
+              'lastname = "{d[lastname]}" and email = "{d[email]}" and ' \
               'fk_competitions = "{d[fk_competitions]}"'.format(d=record)
 
         uid = gen_uid()

@@ -123,7 +123,7 @@ class Import:
         mapping = Import().get_session_mapping()
 
         for row in rows:
-            result = Tools().find('volunteers', ['firstname', 'nickname', 'lastname', 'alias', 'email'],
+            result = Tools().find('people', ['firstname', 'nickname', 'lastname', 'alias', 'email'],
                                   name=row['last_name'], email=row['email'])
 
             logger.info(
@@ -323,9 +323,9 @@ def import_descriptions():
 
 if __name__ == '__main__':
 
-    #test_import_volunteers()
+    test_import_volunteers()
 
-    test_import_entries()
+    #test_import_entries()
 
     #import_descriptions()
 

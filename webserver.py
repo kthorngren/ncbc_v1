@@ -231,6 +231,61 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
     @cherrypy.expose
+    def find_bjcp_judge(self, *args, **kwargs):
+
+        #where = [' {} = "{}" '.format(k, v) for k, v in kwargs.items()]
+
+        where = ' (firstname like "%{d[firstname]}%" and lastname like "%{d[lastname]}%") or ' \
+                'email like "%{d[email]}%"'.format(d=kwargs)
+
+        if len(kwargs.get('bjcp_id', '')) > 0:
+            where +=  'or bjcp_id like "%{d[bjcp_id]}%"'.format(d=kwargs)
+
+        sql = 'select firstname, lastname, email, bjcp_id, level from bjcp_judges where {}'.format(where)
+
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def bulk_find_bjcp_judge(self, *args, **kwargs):
+
+        bjcp_result = []
+
+        try:
+            judges = json.loads(kwargs.get('data', []))
+        except:
+            judges = {}
+
+        for judge in judges:
+
+            where = ' (firstname like "%{d[firstname]}%" and lastname like "%{d[lastname]}%")'.format(d=judge)
+
+            if len(kwargs.get('email', '')) > 0:
+                where +=  'or email like "%{d[email]}%"'.format(d=judge)
+
+            if len(kwargs.get('bjcp_id', '')) > 0:
+                where +=  'or bjcp_id like "%{d[bjcp_id]}%"'.format(d=judge)
+
+            sql = 'select firstname, lastname, email, bjcp_id, level from bjcp_judges where {}'.format(where)
+
+
+            uid = gen_uid()
+            result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+            if judge['lastname'] == 'Houck':
+                print(sql)
+
+            bjcp_result.append({'pkid': judge['pkid'], 'result': result})
+
+        return json.dumps(bjcp_result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
     def add_person(self, *args, **kwargs):
 
         fields = []
@@ -505,6 +560,34 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='volunteers', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+    ######################
+    #
+    # Judge Maintenance
+    #
+    ######################
+    @cherrypy.expose
+    def judge_maintenance(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_maintenance.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_maintenance(self, *args, **kwargs):
+
+        sql = 'select pkid, firstname, lastname, email, bjcp_id, bjcp_rank, cicerone, ' \
+              'ncbc_points, dont_pair, speed, other_cert, result from people where alias = "0"'
+
+        if kwargs.get('action', '') == 'edit':
+
+
+            pkid = self.get_pkid(kwargs)
+
+
+            sql += ' and pkid = "{}"'.format(pkid)
+
+        result = self.dt.parse_request(sql=sql, table='people', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
 
     ######################
     #
@@ -619,6 +702,24 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='instructions', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+    ######################
+    #
+    # Certification Rankings
+    #
+    ######################
+    @cherrypy.expose
+    def cert_rank(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='cert_rank.html')
+        return form
+
+    @cherrypy.expose
+    def dt_cert_rank(self, *args, **kwargs):
+
+        sql = 'select * from cert_rank'
+
+        result = self.dt.parse_request(sql=sql, table='cert_rank', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
 if __name__ == '__main__':
