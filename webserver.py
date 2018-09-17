@@ -604,6 +604,24 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='instructions', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+    ######################
+    #
+    # Certification Rankings
+    #
+    ######################
+    @cherrypy.expose
+    def cert_rank(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='cert_rank.html')
+        return form
+
+    @cherrypy.expose
+    def dt_cert_rank(self, *args, **kwargs):
+
+        sql = 'select * from cert_rank'
+
+        result = self.dt.parse_request(sql=sql, table='cert_rank', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
 if __name__ == '__main__':
