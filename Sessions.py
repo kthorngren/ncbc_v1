@@ -108,6 +108,30 @@ class Sessions:
 
         return result
 
+    def get_session_volunteers(self, session_number, judges=False, stewards=False):
+
+        where = ''
+
+        if stewards and not judges:
+            where = 'and judge = "0"'
+        elif judges and not stewards:
+            where = 'and judge = "1"'
+
+        sql = 'select volunteers.firstname, volunteers.lastname, p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
+                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid ' \
+                'from volunteers '\
+                'inner join people as p on p.pkid = fk_people ' \
+                'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \
+                'and fk_competitions = "{pkid}" {where}'.format(session_number=session_number,
+                                                                pkid=Competitions().get_active_competition(),
+                                                                where=where
+                                                                )
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
 
 def get_session_mapping():
 
@@ -124,11 +148,12 @@ if __name__ == '__main__':
 
     #result = Sessions().get_sessions(judging=True)
 
-    result = get_session_mapping()
+    #result = get_session_mapping()
 
-    for r in result:
-        session = Sessions().get_session_by_number(r['session_number'])
+    #for r in result:
+    #    session = Sessions().get_session_by_number(r['session_number'])
 
-        print(session)
+    #    print(session)
+
 
     pass
