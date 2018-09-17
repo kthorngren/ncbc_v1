@@ -110,7 +110,8 @@
                                 <th>NCBC Points</th>
                                 <th>Don't Pair With</th>
                                 <th>Judge Speed (1-5)</th>
-                                <th>Experience</th>
+                                <th>Other Certifications</th>
+                                <th>BJCP Fetch Results</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -216,14 +217,14 @@ editor = new $.fn.dataTable.Editor(
             label: "Judge Speed:"
         },
         {
-            name: "experience",
-            label: "Experience:",
+            name: "other_cert",
+            label: "Other Certs:",
         },
     ]
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, :last-child)', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -259,7 +260,7 @@ function drawMainTable() {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[2, 'asc']],
+   		order: [[3, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -299,7 +300,23 @@ function drawMainTable() {
 	        	data: 'speed',
 	        },
 	        {
-	        	data: 'experience',
+	        	data: 'other_cert',
+	        },
+	        {
+	        	data: 'result',
+	        	render: function (data, type, row) {
+	        		if (type === 'display' && data.length > 0) {
+	        			var temp = '';
+	        			if (Array.isArray(data)) {
+	        				data.forEach(function(element) {
+	        					cr = temp ? '<br>' : '';
+  								temp = temp + cr + JSON.stringify(element, null, '<br>');
+							})
+	        			}
+	        			return temp;
+	        		}
+	        		return data;
+	        	}
 	        },
 	    ],
 	    buttons: [
@@ -327,7 +344,61 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+            {
+                //extend: "selectedSingle",
+                text: 'Fetch BJCP Info',
+                action: function ( e, dt, node, config ) {
+                
+                	var data = table.rows().data();
+                	
+                	var judges = [];
+                	
+                	for (i=0; i < data.length; i++) {
+                	
+                		judges.push({
+                			pkid: data[i].pkid,
+                			firstname: data[i].firstname,
+                			lastname: data[i].lastname,
+                			email: data[i].email,
+                			bjcp_id: data[i].bjcp_id
+                		});
+
+
+                	}
+                	
+                	
+                		$.ajax({
+					     	url: "/bulk_find_bjcp_judge",
+					      	type: 'post',
+					      	data: {data: JSON.stringify(judges)},
+					      	success: function(json) {
+					            var response = JSON.parse(json);
+					            
+					            	//console.log(response);
+					            	for (i=0; i < response.length; i++) {
+
+										var indexes = table
+										      .rows()
+										      .indexes()
+										      .filter( function ( value, index ) {
+										        return table.row(value).data().pkid == response[i].pkid;
+										      } );
+					            	var row = table.row(indexes[0]).data();
+					            	
+					            	row.result = response[i].result;
+					            	table.row(indexes[0]).data(row);
+					            	}
+							    },
+						  	error: function (jqXHR, exception) {
+				    	
+					      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+					      	},
+			            	
+				        })
+
+               }
+            },        
     ] 
 	    
 

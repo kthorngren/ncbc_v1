@@ -229,14 +229,15 @@ editor = new $.fn.dataTable.Editor(
 function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_cert_rank',
-		dom: 'Blftirp',
+		dom: 'Bftir',
 		rowId: 'pkid',
+		paging: false,
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[2, 'asc']],
+   		order: [[3, 'asc'], [4, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
