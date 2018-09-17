@@ -505,6 +505,34 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='volunteers', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+    ######################
+    #
+    # Judge Maintenance
+    #
+    ######################
+    @cherrypy.expose
+    def judge_maintenance(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_maintenance.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_maintenance(self, *args, **kwargs):
+
+        sql = 'select pkid, firstname, lastname, email, bjcp_id, bjcp_rank, cicerone, ' \
+              'ncbc_points, dont_pair, speed, experience from people where alias = "0"'
+
+        if kwargs.get('action', '') == 'edit':
+
+
+            pkid = self.get_pkid(kwargs)
+
+
+            sql += ' and pkid = "{}"'.format(pkid)
+
+        result = self.dt.parse_request(sql=sql, table='people', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
 
     ######################
     #
