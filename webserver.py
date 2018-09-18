@@ -640,6 +640,49 @@ class Website:
 
 
 
+
+
+
+    ######################
+    #
+    #
+    # ** Sessions section **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Sessions
+    #
+    ######################
+    @cherrypy.expose
+    def sessions(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='sessions.html')
+        return form
+
+    @cherrypy.expose
+    def dt_sessions(self, *args, **kwargs):
+
+        sql = 'select * from sessions where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        if kwargs.get('action', '') == 'edit':
+
+            pkid = self.get_pkid(kwargs)
+
+
+            sql += ' and pkid = "{}"'.format(pkid)
+
+
+
+        result = self.dt.parse_request(sql=sql, table='sessions', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+
+
     ######################
     #
     # web page instructions

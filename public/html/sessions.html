@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Manage Volunteers</h4>
+                <h4 id='main-title'>Sessions Editor</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Volunteers</h2>
+                    <h2 id="table-title">Sessions</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -101,18 +101,14 @@
                               <tr>
                                 <th>pkid</th>
                                 <th></th>
-                                <th>Firstname</th>
-                                <th>Lastname</th>
-                                <th>Email</th>
-                                <th>Judge</th>
-                                <th>fk_people</th>
-                                <th>Notes</th>
-                                <th>Phone</th>
-                                <th>Sessions</th>
-                                <th>Organization</th>
-                                <th>Welcome Email</th>
-                                <th>Changed</th>
-                                <th>New</th>
+                                <th>Name</th>
+                                <th>Judging</th>
+                                <th>Setup</th>
+                                <th>BOS</th>
+                                <th>Session Day</th>
+                                <th>Session Number</th>
+                                <th>Session Start</th>
+                                <th>Session End</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -129,7 +125,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Potential People to Assign to Volunteer</h2>
+                    <h2 id="table-title">Potential People to Assign Email</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -160,7 +156,6 @@
                                 <th>Firstname</th>
                                 <th>Lastname</th>
                                 <th>Email</th>
-                                <th>Alias</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -231,7 +226,7 @@ function initMainEditor() {
 editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
-	ajax: "dt_volunteers",
+	ajax: "dt_sessions",
 	idSrc: 'pkid',
     fields: [
         {
@@ -240,63 +235,105 @@ editor = new $.fn.dataTable.Editor(
             type: "hidden"
         },
         {
-            name: "firstname",
-            label: "Firstname:"
+            name: "name",
+            label: "Name:"
         },
         {
-            name: "lastname",
-            label: "Lastname:",
+            name: "judging",
+            label: "Judging:",
+	            type: "checkbox",
+    	        separator: "|",
+        	    unselectedValue: [
+            	    0
+	            ],
+    	        options: [
+        	        {
+            	        label: "",
+                	    value: 1
+	                }
+    	        ]
         },
         {
-            name: "email",
-            label: "Email:"
+            name: "setup",
+            label: "Setup:",
+	            type: "checkbox",
+    	        separator: "|",
+        	    unselectedValue: [
+            	    0
+	            ],
+    	        options: [
+        	        {
+            	        label: "",
+                	    value: 1
+	                }
+    	        ]
         },
         {
-            name: "judge",
-            label: "Judge:",
+            name: "bos",
+            label: "BOS:",
+	            type: "checkbox",
+    	        separator: "|",
+        	    unselectedValue: [
+            	    0
+	            ],
+    	        options: [
+        	        {
+            	        label: "",
+                	    value: 1
+	                }
+    	        ]
         },
         {
-            name: "fk_people",
-            label: "fk_people:"
+            name: "day",
+            label: "Session Day:"
         },
         {
-            name: "notes",
-            label: "Notes:",
+            name: "session_number",
+            label: "Session Number:",
         },
         {
-            name: "phone",
-            label: "Phone:"
+            name: "session_start",
+            label: "Session Start:"
         },
         {
-            name: "fk_sessions_list",
-            label: "Sessions:",
-        },
-        {
-            name: "organization",
-            label: "Organization:"
-        },
-        {
-            name: "welcome_email",
-            label: "Welcome Email:",
-        },
-        {
-            name: "new",
-            label: "New:"
-        },
-        {
-            name: "changed",
-            label: "Changed:"
+            name: "session_end",
+            label: "Session End:",
         },
     ]
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(3), :nth-child(4)), :nth-child(5)', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
     } );
 
+    $('#main-table').on( 'change', 'input.judging-enabled', function () {
+    	console.log('judging change');
+        editor
+            .edit( $(this).closest('tr'), false )
+            .set( 'judging', $(this).prop( 'checked' ) ? 1 : 0 )
+            .submit();
+    } );
+
+
+    $('#main-table').on( 'change', 'input.setup-enabled', function () {
+    	console.log('setup change');
+        editor
+            .edit( $(this).closest('tr'), false )
+            .set( 'setup', $(this).prop( 'checked' ) ? 1 : 0 )
+            .submit();
+    } );
+
+
+    $('#main-table').on( 'change', 'input.bos-enabled', function () {
+    	console.log('bos change');
+        editor
+            .edit( $(this).closest('tr'), false )
+            .set( 'bos', $(this).prop( 'checked' ) ? 1 : 0 )
+            .submit();
+    } );
 
 
     editor
@@ -319,14 +356,15 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_volunteers',
-		dom: 'Blftirp',
+		ajax: 'dt_sessions',
+		dom: 'Bftir',
+		paging: false,	
 		rowId: 'pkid',
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[3, 'asc']],
+   		order: [[6, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -339,40 +377,52 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'firstname',
+	        	data: 'name',
 	        },
 	        {
-	        	data: 'lastname',
+	        	data: 'judging',
+	        	render: function ( data, type, row ) 
+	        		{
+	        			if ( type === 'display' ) {  
+	        				return '<input type="checkbox" class="judging-enabled">';
+	        			}  
+	        			return data;
+	        		},
+            	className: "dt-body-center"
 	        },
 	        {
-	        	data: 'email',
+	        	data: 'setup',
+	        	render: function ( data, type, row ) 
+	        		{
+	        			if ( type === 'display' ) {  
+	        				return '<input type="checkbox" class="setup-enabled">';
+	        			}  
+	        			return data;
+	        		},
+            	className: "dt-body-center"
 	        },
 	        {
-	        	data: 'judge',
+	        	data: 'bos',
+	        	render: function ( data, type, row ) 
+	        		{
+	        			if ( type === 'display' ) {  
+	        				return '<input type="checkbox" class="bos-enabled">';
+	        			}  
+	        			return data;
+	        		},
+            	className: "dt-body-center"
 	        },
 	        {
-	        	data: 'fk_people',
+	        	data: 'day',
 	        },
 	        {
-	        	data: 'notes',
+	        	data: 'session_number',
 	        },
 	        {
-	        	data: 'phone',
+	        	data: 'session_start',
 	        },
 	        {
-	        	data: 'fk_sessions_list',
-	        },
-	        {
-	        	data: 'organization',
-	        },
-	        {
-	        	data: 'welcome_email',
-	        },
-	        {
-	        	data: 'new',
-	        },
-	        {
-	        	data: 'changed',
+	        	data: 'session_end',
 	        },
 	    ],
 	    buttons: [
@@ -400,67 +450,16 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor },
-            {
-                extend: "selectedSingle",
-                text: 'Add to People Table',
-                action: function ( e, dt, node, config ) {
-
-					var data = table.row( {selected: true} ).data();
-        			var child_data = child_table.row( {selected: true} ).data();
-        			
-        			var update = {
-        				email: data.email,
-        				firstname: data.firstname,
-        				lastname: data.lastname,
-        				organization: data.organization,
-        				phone: data.phone	
-        			}
-
-					console.log('Sending update', update);
-				    $.ajax({
-				      	url: "/add_person",
-				      	type: 'post',
-				      	data: update,
-				      	success: function(json) {
-				            var response = JSON.parse(json);
-				            
-				            console.log('returned data', response);
-				            
-				            if (response >= 1) {
-							    $.ajax({
-							      	url: "/update_volunteer_person",
-							      	type: 'post',
-							      	data: {pkid: data.pkid, fk_people: response},
-							      	success: function(json) {
-							            var del_response = JSON.parse(json);
-				            
-							            console.log('returned data', del_response);
-				            
-							            table.ajax.reload( null, false );
-				            			child_table.clear().draw();
-
-							      	},
-							      	error: function (jqXHR, exception) {
-				      		
-							      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
-							      	},
-				            	
-				            	})
-				            }
-				            table.ajax.reload(null, false)
-				            
-				      	},
-				      	error: function (jqXHR, exception) {
-				      		
-				      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
-				      	},
-				    });
-					
-                }
-            },        
-    ] 
+        { extend: "remove", editor: editor }
+    ],
 	    
+	    rowCallback: function ( row, data ) 
+	    	{ 
+	    		console.log('judging', data.judging);
+	    		$('input.judging-enabled', row).prop( 'checked', data.judging == 1 );
+	    		$('input.setup-enabled', row).prop( 'checked', data.setup == 1 );
+	    		$('input.bos-enabled', row).prop( 'checked', data.bos == 1 );
+	    	},
 
 	});
 
@@ -501,37 +500,54 @@ function drawChildTable() {
 	        {
 	        	data: 'email',
 	        },
-	        {
-	        	data: 'alias',
-	        },
 	    ],
 	    buttons: [
             {
                 extend: "selectedSingle",
-                text: 'Assign to Volunteer',
+                text: 'Create as Alias',
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
         			var child_data = child_table.row( {selected: true} ).data();
         			
         			var update = {
-        				pkid: data.pkid,
-        				fk_people: child_data.pkid
+        				firstname: child_data.firstname,
+        				lastname: child_data.lastname,
+        				email: data.email,
+        				alias: child_data.pkid
         			}
 
 					console.log('Sending update', update);
 				    $.ajax({
-				      	url: "/update_volunteer_person",
+				      	url: "/add_as_alias",
 				      	type: 'post',
 				      	data: update,
 				      	success: function(json) {
 				            var response = JSON.parse(json);
 				            
 				            console.log('returned data', response);
+				            
+				            if (response == 1) {
+							    $.ajax({
+							      	url: "/remove_ncbc_email",
+							      	type: 'post',
+							      	data: {pkid: data.pkid},
+							      	success: function(json) {
+							            var del_response = JSON.parse(json);
+				            
+							            console.log('returned data', del_response);
+				            
+							            table.ajax.reload( null, false );
+				            			child_table.clear().draw();
 
-				            
-				            table.ajax.reload(null, false)
-				            
+							      	},
+							      	error: function (jqXHR, exception) {
+				      		
+							      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+							      	},
+				            	
+				            	})
+				            }
 				      	},
 				      	error: function (jqXHR, exception) {
 				      		
@@ -561,16 +577,11 @@ $(document).ready(function() {
     	
     	if ( type === 'row' ) {
         	var data = table.row( {selected: true} ).data();
-        	
-        	table.button(4).enable (data.fk_people == 0);
         	        	
 		    $.ajax({
 		      	url: "/find_person",
 		      	type: 'post',
-		      	data: {email: data.email, 
-		      			firstname: data.firstname,
-		      			lastname: data.lastname
-		      		},
+		      	data: {email: data.email, display_name: data.display_name},
 		      	success: function(json) {
 		            var data = JSON.parse(json);
 				            

@@ -121,3 +121,22 @@ class Tools:
 
         #where =
 
+    def get_cert_rank(self):
+
+        sql = 'select * from cert_rank'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        ranks = {}
+
+        for r in result:
+
+            key = r['organization']
+
+            if key not in ranks:
+                ranks[key] = {}
+
+            ranks[key][r['name']] = r['rank']
+
+        return ranks
