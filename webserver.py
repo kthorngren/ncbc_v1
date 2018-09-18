@@ -12,6 +12,7 @@ from Datatables import Datatables
 
 from Competitions import Competitions
 from Styles import Style
+from Brewers import Brewers
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -162,17 +163,22 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
-        order = ['entries', 'checked_in', 'brewers']
+        order = ['entries', 'checked_in', 'no_desc', 'judged', 'brewers']
 
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
-            'brewers': 'Brewers'
+            'brewers': 'Brewers',
+            'judged': 'Entries Judged',
+            'no_desc': 'Specialty Entries W/O Description'
         }
 
         result = Competitions().get_comp_status()
 
         entries = result['entries']
+
+        entries['no_desc'] = len(Brewers().get_specialty_wo_desc())
+
 
         temp = []
         for k in order:
@@ -183,6 +189,12 @@ class Website:
 
         return json.dumps(result)
 
+    @cherrypy.expose
+    def get_specialty_wo_desc(self):
+
+        result = Brewers().get_specialty_wo_desc()
+
+        return json.dumps(result)
 
 
     @cherrypy.expose

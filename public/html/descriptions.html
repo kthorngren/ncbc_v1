@@ -95,6 +95,7 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
+                    <p id="no-desc"><p>
     			  </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
@@ -187,7 +188,7 @@ editor = new $.fn.dataTable.Editor(
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2))', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -269,31 +270,49 @@ function drawMainTable() {
                 }
             },        
         { extend: "remove", editor: editor }
-    ] 
+    ],
+    drawCallback: function () {
+    	get_specialty_wo_desc();
+    }
 
 	});
-
-    editor
-        .on( 'postCreate postRemove', function () {
-            // After create or edit, a number of other rows might have been effected -
-            // so we need to reload the table, keeping the paging in the current position
-            table.ajax.reload( null, false );
-        } )
-        .on( 'initCreate', function () {
-            // Enable order for create
-            editor.field( 'pkid' ).disable();
-        } )
-        .on( 'initEdit', function () {
-            // Disable for edit (re-ordering is performed by click and drag)
-            editor.field( 'pkid' ).disable();
-        } );
 
 
 }
 
 
 
+function get_specialty_wo_desc() {
 
+	$.ajax({
+		url: "/get_specialty_wo_desc",
+		type: 'post',
+		success: function(json) {
+			var data = JSON.parse(json);
+						
+	        var temp = '';
+	        if (Array.isArray(data)) {
+	        	data.forEach(function(element) {
+	        		cr = temp ? '<br>' : '';
+  					temp = temp + cr + JSON.stringify(element, null, '<br>');
+				})
+	        }
+			if (temp) {
+				temp = 'Specialty entries without description:<br>' + temp;
+			}
+			
+			$('#no-desc').html(temp);
+
+			        
+		},
+		error: function (jqXHR, exception) {
+				    	
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+			            	
+	})
+
+}
 
 
 $(document).ready(function() {

@@ -89,10 +89,6 @@ class Entrys:
 
         return result
 
-    def get_specialty_entries_wo_desc(self):
-
-        sql = 'select * from entries where '
-
 
     def insert(self, record):
 
