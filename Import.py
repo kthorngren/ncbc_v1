@@ -115,10 +115,14 @@ class Import:
         return updated
 
     def import_ncbc_volunteers(self):
+
+        import_result = {'updated': 0, 'inserted': 0, 'errors': []}
+
         rows = Import().get_ncbc_volunteers()
 
         if len(rows) == 0:
             logger.info('No new volunteers to import')
+            return import_result
 
         mapping = Import().get_session_mapping()
 
@@ -196,17 +200,20 @@ class Import:
 
             record['fk_people'] = fk_people
             record['fk_sessions'] = session['pkid']
-            result = Volunteers().add_record(record)
+            result, inserted = Volunteers().add_record(record)
 
             if not result:
                 logger.error('Error adding volunteer {d[firstname]} {d[lastname]} to database'.format(d=record))
+                import_result['errors'].append('Error adding volunteer {d[firstname]} {d[lastname]} to database'.format(d=record))
             else:
-
+                if inserted:
+                    import_result['inserted'] += 1
+                else:
+                    import_result['updated'] += 1
                 sql = 'update volunteers set new = "0", changed = "0" where pkid = "{}"'.format(row['pkid'])
                 db.db_command(sql=sql)
 
-
-    #import brewers and entries
+        return import_result
 
     def get_brewer(self, pkid):
 
@@ -234,9 +241,11 @@ class Import:
     def import_ncbc_entries(self):
         rows = Import().get_ncbc_entries()
 
+        import_result = {'brewers': 0, 'entries': 0, 'errors': []}
+
         if len(rows) == 0:
-            logger.info('Now new entries to import')
-            return
+            logger.info('No new entries to import')
+            return import_result
 
         for row in rows:
 
@@ -266,12 +275,17 @@ class Import:
                 result = Brewers().insert(new_brewer)
 
                 if not result:
-                    logger.error('Unable ot inster new brewer {d[firstname]} {d[lastname]}, {d[email]}'.format(d=row))
+                    logger.error('Unable to insert new brewer {d[firstname]} {d[lastname]}, {d[email]}'.format(d=row))
+
+                    import_result['errors'].append('Unable to insert new brewer {d[firstname]} {d[lastname]}, {d[email]}'.format(d=row))
+                else:
+                    import_result['brewers'] += 1
 
             brewer_pkid = Brewers().find_brewer(ncbc_brewer['email'])
 
             if brewer_pkid == 0:
                 logger.error('Unable to find brewer, skipping entry insert for pkid: {}'.format(row['pkid']))
+                import_result['errors'].append('Unable to find brewer, skipping entry insert for pkid: {}'.format(row['pkid']))
                 continue
 
 
@@ -291,18 +305,23 @@ class Import:
 
                 sql = 'update entries set imported = "1" where entry_id = "{}"'.format(row['entry_id'])
                 db.db_command(sql=sql)
+                import_result['entries'] += 1
             else:
                 logger.error('Unable to insert entry {d[category]} {d[sub_category]}, {d[name]}'.format(d=row))
+                import_result['errors'].append('Unable to insert entry {d[category]} {d[sub_category]}, {d[name]}'.format(d=row))
 
+        return import_result
 
 def test_import_volunteers():
-    Import().import_ncbc_volunteers()
+    result = Import().import_ncbc_volunteers()
+    print(result)
     #Volunteers().email_new()
     #Volunteers().email_changed()
 
 def test_import_entries():
 
-    Import().import_ncbc_entries()
+    result = Import().import_ncbc_entries()
+    print(result)
 
 
 def import_descriptions():

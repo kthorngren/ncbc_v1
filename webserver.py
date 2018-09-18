@@ -13,6 +13,7 @@ from Datatables import Datatables
 from Competitions import Competitions
 from Styles import Style
 from Brewers import Brewers
+from Import import Import
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -379,6 +380,20 @@ class Website:
 
         return json.dumps(0)
 
+    @cherrypy.expose
+    def import_entries(self):
+
+        result = Import().import_ncbc_entries()
+
+        return json.dumps(result)
+
+    @cherrypy.expose
+    def import_volunteers(self):
+        result = Import().import_ncbc_volunteers()
+
+        return json.dumps(result)
+
+
 
 
     ######################
@@ -405,6 +420,40 @@ class Website:
 
         result = self.dt.parse_request(sql=sql, table='competitions', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
+
+
+    ######################
+    #
+    #
+    # ** Import section **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Import NCBC Entries
+    #
+    ######################
+    @cherrypy.expose
+    def import_ncbc_entries(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='import_ncbc_entries.html')
+        return form
+
+    ######################
+    #
+    # Import NCBC Volunteers
+    #
+    ######################
+    @cherrypy.expose
+    def import_ncbc_volunteers(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='import_ncbc_volunteers.html')
+        return form
+
+
 
 
     ######################

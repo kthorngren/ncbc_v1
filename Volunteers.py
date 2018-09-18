@@ -85,6 +85,7 @@ class Volunteers:
     def add_record(self, record):
 
         success = True
+        inserted = False
 
         sql = 'select pkid, fk_sessions_list from volunteers where firstname = "{d[firstname]}" and ' \
               'lastname = "{d[lastname]}" and email = "{d[email]}" and ' \
@@ -122,6 +123,7 @@ class Volunteers:
 
             if (db.row_count() > 0):
                 logger.info('Updated volunteer {d[firstname]} {d[lastname]} with pkid {pkid}'.format(d=record, pkid=pkid))
+                inserted = False
             else:
                 logger.error('Unable to update volunteer {d[firstname]} {d[lastname]} with pkid {pkid}'.format(d=record, pkid=pkid))
                 success = False
@@ -140,12 +142,13 @@ class Volunteers:
 
             if (db.row_count() > 0):
                 logger.info('Insert volunteer {d[firstname]} {d[lastname]}'.format(d=record))
+                inserted = True
             else:
                 logger.error(
                     'Unable to insert volunteer {d[firstname]} {d[lastname]}'.format(d=record))
                 success = False
 
-        return success
+        return success, inserted
 
 
     def remove_duplicate_sessions(self):
