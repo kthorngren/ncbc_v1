@@ -742,6 +742,46 @@ class Website:
 
 
 
+    ######################
+    #
+    #
+    # ** Email System **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Email Editor
+    #
+    ######################
+    @cherrypy.expose
+    def email_editor(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='email_editor.html')
+        return form
+
+    @cherrypy.expose
+    def dt_email_editor(self, *args, **kwargs):
+
+        sql = 'select * from email_text'
+
+
+        result = self.dt.parse_request(sql=sql, table='email_text', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+
+    ######################
+    #
+    #
+    # ** Global Settings **
+    #
+    #
+    ######################
+
 
 
     ######################
