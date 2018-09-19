@@ -208,11 +208,13 @@ $(document).ready(function() {
             	$('#entries').html(data.entries);
             	$('#brewers').html(data.brewers);
             	$('#error-count').html(data.errors.length);
-
+            	
+			var errors = data.errors
 	        var temp = '';
-	        if (Array.isArray(data)) {
-	        	data.forEach(function(element) {
-	        		cr = temp ? '<br>&nbsp;&nbsp;&nbsp;&nbsp;' : '';
+	        if (Array.isArray(errors)) {
+	        	errors.forEach(function(element) {
+	        	console.log(element);
+	        		cr = temp ? '<br>&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;&nbsp;&nbsp;';
   					temp = temp + cr + JSON.stringify(element, null, '<br>');
 				})
 	        }

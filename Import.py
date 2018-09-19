@@ -253,8 +253,9 @@ class Import:
 
             ncbc_brewer = self.get_brewer(fk_people)
 
+            row['description'] = escape_sql(row['description'])
 
-            brewer_pkid = Brewers().find_brewer(ncbc_brewer['email'])
+            brewer_pkid = Brewers().find_brewer(ncbc_brewer.get('email', ''))
 
             if brewer_pkid == 0:
 
@@ -342,9 +343,9 @@ def import_descriptions():
 
 if __name__ == '__main__':
 
-    test_import_volunteers()
+    #test_import_volunteers()
 
-    #test_import_entries()
+    test_import_entries()
 
     #import_descriptions()
 
