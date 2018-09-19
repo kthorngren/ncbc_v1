@@ -114,6 +114,28 @@ class Brewers:
 
         return success
 
+    def get_specialty_wo_desc(self):
+
+        no_desc = []
+
+        result = Brewers().get_brewers(order_by='organization')
+
+        for r in result:
+            entries = Entrys().get_entries_by_brewer(r['pkid'], order_by='category')
+
+            for entry in entries:
+
+                if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'],
+                                       entry['sub_category']) and not re.sub(r'\s', '', entry['description']):
+
+                    no_desc.append('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}: No description for specialty Entry ID: '
+                        '{e[entry_id]:05}: {e[category]}{e[sub_category]} {cat_name}'.format(d=r, e=entry,
+                                                                                             cat_name=Style(
+                                                                                                 Competitions().get_style_guidelines()).get_style_name(
+                                                                                                 entry['category'],
+                                                                                                 entry[
+                                                                                                     'sub_category'])))
+        return no_desc
 
     def get_entries(self, pkid):
         pass

@@ -2,7 +2,7 @@ import re
 import json
 import sys
 import datetime
-from csv import reader
+from csv import reader, QUOTE_NONE, QUOTE_ALL
 from time import sleep
 
 
@@ -604,14 +604,14 @@ class Ncbc:
                                 #print(self.header)
                                 #self.header = [x.decode('utf-8') for x in self.header]
 
-                                for e in reader(entries):
+                                for e in reader(entries, escapechar='\\', doublequote=False):
                                     if header:
-                                        self.header = e
+                                        self.header = [x.strip('\"') for x in e]
+                                        #print(self.header)
                                         header = False
-                                        #print(e)
                                     else:
-                                        self.entries.append(e)
-                                        #print(e)
+                                        self.entries.append([x.strip('\"').strip() for x in e])
+                                        #print([x.strip('\"').strip() for x in e])
 
 
                             else:
@@ -668,7 +668,11 @@ class Ncbc:
 
     def insert_raw_data(self, gen_id, attendee_id, fk_people, fk_entries, data):
 
-        data = escape_sql(json.dumps(data))
+        #convert row list to string
+        data = json.dumps(data)
+
+        #replace and \" with just " before excaping the quotes
+        data = escape_sql(data.replace(r'\"', '"'))
         sql = 'insert into raw_data (gen_id, attendee_id, fk_people, fk_entries, fk_competitions, json_data) values ' \
               '("{}", "{}", "{}", "{}", "{}", "{}")'.format(gen_id,
                                                attendee_id,
@@ -836,7 +840,16 @@ class Ncbc:
         temp[self.entry_fields['BJCP Subcategory']] = sub_cat
 
 
-        desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"'))
+        """
+        self.get_field(entry, 'Entry Notes') = American IPA, specifically "west-coast style" brewed with pale malt and dry hopped with Mosaic and Citra
+        json.dumps(self.get_field(entry, 'Entry Notes')) = "American IPA, specifically \"west-coast style\" brewed with pale malt and dry hopped with Mosaic and Citra"
+        escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"') = American IPA, specifically \\"west-coast style\\" brewed with pale malt and dry hopped with Mosaic and Citra
+        """
+        #Removed escape_sql as it adds an extra \ in front of the "
+        #desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"'))
+        desc = json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"')
+
+        #print(desc)
 
         temp[self.entry_fields['Entry Notes']] = desc
 

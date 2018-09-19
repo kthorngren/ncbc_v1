@@ -20,6 +20,7 @@ except ImportError:
 from Styles import Style
 from Email import Email
 
+
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
 """
@@ -115,7 +116,8 @@ class Competitions:
         status['entries']['brewers'] = result.get('brewers', 0)
 
 
-        sql = 'select sum(fk_competitions = "{pkid}") as entries, sum(inventory = "1") as checked_in ' \
+        sql = 'select sum(fk_competitions = "{pkid}") as entries, sum(inventory = "1") as checked_in, ' \
+              'sum(judged = "1") as judged ' \
               'from entries where fk_competitions = "{pkid}"'.format(pkid=self.get_active_competition())
 
         uid = gen_uid()
@@ -123,7 +125,7 @@ class Competitions:
 
         status['entries']['entries'] = int(result.get('entries', 0))
         status['entries']['checked_in'] = int(result.get('checked_in', 0))
-
+        status['entries']['judged'] = int(result.get('judged', 0))
 
 
         sql = 'select * from sessions where judging = "1" or setup = "1" and ' \

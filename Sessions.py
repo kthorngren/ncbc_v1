@@ -122,7 +122,7 @@ class Sessions:
                 'from volunteers '\
                 'inner join people as p on p.pkid = fk_people ' \
                 'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \
-                'and fk_competitions = "{pkid}" {where}'.format(session_number=session_number,
+                'and deleted = "0" and fk_competitions = "{pkid}" {where}'.format(session_number=session_number,
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )

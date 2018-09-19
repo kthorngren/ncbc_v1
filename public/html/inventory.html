@@ -95,6 +95,7 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
+                    <p id="no-desc"><p>
     			  </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
@@ -409,8 +410,10 @@ function drawMainTable() {
                 }
             },        
         { extend: "remove", editor: editor }
-    ] 
-
+    ],
+    drawCallback: function () {
+    	get_specialty_wo_desc();
+    }
 	});
 
 
@@ -418,6 +421,37 @@ function drawMainTable() {
 
 
 
+function get_specialty_wo_desc() {
+
+	$.ajax({
+		url: "/get_specialty_wo_desc",
+		type: 'post',
+		success: function(json) {
+			var data = JSON.parse(json);
+						
+	        var temp = '';
+	        if (Array.isArray(data)) {
+	        	data.forEach(function(element) {
+	        		cr = temp ? '<br>' : '';
+  					temp = temp + cr + JSON.stringify(element, null, '<br>');
+				})
+	        }
+			if (temp) {
+				temp = 'Specialty entries without description:<br>' + temp;
+			}
+			
+			$('#no-desc').html(temp);
+
+			        
+		},
+		error: function (jqXHR, exception) {
+				    	
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+			            	
+	})
+
+}
 
 
 
