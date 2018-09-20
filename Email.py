@@ -119,7 +119,7 @@ class Email:
         return message
 
 
-    def create_html_message(self, sender='', to='', bcc='', subject='', message_text=''):
+    def create_html_message(self, sender='', to='', cc='', bcc='', subject='', message_text=''):
         """Create a message for an email.
 
         Args:
@@ -134,7 +134,7 @@ class Email:
 
         if type(to) == type([]):
             to = ','.join(to)
-        logger.info('Creating message for sender: {}'.format(sender))
+        logger.info('Creating HTML message for sender: {}'.format(sender))
         message = MIMEText(message_text, 'html')
         if to:
             message['to'] = to

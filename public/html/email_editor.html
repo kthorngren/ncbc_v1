@@ -308,11 +308,29 @@ function drawMainTable() {
 					data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
 					//data.cc = ['kevin.thorngren@gmail.com']
 					
-					sendEmail(data);
+					sendStatus(data);
+					//sendEmail(data);
 				}
             },        
             {
-                extend: "selectedSingle",
+                //extend: "selectedSingle",
+				enabled: false,
+                text: 'Send Daily Status',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					data.to = ['operations@ncbeer.org', 'jasmine@ncbeer.org',
+                                'erik@mysterybrewing.com', 'hopson@mindspring.com',
+                                'kevin.thorngren@gmail.com']
+					
+					sendStatus(data);
+				}
+            },        
+            {
+                //extend: "selectedSingle",
+				enabled: false,
                 text: 'BCC all Previous NCBC Volunteers',
                 action: function ( e, dt, node, config ) {
 
@@ -327,6 +345,27 @@ function drawMainTable() {
 	});
 
 }
+
+
+function sendStatus(data) {
+	data = JSON.stringify(data);
+	$.ajax({
+		url: "/send_status",
+		type: 'post',
+		data: {data: data},
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			console.log(response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}
+
 
 
 function bccNcbcEmailList(data) {
@@ -350,26 +389,26 @@ function bccNcbcEmailList(data) {
 			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 		},
 	});
-
-
 }
 
 
 function sendEmail(data) {
 	email = {
 		from: data.from,
-		bcc: JSON.stringify(data.bcc),
-		to: JSON.stringify(data.to),
-		cc: JSON.stringify(data.cc),
+		bcc: data.bcc,
+		to: data.to,
+		cc: data.cc,
 		subject: data.subject,
 		msg: data.message,
-		email_type: data.email_type
+		email_type: data.email_type,
+		content_type: data.content_type
 	}
-					
+	email = JSON.stringify(email);
+				
 	$.ajax({
 		url: "/send_email",
 		type: 'post',
-		data: email,
+		data: {data: email},
 		success: function(json) {
 		var response = JSON.parse(json);
 				            
@@ -388,8 +427,23 @@ function sendEmail(data) {
 $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
+
+table.on( 'select', function ( e, dt, type, indexes ) {
+	var data = table.row( {selected: true} ).data();
 	
-	
+	if (data.type == 'daily status') {
+		table.buttons(5).enable();
+	} else if (data.type == 'bcc all') {
+		table.buttons(6).enable();
+	}
+    
+} );
+
+table.on( 'deselect', function ( e, dt, type, indexes ) {
+    table.buttons([5, 6]).disable();
+} );
+
+
 
 });
 </script>

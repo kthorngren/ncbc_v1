@@ -781,19 +781,111 @@ class Website:
 
         return json.dumps(result)
 
+
+    @cherrypy.expose
+    def send_status(self, **kwargs):
+
+        print(kwargs)
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        sql = 'select count(*) from brewers where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).one(uid)
+
+        num_brewers = result.get('count(*)', 'Not found')
+
+
+        result = Competitions().get_comp_status()
+
+        entries = result.get('entries', {})
+        table = '<h3>Inventory Volunteers:</h3>'
+
+        table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                 '<thead>' \
+                 '<tr>' \
+                 '<th>Session</th>' \
+                 '<th>Judges</th>' \
+                 '<th>Stewards</th>' \
+                 '</tr>' \
+                 '</thead>' \
+                 '<tbody>'
+
+        count = 0
+        num_judges = 0
+
+
+        for sessions in result['sessions']:
+
+            num_judges += sessions['judges']
+            table += '<tr>' \
+                     '<td>{}</td>' \
+                     '<td>{}</td>' \
+                     '<td>{}</td>' \
+                     '</tr>'.format(sessions['name'], sessions['judges'], sessions['stewards'])
+
+            if count == 3:
+                table += '</tbody>' \
+                         '</table>'
+
+                table += '<h3>Competition Volunteers:</h3>'
+
+                table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                         '<thead>' \
+                         '<tr>' \
+                         '<th>Session</th>' \
+                         '<th>Judges</th>' \
+                         '<th>Stewards</th>' \
+                         '</tr>' \
+                         '</thead>' \
+                         '<tbody>'
+
+            count += 1
+
+        table += '</tbody>' \
+                 '</table>'
+
+        num_entries = entries.get('entries', 0)
+
+        beers_per_judge = round(num_entries / (num_judges / 2))
+
+
+
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2018, 9, 24) - datetime.date.today()).days, table, beers_per_judge)
+
+        #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
+        #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
+        print('send status', email_params)
+
+        email_params = json.dumps(email_params)
+
+        result = self.send_email(**{'data': email_params})
+
+        return result
+
+
+
+
     @cherrypy.expose
     def send_email(self, *args, **kwargs):
 
-        print(kwargs)
 
-        send_to = kwargs.get('to', '')
-        send_bcc = kwargs.get('bcc', '')
-        send_cc = kwargs.get('cc', '')
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        send_to = email_params.get('to', '')
+        send_bcc = email_params.get('bcc', '')
+        send_cc = email_params.get('cc', '')
 
         errors = []
         result = {}
 
-        sender = kwargs.get('from', '')
+        sender = email_params.get('from', '')
 
         try:
             to = json.loads(send_to)
@@ -820,14 +912,15 @@ class Website:
             bcc = [bcc]
 
 
-        subject = kwargs.get('subject', '')
+        subject = email_params.get('subject', '')
 
-        msg = kwargs.get('msg', '')
+        msg = email_params.get('msg', '')
 
-        email_type = kwargs.get('type', 'text')
+        email_type = email_params.get('type', 'unknown')
+        content_type = email_params.get('content_type', 'text')
 
-        file_path = kwargs.get('file_path', '')
-        file_list = kwargs.get('file_list', [])
+        file_path = email_params.get('file_path', '')
+        file_list = email_params.get('file_list', [])
 
 
 
@@ -837,15 +930,15 @@ class Website:
 
             message = None
 
-            if email_type == 'html':
+            if content_type == 'html':
                 message = email.create_html_message(sender=sender,
                                             to=to,
                                             bcc=bcc,
-                                            bc=cc,
+                                            cc=cc,
                                             subject=subject,
                                             message_text=msg,
                                             )
-            elif email_type == 'text':
+            elif content_type == 'text':
                 message = email.create_message(sender=sender,
                                             to=to,
                                             bcc=bcc,
@@ -853,7 +946,7 @@ class Website:
                                             subject=subject,
                                             message_text=msg,
                                             )
-            elif email_type == 'file':
+            elif content_type == 'file':
                 message = email.create_message_with_attachment(sender=sender,
                                             to=to,
                                             bcc=bcc,
@@ -867,7 +960,7 @@ class Website:
             if message:
                 result = email.send_message(message, rcpt=to + cc + bcc)
             else:
-                errors.append('Unable to create message with email type: {}'.format(email_type))
+                errors.append('Unable to create message with content type: {}'.format(content_type))
 
         else:
             if not sender:
