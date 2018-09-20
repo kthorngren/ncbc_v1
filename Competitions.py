@@ -20,7 +20,6 @@ except ImportError:
 from Styles import Style
 from Email import Email
 
-
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
 """
@@ -168,14 +167,31 @@ class Competitions:
         return status
 
 
+    def validate_ncbc_data(self, entries_report_pkid=0, volunteers_report_pkid=1):
+
+        if entries_report_pkid:
+
+            sql = 'update entries set ncbc_validation = "0" where fk_competitions = "{}"'.format(self.get_active_competition())
+            db.db_command(sql=sql)
+
+            from ncbc import Ncbc
+
+            n = Ncbc(pkid=entries_report_pkid)
+            n.get_csv_2()
+
+            print(n.header)
+
+
 if __name__ == '__main__':
 
-    c = Competitions()
+    #c = Competitions()
 
-    name = c.get_active_competition()
+    #name = c.get_active_competition()
 
-    result = c.get_comp_status()
+    #result = c.get_comp_status()
 
-    print(result)
+    #print(result)
+
+    Competitions().validate_ncbc_data(entries_report_pkid=1)
 
     pass

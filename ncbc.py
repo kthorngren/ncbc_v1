@@ -39,7 +39,7 @@ import os
 
 
 LEVEL = logging.INFO
-logger = logging.getLogger(os.path.basename(__file__).split('.')[0] if __name__ == '__main__' else __name__.split('.')[1])
+logger = logging.getLogger(os.path.basename(__file__).split('.')[0] if __name__ == '__main__' else __name__.split('.')[0])
 logger.setLevel(LEVEL)
 
 # create console handler and set level to debug
@@ -1441,6 +1441,17 @@ def process_new_entries(pkid=1):
 
     brewers = n.group_entries_by_brewer(result)
 
+    try:
+        choice = input('Do you wish to email the brewers (y/n)? ')
+    except Exception as e:
+        choice = 'n'
+
+    if choice and choice[0].lower() == 'y':
+        send_email = True
+    else:
+        send_email = False
+
+
     for brewer in brewers:
         #print(brewer)
 
@@ -1511,23 +1522,15 @@ def process_new_entries(pkid=1):
                 logger.info('Skipping email due to using test DB')
                 result = False
             else:
-                result = False
-                try:
-                    choice = int(input('Do you wish to email the brewers (y/n)? '))
-                except:
-                    choice = 'n'
-
-                if choice and choice[0].lower() == 'y':
+                if send_email:
                     result = e.send_message(message)
                 else:
-                    logger.info('Skipping emailing brewers - please run script again to email')
                     result = False
-
+                    logger.info('Skipping emailing brewers - please run script again to email')
             if result:
                 n.reset_send_labels(brewer)
             else:
                 logger.error('Failed to send email to {}'.format(brewer))
-
 
 
 
