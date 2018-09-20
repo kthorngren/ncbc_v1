@@ -1512,7 +1512,16 @@ def process_new_entries(pkid=1):
                 result = False
             else:
                 result = False
-                #result = e.send_message(message)
+                try:
+                    choice = int(input('Do you wish to email the brewers? '))
+                except ValueError as e:
+                    choice = 'n'
+
+                if choice.lower() == 'y':
+                    result = e.send_message(message)
+                else:
+                    logger.info('Skipping emailing brewers - please run script again to email')
+                    result = False
 
             if result:
                 n.reset_send_labels(brewer)
