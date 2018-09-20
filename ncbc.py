@@ -1508,6 +1508,8 @@ def process_new_entries(pkid=1):
 
             e = Email('files/kevin.json')
 
+
+            """  remove once worlking
             message = e.create_message_with_attachment('NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                        brewer,
                                                        'NC Brewers Cup Entry Labels',
@@ -1516,6 +1518,16 @@ def process_new_entries(pkid=1):
                                                        ['{}_entry_labels.pdf'.format(brewer),
                                                         '{}_invoice.pdf'.format(brewer)]
                                                        )
+            """
+
+            message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                           to=brewer,
+                                                           subject='NC Brewers Cup Entry Labels',
+                                                           message_text=msg,
+                                                           file_dir='files/',
+                                                           filename=['{}_entry_labels.pdf'.format(brewer),
+                                                                        '{}_invoice.pdf'.format(brewer)]
+                                                           )
 
             if validation_errors:
                 result = False
@@ -1524,7 +1536,7 @@ def process_new_entries(pkid=1):
                 result = False
             else:
                 if send_email:
-                    result = e.send_message(message)
+                    result = e.send_message(message, rcpt=[brewer])
                 else:
                     result = False
                     logger.info('Skipping emailing brewers - please run script again to email')

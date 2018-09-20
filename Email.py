@@ -132,17 +132,21 @@ class Email:
           message object
         """
 
-        if type(to) == type([]):
+        if to and type(to) == type([]):
             to = ','.join(to)
+        if cc and type(cc) == type([]):
+            cc = ','.join(cc)
         logger.info('Creating HTML message for sender: {}'.format(sender))
         message = MIMEText(message_text, 'html')
         if to:
             message['to'] = to
+        if cc:
+            message['cc'] = cc
         message['from'] = sender
         message['subject'] = subject
         return message
 
-    def create_message_with_attachment(self, sender='', to='', bcc='', subject='', message_text='', file_dir='', filename=''):
+    def create_message_with_attachment(self, sender='', to='', cc='', bcc='', subject='', message_text='', file_dir='', filename=''):
         """Create a message with attachment for an email.
 
         Args:
@@ -156,17 +160,25 @@ class Email:
         Returns:
         message object
         """
+        if to and type(to) == type([]):
+            to = ','.join(to)
+        if cc and type(cc) == type([]):
+            cc = ','.join(cc)
         logger.info('Creating message for sender: {} with file: {}'.format(sender, filename))
         message = MIMEMultipart()
         if to:
             message['to'] = to
-        if bcc:
-            message['bcc'] = bcc
+        if cc:
+            message['cc'] = cc
+
         message['from'] = sender
         message['subject'] = subject
 
+
+
         msg = MIMEText(message_text)
         message.attach(msg)
+
 
         if type(filename) != type([]):
             filename = [filename]
@@ -178,6 +190,7 @@ class Email:
             if content_type is None or encoding is not None:
                 content_type = 'application/octet-stream'
             main_type, sub_type = content_type.split('/', 1)
+
 
             if main_type == 'text':
                 fp = open(path, 'rb')
@@ -214,7 +227,15 @@ if __name__ == '__main__':
     #e = Email({'username': 'kevin.thorngren@gmail.com', 'password': 'R3alal3)'})
     e = Email('files/kevin.json')
 
-    message = e.create_message('NC Brewers Cup <kevin.thorngren@gmail.com>', 'kevin.thorngren@gmail.com', 'test 3', 'testing number 3')
-    #message = e.create_message_with_attachment('kevin.thorngren@gmail.com', 'kevin.thorngren@gmail.com', 'test 3', 'testing number 3', 'files/', 'kevin.thorngren@gmail.com.pdf')
+    to = 'kevin.thorngren@gmail.com'
+    bcc = 'brewerkev@gmail.com'
+    #message = e.create_message('NC Brewers Cup <kevin.thorngren@gmail.com>', 'kevin.thorngren@gmail.com', 'test 3', 'testing number 3')
+    message = e.create_message_with_attachment(sender='kevin.thorngren@gmail.com',
+                                               to=to,
+                                               subject='test 3',
+                                               message_text='testing number 3',
+                                               file_dir='files/',
+                                               filename='phil@turguabrewing.com_entry_labels.pdf'
+                                               )
 
-    e.send_message(message)
+    e.send_message(message, rcpt=[to] + [bcc])
