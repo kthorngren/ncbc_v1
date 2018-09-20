@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Certification Rankings Editor</h4>
+                <h4 id='main-title'>Email Editor</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Certifications</h2>
+                    <h2 id="table-title">Emails</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -102,10 +102,12 @@
                                 <th>pkid</th>
                                 <th></th>
                                 <th>Name</th>
-                                <th>Organization</th>
-                                <th>Rank</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Message Type</th>
+                                <th>Email Content Type</th>
                               </tr>
-	                        </thead>
+                            </thead>
                           </table>
                 </div>
                 <!-- /x_panel -->
@@ -113,10 +115,6 @@
               </div>
             </div>
             <!-- /row -->
-
-
-            
-            
           </div>
         </div>
         <!-- /page content -->
@@ -168,15 +166,14 @@
 
 var editor;
 
-var table;
-var child_table;
+
 
 function initMainEditor() {
 
 editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
-	ajax: "dt_cert_rank",
+	ajax: "dt_email_editor",
 	idSrc: 'pkid',
     fields: [
         {
@@ -186,15 +183,24 @@ editor = new $.fn.dataTable.Editor(
         },
         {
             name: "name",
-            label: "Name:"
+            label: "Name:",
         },
         {
-            name: "organization",
-            label: "Organization:",
+            name: "subject",
+            label: "Subject:",
         },
         {
-            name: "rank",
-            label: "Cert Rank:",
+            name: "message",
+            label: "Message:",
+            type: "quill_text"
+        },
+        {
+            name: "type",
+            label: "type:",
+        },
+        {
+            name: "content_type",
+            label: "Email Content Type:",
         },
     ]
 });
@@ -207,7 +213,7 @@ editor = new $.fn.dataTable.Editor(
     } );
 
 
-
+ 
     editor
         .on( 'postCreate postRemove', function () {
             // After create or edit, a number of other rows might have been effected -
@@ -228,16 +234,15 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_cert_rank',
-		dom: 'Bftir',
-		rowId: 'pkid',
-		paging: false,
+		ajax: 'dt_email_editor',
+		dom: 'Blftirp',
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+		rowId: 'pkid',
+		scrollY: true,
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[3, 'asc'], [4, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -253,12 +258,17 @@ function drawMainTable() {
 	        	data: 'name',
 	        },
 	        {
-	        	data: 'organization',
+	        	data: 'subject',
 	        },
 	        {
-	        	data: 'rank',
+	        	data: 'message',
 	        },
-
+	        {
+	        	data: 'type',
+	        },
+	        {
+	        	data: 'content_type',
+	        },
 	    ],
 	    buttons: [
         { extend: "create", editor: editor },
@@ -285,7 +295,7 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
             {
                 extend: "selectedSingle",
                 text: 'Send Test Email',
@@ -293,23 +303,146 @@ function drawMainTable() {
 
 					var data = table.row( {selected: true} ).data();
 					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					//data.to = 'kevin.thorngren@gmail.com'
+					data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					//data.cc = ['kevin.thorngren@gmail.com']
+					
+					sendStatus(data);
+					//sendEmail(data);
+				}
+            },        
+            {
+                //extend: "selectedSingle",
+				enabled: false,
+                text: 'Send Daily Status',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					data.to = ['operations@ncbeer.org', 'jasmine@ncbeer.org',
+                                'erik@mysterybrewing.com', 'hopson@mindspring.com',
+                                'kevin.thorngren@gmail.com']
+					
+					sendStatus(data);
+				}
+            },        
+            {
+                //extend: "selectedSingle",
+				enabled: false,
+                text: 'BCC all Previous NCBC Volunteers',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					bccNcbcEmailList(data);
+					
 				}
             },        
     ] 
-	    
 
 	});
-
 
 }
 
 
+function sendStatus(data) {
+	data = JSON.stringify(data);
+	$.ajax({
+		url: "/send_status",
+		type: 'post',
+		data: {data: data},
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			console.log(response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}
+
+
+
+function bccNcbcEmailList(data) {
+	$.ajax({
+		url: "/get_ncbc_email_list",
+		type: 'post',
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			if (response) {
+				data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+				data.bcc = response
+				sendEmail(data);
+			} else {
+				console.log('no ncbc email list returned')
+			}
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}
+
+
+function sendEmail(data) {
+	email = {
+		from: data.from,
+		bcc: data.bcc,
+		to: data.to,
+		cc: data.cc,
+		subject: data.subject,
+		msg: data.message,
+		email_type: data.email_type,
+		content_type: data.content_type
+	}
+	email = JSON.stringify(email);
+				
+	$.ajax({
+		url: "/send_email",
+		type: 'post',
+		data: {data: email},
+		success: function(json) {
+		var response = JSON.parse(json);
+				            
+			console.log('returned data', response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}					
 
 
 
 $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
+
+table.on( 'select', function ( e, dt, type, indexes ) {
+	var data = table.row( {selected: true} ).data();
+	
+	if (data.type == 'daily status') {
+		table.buttons(5).enable();
+	} else if (data.type == 'bcc all') {
+		table.buttons(6).enable();
+	}
+    
+} );
+
+table.on( 'deselect', function ( e, dt, type, indexes ) {
+    table.buttons([5, 6]).disable();
+} );
+
 
 
 });

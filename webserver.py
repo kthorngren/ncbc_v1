@@ -14,6 +14,7 @@ from Competitions import Competitions
 from Styles import Style
 from Brewers import Brewers
 from Import import Import
+from Email import Email
 from Volunteers import Volunteers
 
 DATABASE = ''
@@ -759,6 +760,253 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
 
+
+    ######################
+    #
+    #
+    # ** Email System **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Email Editor
+    #
+    ######################
+    @cherrypy.expose
+    def email_editor(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='email_editor.html')
+        return form
+
+    @cherrypy.expose
+    def dt_email_editor(self, *args, **kwargs):
+
+        sql = 'select * from email_text'
+
+
+        result = self.dt.parse_request(sql=sql, table='email_text', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def get_ncbc_email_list(self):
+
+        result = Volunteers().get_ncbc_email_list()
+
+        return json.dumps(result)
+
+
+    @cherrypy.expose
+    def send_status(self, **kwargs):
+
+        print(kwargs)
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        sql = 'select count(*) from brewers where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).one(uid)
+
+        num_brewers = result.get('count(*)', 'Not found')
+
+
+        result = Competitions().get_comp_status()
+
+        entries = result.get('entries', {})
+        table = '<h3>Inventory Volunteers:</h3>'
+
+        table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                 '<thead>' \
+                 '<tr>' \
+                 '<th>Session</th>' \
+                 '<th>Judges</th>' \
+                 '<th>Stewards</th>' \
+                 '</tr>' \
+                 '</thead>' \
+                 '<tbody>'
+
+        count = 0
+        num_judges = 0
+
+
+        for sessions in result['sessions']:
+
+            num_judges += sessions['judges']
+            table += '<tr>' \
+                     '<td>{}</td>' \
+                     '<td>{}</td>' \
+                     '<td>{}</td>' \
+                     '</tr>'.format(sessions['name'], sessions['judges'], sessions['stewards'])
+
+            if count == 3:
+                table += '</tbody>' \
+                         '</table>'
+
+                table += '<h3>Competition Volunteers:</h3>'
+
+                table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                         '<thead>' \
+                         '<tr>' \
+                         '<th>Session</th>' \
+                         '<th>Judges</th>' \
+                         '<th>Stewards</th>' \
+                         '</tr>' \
+                         '</thead>' \
+                         '<tbody>'
+
+            count += 1
+
+        table += '</tbody>' \
+                 '</table>'
+
+        num_entries = entries.get('entries', 0)
+
+        beers_per_judge = round(num_entries / (num_judges / 2))
+
+
+
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2018, 9, 24) - datetime.date.today()).days, table, beers_per_judge)
+
+        #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
+        #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
+        print('send status', email_params)
+
+        email_params = json.dumps(email_params)
+
+        result = self.send_email(**{'data': email_params})
+
+        return result
+
+
+
+
+    @cherrypy.expose
+    def send_email(self, *args, **kwargs):
+
+
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        send_to = email_params.get('to', '')
+        send_bcc = email_params.get('bcc', '')
+        send_cc = email_params.get('cc', '')
+
+        errors = []
+        result = {}
+
+        sender = email_params.get('from', '')
+
+        try:
+            to = json.loads(send_to)
+        except Exception as e:
+            to = send_to
+
+
+        try:
+            cc = json.loads(send_cc)
+        except Exception as e:
+            cc = send_cc
+
+        try:
+            bcc = json.loads(send_bcc)
+        except Exception as e:
+            bcc = send_bcc
+
+
+        if type(to) != type([]):
+            to = [to]
+        if type(cc) != type([]):
+            cc = [cc]
+        if type(bcc) != type([]):
+            bcc = [bcc]
+
+
+        subject = email_params.get('subject', '')
+
+        msg = email_params.get('msg', '')
+
+        email_type = email_params.get('type', 'unknown')
+        content_type = email_params.get('content_type', 'text')
+
+        file_path = email_params.get('file_path', '')
+        file_list = email_params.get('file_list', [])
+
+
+
+        #send email if all the fields are populated and the file attachment fields are populated if email_type is file
+        if sender and (to or cc or bcc) and subject and msg and ((email_type == 'file' and file_path and file_list) or email_type != 'file'):
+            email = Email('files/kevin.json')
+
+            message = None
+
+            if content_type == 'html':
+                message = email.create_html_message(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            cc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            )
+            elif content_type == 'text':
+                message = email.create_message(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            cc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            )
+            elif content_type == 'file':
+                message = email.create_message_with_attachment(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            cc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            file_dir=file_path,
+                                            filename=file_list
+                                            )
+
+            if message:
+                result = email.send_message(message, rcpt=to + cc + bcc)
+            else:
+                errors.append('Unable to create message with content type: {}'.format(content_type))
+
+        else:
+            if not sender:
+                errors.append('From field is blank')
+            if not to or not cc or not bcc:
+                errors.append('To, CC or BCC fields are blank to: "{}", cc: "{}", bcc: "{}"'.format(to, cc, bcc))
+            if not subject:
+                errors.append('Subject field is blank')
+            if not msg:
+                errors.append('Message is blank')
+
+            if email_type == 'file':
+                if not file_path:
+                    errors.append('File path is blank for "file" email type')
+                if not file_list:
+                    errors.append('File list is blank for "file" email type')
+
+
+        return json.dumps({'data': result, 'error': errors}, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    #
+    # ** Global Settings **
+    #
+    #
+    ######################
 
 
 
