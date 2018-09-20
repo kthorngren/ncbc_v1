@@ -1451,6 +1451,7 @@ def process_new_entries(pkid=1):
     else:
         send_email = False
 
+    sent_email_count = 0
 
     for brewer in brewers:
         #print(brewer)
@@ -1529,9 +1530,11 @@ def process_new_entries(pkid=1):
                     logger.info('Skipping emailing brewers - please run script again to email')
             if result:
                 n.reset_send_labels(brewer)
+                sent_email_count += 1
             else:
                 logger.error('Failed to send email to {}'.format(brewer))
 
+    logger.info('Sent emails to {} brewers'.format(sent_email_count))
 
 
 
@@ -1761,6 +1764,8 @@ def fix_descriptions(pkid=1):
 if __name__ == '__main__':
 
     process_new_entries(pkid=1)
+
+    process_new_volunteers(pkid=3)
 
     #process_import_volunteers(pkid=3)
 
