@@ -211,9 +211,14 @@ class Volunteers:
 
     def email_new(self):
         result = Volunteers().get_volunteers(new=True)
+
+        errors = []
+        email_counter = 0
+
         if len(result) == 0:
             logger.info('No new volunteers to email')
-            return
+            errors.append('No new volunteers to email')
+            return {'count': email_counter, 'error': errors}
 
         e = Email('files/kevin.json')
 
@@ -223,6 +228,8 @@ class Volunteers:
 
             if r['welcome_email'] == 1:
                 logger.error('Volunteer {d[firstname]} {d[lastname]} PKID: {d[pkid]} marked as new but the '
+                             'welcome email has been sent - not sending email'.format(d=r))
+                errors.append('Volunteer {d[firstname]} {d[lastname]} PKID: {d[pkid]} marked as new but the '
                              'welcome email has been sent - not sending email'.format(d=r))
                 continue
             sessions = Sessions().get_fk_sessions(r['fk_sessions_list'])
@@ -303,23 +310,33 @@ class Volunteers:
             if result:
                 sql = 'update volunteers set welcome_email = "1", new = "0", changed = "0" where pkid = "{}"'.format(r['pkid'])
                 db.db_command(sql=sql)
+                email_counter += 1
             else:
                 logger.error('Welcome email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+                errors.append('Welcome email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+
+        return {'count': email_counter, 'error': errors}
 
 
     def email_changed(self):
+
+        errors = []
+        email_counter = 0
 
         result = Volunteers().get_volunteers(new=True, changed=True)
 
         if len(result) == 0:
             logger.info('No changed volunteers to email')
-            return
+            errors.append('No changed volunteers to email')
+            return {'count': email_counter, 'error': errors}
 
         e = Email('files/kevin.json')
 
         for r in result:
             if r['new'] == 1 and r['welcome_email'] == 0:
                 logger.error('Skipping New entry for {d[firstname]} {d[lastname]}, PKID: {d[pkid]} because the Welcome Email '
+                             'has not been sent'.format(d=r))
+                errors.append('Skipping New entry for {d[firstname]} {d[lastname]}, PKID: {d[pkid]} because the Welcome Email '
                              'has not been sent'.format(d=r))
                 continue
 
@@ -394,13 +411,16 @@ class Volunteers:
                 result = e.send_message(message)
 
 
+
             if result:
                 sql = 'update volunteers set new = "0", changed = "0" where pkid = "{}"'.format(r['pkid'])
                 db.db_command(sql=sql)
+                email_counter += 1
             else:
-                logger.error('Welcome email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+                logger.error('Session change email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+                errors.append('Session change not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
 
-
+        return {'count': email_counter, 'error': errors}
 
 
 
