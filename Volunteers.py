@@ -295,16 +295,16 @@ class Volunteers:
                   'Thanks,<br/>' \
                   'Kevin<br/>'.format(firstname=firstname, table=table)
 
-            message = e.create_html_message('NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                            r['email'],
-                                                       'NC Brewers Cup Welcome',
-                                                       msg,
-                                                       )
+            message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                to=r['email'],
+                                                subject='NC Brewers Cup Welcome',
+                                                message_text=msg,
+                                                )
             if DATABASE != 'competitions':
                 logger.info('Skipping email due to using test DB')
                 result = False
             else:
-                result = e.send_message(message)
+                result = e.send_message(message, rcpt=[r['email']])
 
 
             if result:
@@ -399,16 +399,16 @@ class Volunteers:
                   'Thanks,<br/>' \
                   'Kevin<br/>'.format(firstname=firstname, table=table)
 
-            message = e.create_html_message('NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                            r['email'],
-                                                       'NC Brewers Cup Schedule Change Confirmation',
-                                                       msg,
-                                                       )
+            message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                to=r['email'],
+                                                subject='NC Brewers Cup Schedule Change Confirmation',
+                                                message_text=msg,
+                                                )
             if DATABASE != 'competitions':
                 logger.info('Skipping email due to using test DB')
                 result = False
             else:
-                result = e.send_message(message)
+                result = e.send_message(message, rcpt=[r['email']])
 
 
 
