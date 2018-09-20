@@ -14,6 +14,7 @@ from Competitions import Competitions
 from Styles import Style
 from Brewers import Brewers
 from Import import Import
+from Volunteers import Volunteers
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -454,7 +455,24 @@ class Website:
         return form
 
 
+    ######################
+    #
+    # Email new and changed volunteers
+    #
+    ######################
+    @cherrypy.expose
+    def email_volunteer_sessions(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='email_volunteer_sessions.html')
+        return form
 
+    @cherrypy.expose
+    def send_volunteer_sessions(self, **kwargs):
+
+        new_result = Volunteers().email_new()
+        changed_result = Volunteers().email_changed()
+
+        return json.dumps({'new': new_result, 'changed': changed_result})
 
     ######################
     #
