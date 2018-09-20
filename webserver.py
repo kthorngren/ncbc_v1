@@ -14,6 +14,8 @@ from Competitions import Competitions
 from Styles import Style
 from Brewers import Brewers
 from Import import Import
+from Email import Email
+from Volunteers import Volunteers
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -771,6 +773,120 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='email_text', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+    @cherrypy.expose
+    def get_ncbc_email_list(self):
+
+        result = Volunteers().get_ncbc_email_list()
+
+        return json.dumps(result)
+
+    @cherrypy.expose
+    def send_email(self, *args, **kwargs):
+
+        print(kwargs)
+
+        send_to = kwargs.get('to', '')
+        send_bcc = kwargs.get('bcc', '')
+        send_cc = kwargs.get('cc', '')
+
+        errors = []
+        result = {}
+
+        sender = kwargs.get('from', '')
+
+        try:
+            to = json.loads(send_to)
+        except Exception as e:
+            to = send_to
+
+
+        try:
+            cc = json.loads(send_cc)
+        except Exception as e:
+            cc = send_cc
+
+        try:
+            bcc = json.loads(send_bcc)
+        except Exception as e:
+            bcc = send_bcc
+
+
+        if type(to) != type([]):
+            to = [to]
+        if type(cc) != type([]):
+            cc = [cc]
+        if type(bcc) != type([]):
+            bcc = [bcc]
+
+
+        subject = kwargs.get('subject', '')
+
+        msg = kwargs.get('msg', '')
+
+        email_type = kwargs.get('type', 'text')
+
+        file_path = kwargs.get('file_path', '')
+        file_list = kwargs.get('file_list', [])
+
+
+
+        #send email if all the fields are populated and the file attachment fields are populated if email_type is file
+        if sender and (to or cc or bcc) and subject and msg and ((email_type == 'file' and file_path and file_list) or email_type != 'file'):
+            email = Email('files/kevin.json')
+
+            message = None
+
+            if email_type == 'html':
+                message = email.create_html_message(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            bc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            )
+            elif email_type == 'text':
+                message = email.create_message(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            cc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            )
+            elif email_type == 'file':
+                message = email.create_message_with_attachment(sender=sender,
+                                            to=to,
+                                            bcc=bcc,
+                                            cc=cc,
+                                            subject=subject,
+                                            message_text=msg,
+                                            file_dir=file_path,
+                                            filename=file_list
+                                            )
+
+            if message:
+                result = email.send_message(message, rcpt=to + cc + bcc)
+            else:
+                errors.append('Unable to create message with email type: {}'.format(email_type))
+
+        else:
+            if not sender:
+                errors.append('From field is blank')
+            if not to or not cc or not bcc:
+                errors.append('To, CC or BCC fields are blank to: "{}", cc: "{}", bcc: "{}"'.format(to, cc, bcc))
+            if not subject:
+                errors.append('Subject field is blank')
+            if not msg:
+                errors.append('Message is blank')
+
+            if email_type == 'file':
+                if not file_path:
+                    errors.append('File path is blank for "file" email type')
+                if not file_list:
+                    errors.append('File list is blank for "file" email type')
+
+
+        return json.dumps({'data': result, 'error': errors}, cls=DatetimeEncoder)
 
 
 

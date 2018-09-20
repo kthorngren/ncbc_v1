@@ -286,6 +286,15 @@ function drawMainTable() {
                 }
             },        
         { extend: "remove", editor: editor }
+            {
+                extend: "selectedSingle",
+                text: 'Send Test Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+				}
+            },        
     ] 
 	    
 

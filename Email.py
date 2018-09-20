@@ -60,13 +60,14 @@ class Email:
 
 
 
-    def send_message(self, message):
+    def send_message(self, message, rcpt=''):
         """
         Sned email via SMTP
         :param message: message object to send
         :return:
         """
         logger.info('Attempting to send email from {}, to {}'.format(message['From'], message['To']))
+        print(rcpt)
         try:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             #print 'server created'
@@ -76,7 +77,7 @@ class Email:
             #print 'starttls'
             server.login(self.username, self.password)
             #print 'login'
-            server.sendmail(message['From'], message['To'], message.as_bytes())
+            server.sendmail(message['From'], rcpt, message.as_bytes())
             #print 'sendmail'
             server.close()
             #print "Successfully sent email"
@@ -88,7 +89,7 @@ class Email:
         return False
 
 
-    def create_message(self, sender, to, subject, message_text):
+    def create_message(self, sender='', to='', cc='', bcc='', subject='', message_text=''):
         """Create a message for an email.
 
         Args:
@@ -100,18 +101,25 @@ class Email:
         Returns:
           message object
         """
-
-        if type(to) == type([]):
+        print(sender, to, bcc, cc)
+        if to and type(to) == type([]):
             to = ','.join(to)
+        if cc and type(cc) == type([]):
+            cc = ','.join(cc)
         logger.info('Creating message for sender: {}'.format(sender))
         message = MIMEText(message_text)
-        message['to'] = to
+        if to:
+            message['to'] = to
+        if cc:
+            message['cc'] = cc
         message['from'] = sender
         message['subject'] = subject
+
+
         return message
 
 
-    def create_html_message(self, sender, to, subject, message_text):
+    def create_html_message(self, sender='', to='', bcc='', subject='', message_text=''):
         """Create a message for an email.
 
         Args:
@@ -128,12 +136,13 @@ class Email:
             to = ','.join(to)
         logger.info('Creating message for sender: {}'.format(sender))
         message = MIMEText(message_text, 'html')
-        message['to'] = to
+        if to:
+            message['to'] = to
         message['from'] = sender
         message['subject'] = subject
         return message
 
-    def create_message_with_attachment(self, sender, to, subject, message_text, file_dir, filename):
+    def create_message_with_attachment(self, sender='', to='', bcc='', subject='', message_text='', file_dir='', filename=''):
         """Create a message with attachment for an email.
 
         Args:
@@ -149,7 +158,10 @@ class Email:
         """
         logger.info('Creating message for sender: {} with file: {}'.format(sender, filename))
         message = MIMEMultipart()
-        message['to'] = to
+        if to:
+            message['to'] = to
+        if bcc:
+            message['bcc'] = bcc
         message['from'] = sender
         message['subject'] = subject
 

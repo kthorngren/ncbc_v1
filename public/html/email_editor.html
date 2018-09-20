@@ -240,7 +240,7 @@ function drawMainTable() {
 		rowId: 'pkid',
 		scrollY: true,
 	    select: {
-    	    style: "multi+shift",
+    	    style: "single",
         	selector: "td:first-child"
    		},
 		columns: [
@@ -295,7 +295,33 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+            {
+                extend: "selectedSingle",
+                text: 'Send Test Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					//data.to = 'kevin.thorngren@gmail.com'
+					data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					//data.cc = ['kevin.thorngren@gmail.com']
+					
+					sendEmail(data);
+				}
+            },        
+            {
+                extend: "selectedSingle",
+                text: 'BCC all Previous NCBC Volunteers',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					bccNcbcEmailList(data);
+					
+				}
+            },        
     ] 
 
 	});
@@ -303,7 +329,59 @@ function drawMainTable() {
 }
 
 
+function bccNcbcEmailList(data) {
+	$.ajax({
+		url: "/get_ncbc_email_list",
+		type: 'post',
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			if (response) {
+				data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+				data.bcc = response
+				sendEmail(data);
+			} else {
+				console.log('no ncbc email list returned')
+			}
 
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+
+
+}
+
+
+function sendEmail(data) {
+	email = {
+		from: data.from,
+		bcc: JSON.stringify(data.bcc),
+		to: JSON.stringify(data.to),
+		cc: JSON.stringify(data.cc),
+		subject: data.subject,
+		msg: data.message,
+		email_type: data.email_type
+	}
+					
+	$.ajax({
+		url: "/send_email",
+		type: 'post',
+		data: email,
+		success: function(json) {
+		var response = JSON.parse(json);
+				            
+			console.log('returned data', response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}					
 
 
 

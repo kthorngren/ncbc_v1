@@ -60,6 +60,24 @@ class Volunteers:
 
         pass
 
+    def get_ncbc_email_list(self):
+
+        sql = 'select distinct email from people'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        email_list = [x['email'] for x in result]
+
+        sql = 'select distinct email from ncbc_email_list'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        email_list += [x['email'] for x in result]
+
+        return email_list
+
     def get_volunteers(self, new=False, changed=False):
 
         where = []
@@ -411,9 +429,11 @@ def test_remove_dup_sessions():
 
 if __name__ == '__main__':
 
+
+    #print(Volunteers().get_ncbc_email_list())
     #test_get_sessions()
 
-    test_remove_dup_sessions()
+    #test_remove_dup_sessions()
 
     #email_new()
 
