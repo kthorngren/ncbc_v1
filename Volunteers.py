@@ -295,14 +295,6 @@ class Volunteers:
                   'Thanks,<br/>' \
                   'Kevin<br/>'.format(firstname=firstname, table=table)
 
-            """
-            remove once bleo works
-            message = e.create_html_message('NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                            r['email'],
-                                                       'NC Brewers Cup Welcome',
-                                                       msg,
-                                                       )
-            """
             message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                 to=r['email'],
                                                 subject='NC Brewers Cup Welcome',
@@ -407,14 +399,6 @@ class Volunteers:
                   'Thanks,<br/>' \
                   'Kevin<br/>'.format(firstname=firstname, table=table)
 
-            """
-            remove once below works
-            message = e.create_html_message('NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                            r['email'],
-                                                       'NC Brewers Cup Schedule Change Confirmation',
-                                                       msg,
-                                                       )
-            """
             message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                 to=r['email'],
                                                 subject='NC Brewers Cup Schedule Change Confirmation',

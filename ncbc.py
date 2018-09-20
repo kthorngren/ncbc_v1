@@ -1509,17 +1509,6 @@ def process_new_entries(pkid=1):
             e = Email('files/kevin.json')
 
 
-            """  remove once worlking
-            message = e.create_message_with_attachment('NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                                       brewer,
-                                                       'NC Brewers Cup Entry Labels',
-                                                       msg,
-                                                       'files/',
-                                                       ['{}_entry_labels.pdf'.format(brewer),
-                                                        '{}_invoice.pdf'.format(brewer)]
-                                                       )
-            """
-
             message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                            to=brewer,
                                                            subject='NC Brewers Cup Entry Labels',
