@@ -113,7 +113,7 @@
 	
 	<span><br>Number of New Volunteers Emailed: </span><span id="inserted"></span>
 	<span><br>Number of Changed Volunteers Emailed: </span><span id="updated"></span>
-	<span><br>Email Reuslt Messages: </span><span id="error-count"></span>
+	<span><br>Email Result Messages: </span><span id="error-count"></span>
 	<span><br></span><span id="errors"></span>
 
 	</div>
@@ -204,12 +204,12 @@ $(document).ready(function() {
             	
             	var new_result = data.new;
             	var changed_result = data.changed;
-
+            	
             	buttonEnable('#import');
             	$('#result').show();
             	
-            	$('#inserted').html(new_result.email_counter);
-            	$('#updated').html(changed_result.email_counter);
+            	$('#inserted').html(new_result.count);
+            	$('#updated').html(changed_result.count);
             	$('#error-count').html(new_result.error.length + changed_result.error.length);
 
 			var errors = changed_result.error.concat(new_result.error)
