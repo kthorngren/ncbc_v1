@@ -17,6 +17,7 @@ from Import import Import
 from Email import Email
 from Volunteers import Volunteers
 from Flights import Flights
+from Sessions import Sessions
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -813,6 +814,34 @@ class Website:
         result['pairing'] = Flights().get_session_pairing(session_number)
 
         return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_pairs(self, *args, **kwargs):
+
+        errors = []
+
+        result = ''
+
+        try:
+            session_pairs = json.loads(kwargs.get('data', {}))
+        except:
+            session_pairs = {}
+        print(session_pairs.keys())
+        if session_pairs:
+            save_result = Sessions().save_session_pairs(session_pairs)
+
+            if save_result:
+                result = 'Successfully save judge pairs'
+            else:
+                errors.append('Unable to save judge pairs')
+
+        else:
+            errors.append('Unable to parse judge pairs')
+
+
+
+        return json.dumps({'data': result, 'error': ','.join(errors)}, cls=DatetimeEncoder)
 
 
     ######################

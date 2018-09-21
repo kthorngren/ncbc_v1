@@ -379,7 +379,29 @@ function drawMainTable() {
                 extend: "selectedSingle",
                 text: 'Save Judge Pairs',
                 action: function ( e, dt, node, config ) {
+                
+                	var data = {};
 
+					data.judges = judges_table.rows().data().toArray();
+					data.hj_judges = hj_table.rows().data().toArray();
+					data.sj_judges = sj_table.rows().data().toArray();
+					
+					data.fk_sessions = table.row( { selected: true } ).data()['pkid'];
+					
+					//console.log('save', data);
+					
+					save_pairs(data);
+
+                }
+            },        
+            {
+                extend: "selectedSingle",
+                text: 'Reset Judge Pairs',
+                action: function ( e, dt, node, config ) {
+                
+    				var session_number = table.row( { selected: true } ).data()['pkid'];
+    	
+					reset_session_judges(session_number);
                 }
             },        
     ] 
@@ -550,6 +572,29 @@ function drawJudgesTables() {
 
 
 
+function save_pairs(data) {
+
+	$.ajax({
+      	url: "/save_pairs",
+      	type: 'post',
+      	data: {data: JSON.stringify(data)},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            //console.log(data);
+            
+            if (data.error) {
+            	alert('Error trying to save judge pairs: ' + data.error);
+            }
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
 
 function auto_gen_pairs(session_number) {
 
@@ -559,7 +604,7 @@ function auto_gen_pairs(session_number) {
       	data: {session_number: session_number},
       	success: function(json) {
             var data = JSON.parse(json);
-            console.log(data);
+            //console.log(data);
             
             judges_table.clear().draw();
             hj_table.clear().draw();
@@ -604,7 +649,7 @@ function auto_gen_pairs(session_number) {
 
 
 
-function get_session_judges(session_number) {
+function reset_session_judges(session_number) {
 
 	$.ajax({
       	url: "/get_session_judges",
@@ -612,7 +657,7 @@ function get_session_judges(session_number) {
       	data: {session_number: session_number},
       	success: function(json) {
             var data = JSON.parse(json);
-            
+
             judges_table.clear().draw();
             hj_table.clear().draw();
             sj_table.clear().draw();
@@ -622,6 +667,49 @@ function get_session_judges(session_number) {
             }
             
             judges_table.rows.add(data.all).draw();
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+
+function get_session_judges(session_number) {
+
+	$.ajax({
+      	url: "/get_session_judges",
+      	type: 'post',
+      	data: {session_number: session_number},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            //console.log(data);
+            judges_table.clear().draw();
+            hj_table.clear().draw();
+            sj_table.clear().draw();
+            
+            for (i=0; i<data.all.length; i++) {
+            	data.all[i].order = 0;
+            }
+            //console.log(typeof data.pairing == 'undefined');
+            if (typeof data.pairing == 'undefined' || data.pairing.length === 0) {
+            	judges_table.rows.add(data.all).draw();
+            } else {
+            	var pairs = data.pairing[0];
+            	
+            	var judges = JSON.parse(pairs.judges);
+            	var head_judge = JSON.parse(pairs.head_judge);
+            	var second_judge = JSON.parse(pairs.second_judge);
+            	
+            	//console.log('judges', judges)
+            	
+            	judges_table.rows.add(judges).draw();
+            	hj_table.rows.add(head_judge).draw();
+            	sj_table.rows.add(second_judge).draw();
+            }
         },
 
       	error: function (jqXHR, exception) {
@@ -668,7 +756,7 @@ $("#judges, #head-judge, #second-judge").droppable({
 });
 
 $(document).on("click", ".tablegrid tr", function () {
-  console.log('toggle class')
+  //console.log('toggle class')
     $(this).toggleClass("selectedRow");
 });
 

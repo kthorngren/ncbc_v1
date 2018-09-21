@@ -1,3 +1,5 @@
+import json
+
 from Tools import Tools
 from Competitions import DATABASE
 from Competitions import Competitions
@@ -132,6 +134,40 @@ class Sessions:
 
         return result
 
+
+    def save_session_pairs(self, session_pairs):
+
+        result = False
+
+        fk_sessions = session_pairs.get('fk_sessions', 0)
+
+        if fk_sessions:
+
+            data = {}
+
+            data['judges'] = escape_sql(json.dumps(session_pairs.get('judges', '')))
+            data['head_judge'] = escape_sql(json.dumps(session_pairs.get('hj_judges', '')))
+            data['second_judge'] = escape_sql(json.dumps(session_pairs.get('sj_judges', '')))
+
+            print('session pairs', data)
+
+            sql = 'insert ignore into judge_pairing (fk_sessions, judges, head_judge, second_judge) values ' \
+            ' ("{}", "", "", "") '.format(fk_sessions)
+            db.db_command(sql=sql)
+
+            result = False if db.sql_error else True
+
+            if result:
+                sql = 'update judge_pairing set judges = "{d[judges]}", head_judge = "{d[head_judge]}", ' \
+                      'second_judge = "{d[second_judge]}" where fk_sessions = "{fk_sessions}"'.format(d=data,
+                                                                                                       fk_sessions=fk_sessions
+                                                                                                       )
+                db.db_command(sql=sql)
+
+
+            result = False if db.sql_error else True
+
+        return result
 
     def get_daily_pkids(self, session_number):
 
