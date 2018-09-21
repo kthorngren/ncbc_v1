@@ -399,7 +399,7 @@ function drawJudgesTables() {
 		columns: [
 			{data: null,
 				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname;
+					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
 			
 			},
@@ -451,7 +451,7 @@ function drawJudgesTables() {
 			},
 			{data: null,
 				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname;
+					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
 			
 			},
@@ -503,7 +503,7 @@ function drawJudgesTables() {
 			},
 			{data: null,
 				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname;
+					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
 			
 			},

@@ -117,7 +117,7 @@ class Sessions:
         elif judges and not stewards:
             where = 'and judge = "1"'
 
-        sql = 'select volunteers.firstname, volunteers.lastname, p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
+        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
                 'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid ' \
                 'from volunteers '\
                 'inner join people as p on p.pkid = fk_people ' \
@@ -131,6 +131,23 @@ class Sessions:
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
         return result
+
+
+    def get_daily_pkids(self, session_number):
+
+        sql = 'select pkid from sessions where day = ' \
+              '(select day from sessions ' \
+              'where pkid = "{}" and fk_competitions = "{}")'.format(session_number, Competitions().get_active_competition())
+        print(sql)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        session_list = []
+
+        for r in result:
+            session_list.append(r['pkid'])
+
+        return session_list
 
 
 def get_session_mapping():

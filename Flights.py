@@ -63,7 +63,7 @@ class Flights:
 
         BJCP_MULTIPLIER = 2  #because BJCP judges are just better ;-)
 
-        result = Sessions().get_session_volunteers(session_number, judges=True)
+        result = self.get_judges_for_session(session_number)
         ranks = Tools().get_cert_rank()
 
         #calculate ranking for all judges in session
@@ -130,6 +130,20 @@ class Flights:
     def get_judges_for_session(self, session_number):
 
         result = Sessions().get_session_volunteers(session_number, judges=True)
+
+        session_list = Sessions().get_daily_pkids(session_number)
+
+        for r in result:
+
+            count = 0
+            judge_sessions = r['fk_sessions_list'].split(',')
+
+            for s in session_list:
+
+                count += judge_sessions.count(str(s))
+
+            r['total_day'] = count
+            r['total_sessions'] = len(judge_sessions)
 
         return result
 
