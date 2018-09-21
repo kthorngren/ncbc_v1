@@ -775,6 +775,127 @@ class Website:
 
     ######################
     #
+    # Flights Health Check
+    #
+    ######################
+    @cherrypy.expose
+    def flights_health(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flights_health.html')
+        return form
+
+    @cherrypy.expose
+    def health_check(self, **kwargs):
+
+        data = []
+
+        sessions = Sessions().get_sessions(judging=True)
+
+        for session in sorted(sessions, key=lambda k: k['session_number']):
+            print(session)
+
+            #['pkid', 'fk_sessions', 'head_judge', 'second_judge', 'judges']
+            pairing = Flights().get_session_pairing(session['pkid'])
+
+            all_judges = Flights().get_judges_for_session(session['pkid'])
+
+            if len(pairing) == 0:
+                data.append({'name': session['name'], 'status': 'Judge pairing not defined', 'code': 'red'})
+            else:
+                pairing = pairing[0]
+
+                try:
+                    judges = json.loads(pairing['judges'])
+                except:
+                    judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse judges', 'code': 'red'})
+
+                try:
+                    hj_judges = json.loads(pairing['head_judge'])
+                except:
+                    hj_judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse head judges', 'code': 'red'})
+
+                try:
+                    sj_judges = json.loads(pairing['second_judge'])
+                except:
+                    sj_judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse second judges', 'code': 'red'})
+
+                if len(all_judges) == 0:
+                    data.append({'name': session['name'], 'status': 'No judges registerd for session', 'code': 'yellow'})
+                else:
+                    data.append({'name': session['name'], 'status': '{} judges registerd for session'.format(len(all_judges)), 'code': 'green'})
+
+                difference = len(hj_judges) - len(sj_judges)
+
+                if difference == 0:
+                    data.append(
+                        {'name': session['name'], 'status': 'Judge pairs are symmetrical', 'code': 'green'})
+                else:
+                    more = 'Head' if difference > 0 else 'Second'
+                    less = 'Second' if more == 'Head' else 'Head'
+                    data.append({'name': session['name'], 'status': 'More {} judges than {} judges - '
+                                                                    'Head Judges: {}, Second Judges: {}'.format(more, less, len(hj_judges), len(sj_judges)),
+                                 'code': 'red'})
+
+                if len(judges) > 0:
+                    data.append({'name': session['name'], 'status': '{} judges need to be assigned'.format(len(judges)), 'code': 'yellow'})
+
+                all_pkids = [x['pkid'] for x in all_judges]
+                print(all_pkids)
+                not_in_session = []
+                for judge in judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+
+                for judge in hj_judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                for judge in sj_judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                print(not_in_session)
+                print(all_pkids)
+
+                if not_in_session:
+                    data.append({'name': session['name'],
+                                 'status': 'Judges not assigned to session: {}'.format(', '.join(not_in_session)),
+                                 'code': 'red'})
+
+                if all_pkids:
+                    all_list = []
+
+                    for judge in all_judges:
+                        if judge['pkid'] in all_pkids:
+                            all_list.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                    data.append({'name': session['name'],
+                                 'status': 'Session judges not in pairing: {}'.format(', '.join(all_list)),
+                                 'code': 'red'})
+
+                else:
+                    data.append({'name': session['name'],
+                                 'status': 'All session judges accounted for',
+                                 'code': 'green'})
+
+
+        return json.dumps({'data': data}, cls=DatetimeEncoder)
+
+    ######################
+    #
     # Judge Pairing
     #
     ######################
@@ -842,6 +963,52 @@ class Website:
 
 
         return json.dumps({'data': result, 'error': ','.join(errors)}, cls=DatetimeEncoder)
+
+
+
+
+    ######################
+    #
+    # Table Assignments
+    #
+    ######################
+    @cherrypy.expose
+    def tables(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='tables.html')
+        return form
+
+    @cherrypy.expose
+    def dt_tables(self, *args, **kwargs):
+
+        sql = 'select * from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='tables', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    # Flght Assignments
+    #
+    ######################
+    @cherrypy.expose
+    def flight(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flights.html')
+        return form
+
+    @cherrypy.expose
+    def dt_flights(self, *args, **kwargs):
+
+        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
 
 
     ######################
