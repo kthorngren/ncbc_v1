@@ -158,6 +158,16 @@ class Flights:
         return result
 
 
+    def get_flights(self):
+
+        sql = 'select * from flights where fk_competitinos = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
+
 if __name__ == '__main__':
 
 

@@ -892,6 +892,32 @@ class Website:
                                  'code': 'green'})
 
 
+
+
+        sql = 'select * from tables where fk_compeptions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+        if not result:
+            data.append({'name': 'Tables',
+                         'status': 'Tables are not defined',
+                         'code': 'red'})
+        else:
+            pass
+
+        flights = Flights().get_flights()
+
+        if not flights:
+            data.append({'name': 'Flights',
+                         'status': 'Flights are not defined',
+                         'code': 'red'})
+        else:
+            pass
+
+        
+
         return json.dumps({'data': data}, cls=DatetimeEncoder)
 
     ######################

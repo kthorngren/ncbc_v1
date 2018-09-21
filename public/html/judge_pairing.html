@@ -760,7 +760,12 @@ $(document).on("click", ".tablegrid tr", function () {
     $(this).toggleClass("selectedRow");
 });
 
+table.on( 'deselect', function ( e, dt, type, indexes ) {
+    judges_table.clear().draw();
+    hj_table.clear().draw();
+    sj_table.clear().draw();
 
+} );
 
 });
 </script>
