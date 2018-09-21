@@ -104,7 +104,7 @@ class Flights:
 
             for judge in judges:
                 #get judges don't pair list
-                j_dont_pair = judge['dont_pair'].split(',')
+                j_dont_pair = judge['dont_pair'].split(',') if judge['dont_pair'] else ''
 
                 #if head judge pkid not in judge do not pair with and
                 #judge pkid not in head judge do not pair with then pair the judges
