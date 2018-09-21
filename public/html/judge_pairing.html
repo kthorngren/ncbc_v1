@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+    <!-- DataTables RowReorder -->
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.4/css/rowReorder.bootstrap.min.css"/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+    
+  </head>
+
+  <style>
+  
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>                
+                
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Manage People</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2 id="table-title">People</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <!--
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      -->
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+                          <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Session Day</th>
+                                <th>Session Number</th>
+                               </tr>
+	                        </thead>
+                          </table>
+                </div>
+                <!-- /x_panel -->
+
+              </div>
+            </div>
+            <!-- /row -->
+
+
+				  <!-- col-md-4 -->
+                  <div class="col-md-4 col-sm-4 col-xs-12">
+                  
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+                      
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Session Judges<small id="tests-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                      
+                      </div>
+                      <!-- /x_title -->
+                      
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="judges" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                <th>BJCP</th>
+                                <th>Other</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+                        
+                      </div>
+                      <!-- /x_content -->  
+
+                      
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-4 -->
+
+
+
+ 
+ 
+ 				  <!-- col-md-4 -->
+                  <div class="col-md-4 col-sm-4 col-xs-12">
+                  
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+                      
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Head Judge<small id="tests-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                      
+                      </div>
+                      <!-- /x_title -->
+                      
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="head-judge" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Pair</th>
+                                <th>Judge</th>
+                                <th>BJCP</th>
+                                <th>Other</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+                        
+                      </div>
+                      <!-- /x_content -->  
+
+                      
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-4 -->
+
+
+
+				  <!-- col-md-4 -->
+                  <div class="col-md-4 col-sm-4 col-xs-12">
+                  
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+                      
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Second Judge<small id="tests-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                      
+                      </div>
+                      <!-- /x_title -->
+                      
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="second-judge" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Pair</th>
+                                <th>Name</th>
+                                <th>BJCP</th>
+                                <th>Other</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+                        
+                      </div>
+                      <!-- /x_content -->  
+
+                      
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-4 -->
+           
+            
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+    <!-- DataTables RowReorder -->
+	<script type="text/javascript" src="https://cdn.datatables.net/rowreorder/1.2.4/js/dataTables.rowReorder.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Quill -->
+    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+
+var table;
+var judges_table;
+var hj_table;
+var sj_table;  //sj = second judge
+
+
+
+function drawMainTable() {
+	table = $('#main-table').DataTable({
+		ajax: 'dt_judge_pairing',
+		dom: 'Blftirp',
+		rowId: 'pkid',
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
+   		order: [[3, 'asc'], [4, 'asc']],
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	visible: false
+	        },
+	        {
+    	        data: null,
+        	    defaultContent: "",
+            	className: "select-checkbox",
+	            orderable: false
+    	    },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'day',
+	        },
+	        {
+	        	data: 'session_number',
+	        },
+	    ],
+    columnDefs: [
+      {
+      	targets: ['_all'],
+      	orderable: false
+      }
+
+    ],
+	    buttons: [
+            {
+                extend: "selectedSingle",
+                text: 'Auto Generate Judge Pairs',
+                action: function ( e, dt, node, config ) {
+    				var session_number = table.row( { selected: true } ).data()['pkid'];
+    	
+    				auto_gen_pairs(session_number);
+    	
+
+                }
+            },        
+            {
+                extend: "selectedSingle",
+                text: 'Save Judge Pairs',
+                action: function ( e, dt, node, config ) {
+
+                }
+            },        
+    ] 
+	    
+
+	});
+
+
+}
+
+
+function drawJudgesTables() {
+
+	judges_table = $('#judges').DataTable({
+		dom: 't',
+		paging: false,
+		columns: [
+			{data: null,
+				render: function (data, type, row) {
+					return row.firstname + ' ' + row.lastname;
+				}
+			
+			},
+			{data: 'bjcp_rank'},
+			{data: null,
+				render: function (data, type, row) {
+					return row.cicerone + ' ' + row.other_cert;
+				}
+			
+			},
+		],
+
+    columnDefs: [
+      {
+        targets: 0,
+        createdCell: function (td, cellData, rowData, row, col) {
+          $(td).addClass('draggable_tr');
+        }
+      },
+      {
+      	targets: ['_all'],
+      	orderable: false
+      }
+
+    ],
+    drawCallback: function () {
+      $("#judges tr .draggable_tr").draggable({
+      helper: function(){
+        var selected = $('tr.selectedRow');
+        if (selected.length === 0) {
+          selected = $(this).closest('tr').addClass('selectedRow');
+        }
+        var container = $('<div/>').attr('id', 'draggingContainer');
+        container.append(selected.clone().removeClass("selectedRow"));
+        return container;
+        }
+      });
+    }
+	});
+	
+	
+	
+	
+	hj_table = $('#head-judge').DataTable({
+		dom: 't',
+		order: [[0, 'asc']],
+		columns: [
+			{data: 'order',
+			},
+			{data: null,
+				render: function (data, type, row) {
+					return row.firstname + ' ' + row.lastname;
+				}
+			
+			},
+			{data: 'bjcp_rank'},
+			{data: null,
+				render: function (data, type, row) {
+					return row.cicerone + ' ' + row.other_cert;
+				}
+			
+			},
+		],
+        rowReorder: {
+            dataSrc: 'order'
+        },
+    columnDefs: [
+      {
+        targets: 1,
+        createdCell: function (td, cellData, rowData, row, col) {
+          $(td).addClass('draggable_tr');
+        }
+      },
+      {
+      	targets: ['_all'],
+      	orderable: false
+      }
+    ],
+    drawCallback: function () {
+      $("#head-judge tr .draggable_tr").draggable({
+      helper: function(){
+        var selected = $('tr.selectedRow');
+        if (selected.length === 0) {
+          selected = $(this).closest('tr').addClass('selectedRow');
+        }
+        var container = $('<div/>').attr('id', 'draggingContainer');
+        container.append(selected.clone().removeClass("selectedRow"));
+        return container;
+        }
+      })
+      }
+    });
+    
+    
+    
+	sj_table = $('#second-judge').DataTable({
+		dom: 't',
+		order: [[0, 'asc']],
+		columns: [
+			{data: 'order',
+			},
+			{data: null,
+				render: function (data, type, row) {
+					return row.firstname + ' ' + row.lastname;
+				}
+			
+			},
+			{data: 'bjcp_rank'},
+			{data: null,
+				render: function (data, type, row) {
+					return row.cicerone + ' ' + row.other_cert;
+				}
+			
+			},
+		],
+        rowReorder: {
+            dataSrc: 'order'
+        },
+    columnDefs: [
+      {
+        targets: 1,
+        createdCell: function (td, cellData, rowData, row, col) {
+          $(td).addClass('draggable_tr');
+        }
+      },
+      {
+      	targets: ['_all'],
+      	orderable: false
+      }
+    ],
+    drawCallback: function () {
+      $("#second-judge tr .draggable_tr").draggable({
+      helper: function(){
+        var selected = $('tr.selectedRow');
+        if (selected.length === 0) {
+          selected = $(this).closest('tr').addClass('selectedRow');
+        }
+        var container = $('<div/>').attr('id', 'draggingContainer');
+        container.append(selected.clone().removeClass("selectedRow"));
+        return container;
+        }
+      })
+      }
+	});
+	
+
+}
+
+
+
+
+function auto_gen_pairs(session_number) {
+
+	$.ajax({
+      	url: "/auto_generate_pairs",
+      	type: 'post',
+      	data: {session_number: session_number},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            console.log(data);
+            
+            judges_table.clear().draw();
+            hj_table.clear().draw();
+            sj_table.clear().draw();
+
+            for (i=0; i<data.judges.length; i++) {
+            	data.judges[i].order = 0;
+            }
+            
+            judges_table.rows.add(data.judges).draw();
+
+			row_index = 0;
+
+            for (i=0; i<data.pairing.length; i++) {
+            	row_index++;
+            	
+            	hj = data.pairing[i][0];
+            	hj.order = row_index;
+            	
+            	hj_table.row.add(hj);
+            	
+            	sj = data.pairing[i][1];
+            	sj.order = row_index;
+            	
+            	sj_table.row.add(sj);
+
+            	
+            }
+            
+            hj_table.draw();
+            sj_table.draw();
+			
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+
+function get_session_judges(session_number) {
+
+	$.ajax({
+      	url: "/get_session_judges",
+      	type: 'post',
+      	data: {session_number: session_number},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            
+            judges_table.clear().draw();
+            hj_table.clear().draw();
+            sj_table.clear().draw();
+            
+            for (i=0; i<data.all.length; i++) {
+            	data.all[i].order = 0;
+            }
+            
+            judges_table.rows.add(data.all).draw();
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+$(document).ready(function() {
+	drawMainTable();
+	
+	drawJudgesTables();
+
+	table.on( 'select', function ( e, dt, type, indexes ) {
+	
+    	var session_number = table.row( { selected: true } ).data()['pkid'];
+    	
+    	get_session_judges(session_number);
+    	
+    	
+	} );
+	
+	
+$("#judges, #head-judge, #second-judge").droppable({
+    drop: function (event, ui) {
+    
+      var dropTable = $(this).DataTable();
+      
+      var draggingTable = $('.selectedRow').closest('table').DataTable();
+      var source = draggingTable.row($('.selectedRow')).data();
+      //console.log(source);
+      
+      dropTable.row.add( source ).draw(false);
+        dropTable.rows( {search:'applied', order:'applied'}).every( function ( rowIdx, tableLoop, rowLoop ) {
+    		var data = this.data();
+   		 	data.order = rowIdx + 1;
+   		 	this.data( data );
+		} ).draw();
+
+      draggingTable.row($('.selectedRow')).remove().draw(false);
+    }
+});
+
+$(document).on("click", ".tablegrid tr", function () {
+  console.log('toggle class')
+    $(this).toggleClass("selectedRow");
+});
+
+
+
+});
+</script>
+
+</body>
+</html>
+

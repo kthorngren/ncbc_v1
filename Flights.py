@@ -127,6 +127,21 @@ class Flights:
         return {'pairing': pairing, 'judges': judges}
 
 
+    def get_judges_for_session(self, session_number):
+
+        result = Sessions().get_session_volunteers(session_number, judges=True)
+
+        return result
+
+
+    def get_session_pairing(self, session_number):
+
+        sql = 'select * from judge_pairing where fk_sessions = "{}" ' \
+              ''.format(session_number)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
 
 
 if __name__ == '__main__':

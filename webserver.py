@@ -16,6 +16,7 @@ from Brewers import Brewers
 from Import import Import
 from Email import Email
 from Volunteers import Volunteers
+from Flights import Flights
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -759,6 +760,59 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='sessions', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+
+
+    ######################
+    #
+    #
+    # ** Flights **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Judge Pairing
+    #
+    ######################
+    @cherrypy.expose
+    def judge_pairing(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_pairing.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_pairing(self, *args, **kwargs):
+
+        sql = 'select * from sessions where judging = "1" and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='sessions', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def auto_generate_pairs(self, *args, **kwargs):
+
+        session_number = kwargs.get('session_number', 0)
+
+        result = Flights().auto_assign_judges(session_number)
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def get_session_judges(self, *args, **kwargs):
+
+        result = {}
+
+        session_number = kwargs.get('session_number', 0)
+
+        result['all'] = Flights().get_judges_for_session(session_number)
+
+        result['pairing'] = Flights().get_session_pairing(session_number)
+
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
     ######################
