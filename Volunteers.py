@@ -423,6 +423,20 @@ class Volunteers:
         return {'count': email_counter, 'error': errors}
 
 
+    def find_volunteer_entries(self):
+
+        sql = 'select b.pkid, b.firstname, b.lastname, b.email, b.organization, v.pkid as vol_pkid, ' \
+              'v.firstname as vol_firstname, v.lastname as vol_lastname, v.email as vol_email, ' \
+              'v.organization as vol_organization from brewers as b join volunteers as v on v.lastname like CONCAT( "%", b.lastname, "%") ' \
+              'or SUBSTRING_INDEX(v.email,"@",-1) like CONCAT( "%",SUBSTRING_INDEX(b.email,"@",-1), "%") ' \
+              'or v.organization like CONCAT( "%",b.organization,"%") '
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
+
 
 def test_get_sessions():
 

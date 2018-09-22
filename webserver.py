@@ -792,7 +792,6 @@ class Website:
         sessions = Sessions().get_sessions(judging=True)
 
         for session in sorted(sessions, key=lambda k: k['session_number']):
-            print(session)
 
             #['pkid', 'fk_sessions', 'head_judge', 'second_judge', 'judges']
             pairing = Flights().get_session_pairing(session['pkid'])
@@ -843,7 +842,6 @@ class Website:
                     data.append({'name': session['name'], 'status': '{} judges need to be assigned'.format(len(judges)), 'code': 'yellow'})
 
                 all_pkids = [x['pkid'] for x in all_judges]
-                print(all_pkids)
                 not_in_session = []
                 for judge in judges:
                     try:
@@ -866,9 +864,6 @@ class Website:
                         all_pkids.pop(pkid_index)
                     except:
                         not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
-
-                print(not_in_session)
-                print(all_pkids)
 
                 if not_in_session:
                     data.append({'name': session['name'],
@@ -894,7 +889,7 @@ class Website:
 
 
 
-        sql = 'select * from tables where fk_compeptions = "{}"'.format(Competitions().get_active_competition())
+        sql = 'select * from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
 
         uid = gen_uid()
         result = self.db.db_command(sql=sql, uid=uid).all(uid)
@@ -916,7 +911,7 @@ class Website:
         else:
             pass
 
-        
+
 
         return json.dumps({'data': data}, cls=DatetimeEncoder)
 
@@ -991,6 +986,24 @@ class Website:
         return json.dumps({'data': result, 'error': ','.join(errors)}, cls=DatetimeEncoder)
 
 
+
+    ######################
+    #
+    # Find judge entries
+    #
+    ######################
+    @cherrypy.expose
+    def judge_entries(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_entries.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_entries(self, *args, **kwargs):
+
+        result = Volunteers().find_volunteer_entries()
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
     ######################
