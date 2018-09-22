@@ -477,6 +477,59 @@ class Website:
 
         return json.dumps({'new': new_result, 'changed': changed_result})
 
+
+    ######################
+    #
+    # Inventory
+    #
+    ######################
+    @cherrypy.expose
+    def categories(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='categories.html')
+        return form
+
+    @cherrypy.expose
+    def dt_categories(self, *args, **kwargs):
+
+        #todo: eventually start using the base guidlelines
+        #result = Style().get_styles(Competitions().get_style_guidelines())
+
+        sql = 'select * from category_strength_rating'
+
+        result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_categories(self, *args, **kwargs):
+
+        errors = []
+
+        result = 'Unable to process catorgories'
+
+        try:
+            categories = json.loads(kwargs.get('data', {}))
+        except:
+            categories = {}
+
+        print(categories)
+
+        if categories:
+
+            categories = [str(x) for x in categories]
+
+            sql = 'update competitions set fk_categories_list = "{}" ' \
+                  'where pkid = "{}"'.format(','.join(categories), Competitions().get_active_competition())
+
+            self.db.db_command(sql=sql)
+
+            result = self.db.sql_error
+
+
+        return result
+
+
     ######################
     #
     # Inventory
@@ -1186,7 +1239,7 @@ class Website:
     #
     ######################
     @cherrypy.expose
-    def flight(self, **kwargs):
+    def flights(self, **kwargs):
         page_name = sys._getframe().f_code.co_name
         form = self.build_page(page_name, html_page='flights.html')
         return form
@@ -1494,7 +1547,7 @@ class Website:
 
     ######################
     #
-    # Category Stength Rating
+    # Category Strength Rating
     #
     ######################
     @cherrypy.expose

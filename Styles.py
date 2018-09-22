@@ -191,6 +191,22 @@ class Style:
 
         return result
 
+    def get_styles(self, version=''):
+
+        if version:
+
+            where = ' where version = "{}" '
+        else:
+            where = ''
+
+        sql = 'select style_num, style_name, category, style_group, version, pkid from baseline_styles {}'.format(where)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
+
 
 if __name__ == '__main__':
 
