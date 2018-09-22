@@ -7,7 +7,7 @@ import re
 import cherrypy
 
 from MySql import local_host
-from Database import Database, gen_uid
+from Database import Database, gen_uid, escape_sql
 from Datatables import Datatables
 
 from Competitions import Competitions
@@ -1062,11 +1062,123 @@ class Website:
     @cherrypy.expose
     def dt_tables(self, *args, **kwargs):
 
-        sql = 'select * from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        sql = 'select tables.pkid, tables.name, tables.head_judge, tables.second_judge, ' \
+              's.pkid as session_pikd, s.name as session_name from tables ' \
+              'inner join sessions as s on s.pkid = fk_sessions ' \
+              'where tables.fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
 
         result = self.dt.parse_request(sql=sql, table='tables', debug=True, *args, **kwargs)
+
+        for r in result['data']:
+            print(r)
+            r['head_judge'] = json.loads(r['head_judge'])
+            r['second_judge'] = json.loads(r['second_judge'])
+
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+    @cherrypy.expose
+    def generate_tables(self, *args, **kwargs):
+
+        sql = 'select * from sessions where judging = "1" and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+        session_counter = 0
+
+        tables = {}
+
+        for session in result:
+
+
+            sql = 'select * from judge_pairing where fk_sessions = "{}"'.format(session['pkid'])
+
+            uid = gen_uid()
+            judges = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+            judges = judges[0]
+
+            try:
+                head_judge = json.loads(judges['head_judge'])
+            except:
+                head_judge = []
+
+            try:
+                second_judge = json.loads(judges['second_judge'])
+            except:
+                second_judge = []
+
+            number_of_judges = 0
+
+            for j in head_judge:
+                if number_of_judges < j['order']:
+                    number_of_judges = j['order']
+                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+
+                if judges_table not in tables:
+                    tables[judges_table] = {
+                        'name': judges_table,
+                        'session_name': session['name'],
+                        'fk_sessions': session['pkid'],
+                        'head_judge': j,
+                        'second_judge': {}
+                    }
+
+                tables[judges_table]['head_judge'] = j
+
+
+            for j in second_judge:
+                if number_of_judges < j['order']:
+                    number_of_judges = j['order']
+                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+
+                if judges_table not in tables:
+                    tables[judges_table] = {
+                        'name': judges_table,
+                        'session_name': session['name'],
+                        'fk_sessions': session['pkid'],
+                        'head_judge': {},
+                        'second_judge': j
+                    }
+
+                tables[judges_table]['second_judge'] = j
+
+            session_counter += number_of_judges + 5
+
+        tables_list = []
+        for t in tables:
+            tables_list.append(tables[t])
+
+        return json.dumps(tables_list, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_tables(self, *args, **kwargs):
+
+        try:
+            tables = json.loads(kwargs.get('data', {}))
+        except:
+            tables = []
+
+        sql = 'delete from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        self.db.db_command(sql=sql)
+
+        for table in tables:
+
+            head_judge = escape_sql(json.dumps(table['head_judge']))
+            second_judge = escape_sql(json.dumps(table['second_judge']))
+
+            sql = 'insert into tables (name, fk_sessions, fk_competitions, head_judge, second_judge) ' \
+                  'values ("{}", "{}", "{}", "{}", "{}")'.format(table['name'],
+                                                                 table['fk_sessions'],
+                                                                 Competitions().get_active_competition(),
+                                                                 head_judge,
+                                                                 second_judge
+                                                                 )
+            self.db.db_command(sql=sql)
+
+        return self.db.sql_error
 
 
     ######################

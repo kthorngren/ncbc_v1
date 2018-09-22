@@ -119,7 +119,8 @@ class Sessions:
         elif judges and not stewards:
             where = 'and judge = "1"'
 
-        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
+        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
+              'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
                 'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid ' \
                 'from volunteers '\
                 'inner join people as p on p.pkid = fk_people ' \

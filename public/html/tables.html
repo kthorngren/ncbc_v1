@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css">
+    <!-- Quill -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.quilljs.com/1.2.2/quill.snow.css">
+    <link rel="stylesheet" type="text/css" href="static/css/editor.quill.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+    
+  </head>
+
+  <style>
+  
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>                
+                
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Judge Entries</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2 id="table-title">Judge Entries</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <!--
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      -->
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+                          <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th>Table Name</th>
+                                <th>Session</th>
+                                <th>Head Judge</th>
+                                <th>Second Judge</th>
+                              </tr>
+	                        </thead>
+                          </table>
+                </div>
+                <!-- /x_panel -->
+
+              </div>
+            </div>
+            <!-- /row -->
+
+
+            
+            
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Quill -->
+    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+var table;
+
+function drawMainTable() {
+	table = $('#main-table').DataTable({
+		ajax: 'dt_tables',
+		dom: 'Blftirp',
+		rowId: 'pkid',
+		paging: false,
+   		order: [[2, 'asc']],
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	defaultContent: '',
+	        	visible: false
+	        },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'session_name',
+	        },
+	        {
+	        	data: 'head_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
+	        },
+	        {
+	        	data: 'second_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
+	        },
+	    ],
+	    rowGroup: {
+	    	dataSrc: 'session_name',
+            startRender: function ( rows, group ) {
+                return group +' ('+rows.count()+' Tables)';
+            },
+	    },
+	    buttons: [
+            {
+                text: 'Generate Table Assignments',
+                action: function ( e, dt, node, config ) {
+    				generate_tables();
+                }
+            },        
+            {
+                text: 'Save Table Assignments',
+                action: function ( e, dt, node, config ) {
+                	save_tables();
+                }
+            },        
+    ] 
+	    
+
+	});
+
+
+}
+
+
+
+function generate_tables() {
+
+	$.ajax({
+      	url: '/generate_tables',
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+            //console.log(data);
+            table.clear().draw();
+            table.rows.add(data).draw();
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+function save_tables() {
+
+	var data = table.rows().data().toArray();
+	
+	data = JSON.stringify(data);
+
+	$.ajax({
+      	url: '/save_tables',
+      	type: 'post',
+      	data: {data: data},
+      	success: function(data) {
+            
+            if (data) {
+            	alert('Error trying to save table assignments: ' + data);
+            } else {
+            	//table.rows().deselect();
+            	table.ajax.reload();
+            	
+            }
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+$(document).ready(function() {
+	drawMainTable();
+
+
+});
+</script>
+
+</body>
+</html>
+
