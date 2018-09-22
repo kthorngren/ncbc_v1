@@ -427,7 +427,8 @@ class Volunteers:
 
         sql = 'select b.pkid, b.firstname, b.lastname, b.email, b.organization, v.pkid as vol_pkid, ' \
               'v.firstname as vol_firstname, v.lastname as vol_lastname, v.email as vol_email, ' \
-              'v.organization as vol_organization from brewers as b join volunteers as v on v.lastname like CONCAT( "%", b.lastname, "%") ' \
+              'v.organization as vol_organization, v.fk_brewers as fk_brewers ' \
+              'from brewers as b join volunteers as v on v.lastname like CONCAT( "%", b.lastname, "%") ' \
               'or SUBSTRING_INDEX(v.email,"@",-1) like CONCAT( "%",SUBSTRING_INDEX(b.email,"@",-1), "%") ' \
               'or v.organization like CONCAT( "%",b.organization,"%") '
 

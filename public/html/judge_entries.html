@@ -184,7 +184,7 @@ function drawMainTable() {
 		rowId: 'pkid',
 		paging: false,
 	    select: {
-    	    style: "single",
+    	    style: "multi+shift",
         	selector: "td:first-child"
    		},
    		order: [[3, 'asc']],
@@ -224,14 +224,32 @@ function drawMainTable() {
 	        	data: 'vol_organization',
 	        },
 	    ],
+	    rowCallback: function (row, data) {
+			if (data.fk_brewers == data.pkid) {
+				$(row).css('color', 'Blue')
+			}
+	    },
 	    buttons: [
             {
-                extend: "selectedSingle",
-                text: 'Auto Generate Judge Pairs',
+                extend: "selected",
+                text: 'Assign Selected Volunteers to Brewers',
                 action: function ( e, dt, node, config ) {
-    				var session_number = table.row( { selected: true } ).data()['pkid'];
+    				var volunteers = table.rows( { selected: true } ).data().toArray();
     	
-    				auto_gen_pairs(session_number);
+    				console.log(volunteers);
+    				assign_volunteers_to_brewers(volunteers, true);
+    	
+
+                }
+            },        
+            {
+                extend: "selected",
+                text: 'Unassign Selected Volunteers',
+                action: function ( e, dt, node, config ) {
+    				var volunteers = table.rows( { selected: true } ).data().toArray();
+    	
+    				console.log(volunteers);
+    				assign_volunteers_to_brewers(volunteers, false);
     	
 
                 }
@@ -246,6 +264,38 @@ function drawMainTable() {
 
 
 
+function assign_volunteers_to_brewers(data, assign=true) {
+
+	if (assign) {
+		var url = "/assign_volunteers_to_brewers"
+	} else {
+		var url = "/unassign_volunteers_to_brewers"
+	}
+
+	$.ajax({
+      	url: url,
+      	type: 'post',
+      	data: {data: JSON.stringify(data)},
+      	success: function(json) {
+      		console.log(json)
+            //var data = JSON.parse(json);
+            //console.log(data);
+            
+            if (json) {
+            	alert('Error trying to assign volunteers to brewers: ' + json);
+            } else {
+            	table.rows().deselect();
+            	table.ajax.reload();
+            	
+            }
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
 
 
 $(document).ready(function() {

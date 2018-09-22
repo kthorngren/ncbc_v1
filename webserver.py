@@ -1006,6 +1006,48 @@ class Website:
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
+    @cherrypy.expose
+    def assign_volunteers_to_brewers(self, **kwargs):
+
+        try:
+            volunteers = json.loads(kwargs.get('data', {}))
+        except:
+            volunteers = []
+
+        errors = []
+
+        for volunteer in volunteers:
+
+            sql = 'update volunteers set fk_brewers = "{d[pkid]}" where pkid = "{d[vol_pkid]}"'.format(d=volunteer)
+
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+        return ','.join(errors)
+
+
+    @cherrypy.expose
+    def unassign_volunteers_to_brewers(self, **kwargs):
+
+        try:
+            volunteers = json.loads(kwargs.get('data', {}))
+        except:
+            volunteers = []
+
+        errors = []
+
+        for volunteer in volunteers:
+
+            sql = 'update volunteers set fk_brewers = "0" where pkid = "{d[vol_pkid]}"'.format(d=volunteer)
+
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+        return ','.join(errors)
+
+
     ######################
     #
     # Table Assignments
