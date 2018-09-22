@@ -1071,7 +1071,6 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='tables', debug=True, *args, **kwargs)
 
         for r in result['data']:
-            print(r)
             r['head_judge'] = json.loads(r['head_judge'])
             r['second_judge'] = json.loads(r['second_judge'])
 
