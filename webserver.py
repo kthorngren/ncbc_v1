@@ -1491,6 +1491,26 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
 
+
+    ######################
+    #
+    # Category Stength Rating
+    #
+    ######################
+    @cherrypy.expose
+    def strength_rating(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='strength_rating.html')
+        return form
+
+    @cherrypy.expose
+    def dt_strength_rating(self, *args, **kwargs):
+
+        sql = 'select * from category_strength_rating'
+
+        result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
 if __name__ == '__main__':
     conf = {
         '/': {
