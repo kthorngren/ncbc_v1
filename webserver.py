@@ -1247,10 +1247,32 @@ class Website:
     @cherrypy.expose
     def dt_flights(self, *args, **kwargs):
 
-        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        result = []
 
-        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
-        return json.dumps(result, cls=DatetimeEncoder)
+        fk_categories = Competitions().get_categories().split(',')
+
+        sql = 'select * from category_strength_rating where pkid in ("{}")'.format('","'.join(fk_categories))
+
+        uid = gen_uid()
+        categories = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        for cat in categories:
+            styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
+
+            for style in styles:
+
+                category_desc = '{} {}'.format(cat['category_id'], cat['category'])
+                style_desc = '{}{} {}'.format(str(int(cat['category_id'])), style['style_num'], style['style_name'])
+
+
+                result.append({'category': category_desc,
+                               'style': style_desc,
+                               'category_id': int(cat['category_id']),
+                               'sub_category_id': style['style_num'],
+                               'count': 0
+                               })
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
 

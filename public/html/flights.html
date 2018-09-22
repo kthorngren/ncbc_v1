@@ -99,11 +99,10 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
-                                <th>pkid</th>
                                 <th></th>
-                                <th>Guidelines</th>
-                                <th>Category ID</th>
                                 <th>Category</th>
+                                <th>Sub Category</th>
+                                <th>Number of Entries</th>
                               </tr>
                             </thead>
                           </table>
@@ -236,19 +235,15 @@ var table;
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_categories',
-		dom: 'Blftirp',
-		rowId: 'pkid',
+		ajax: 'dt_flights',
+		dom: 'Bft',
+		paging: false,
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[2, 'asc'], [3, 'asc']],
+   		order: [[1, 'asc'], [2, 'asc']],
 		columns: [
-	        {
-	        	data: 'pkid',
-	        	visible: false
-	        },
 	        {
     	        data: null,
         	    defaultContent: "",
@@ -256,19 +251,27 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'version',
-	        },
-	        {
-	        	data: 'style_num',
-	        },
-	        {
 	        	data: 'category',
+	        	visible: false
+	        },
+	        {
+	        	data: 'style',
+	        },
+	        {
+	        	data: 'count',
 	        },
 	    ],
 	    rowGroup: {
-	    	dataSrc: 'style_guidelines',
+	    	dataSrc: 'category',
             startRender: function ( rows, group ) {
-                return group +' ('+rows.count()+' Categories)';
+            	var sum = rows
+                    .data()
+                    .pluck('count')
+                    .reduce( function (a, b) {
+                    return a + b;
+                	}, 0 );
+                    
+                return group +'  - Total Entries in Cat: ' + sum;
             },
 	    },
     columnDefs: [
@@ -281,7 +284,7 @@ function drawMainTable() {
 	    buttons: [
             {
                 extend: "selectedSingle",
-                text: 'Auto Generate Judge Pairs',
+                text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
     				var session_number = table.row( { selected: true } ).data()['pkid'];
     	
@@ -292,7 +295,7 @@ function drawMainTable() {
             },        
             {
                 extend: "selectedSingle",
-                text: 'Save Judge Pairs',
+                text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
                 
                 	var data = {};
@@ -327,163 +330,6 @@ function drawMainTable() {
 
 }
 
-
-function drawJudgesTables() {
-
-	judges_table = $('#judges').DataTable({
-		dom: 't',
-		paging: false,
-		columns: [
-			{data: null,
-				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
-				}
-			
-			},
-			{data: 'bjcp_rank'},
-			{data: null,
-				render: function (data, type, row) {
-					return row.cicerone + ' ' + row.other_cert;
-				}
-			
-			},
-		],
-
-    columnDefs: [
-      {
-        targets: 0,
-        createdCell: function (td, cellData, rowData, row, col) {
-          $(td).addClass('draggable_tr');
-        }
-      },
-      {
-      	targets: ['_all'],
-      	orderable: false
-      }
-
-    ],
-    drawCallback: function () {
-      $("#judges tr .draggable_tr").draggable({
-      helper: function(){
-        var selected = $('tr.selectedRow');
-        if (selected.length === 0) {
-          selected = $(this).closest('tr').addClass('selectedRow');
-        }
-        var container = $('<div/>').attr('id', 'draggingContainer');
-        container.append(selected.clone().removeClass("selectedRow"));
-        return container;
-        }
-      });
-    }
-	});
-	
-	
-	
-	
-	hj_table = $('#head-judge').DataTable({
-		dom: 't',
-		order: [[0, 'asc']],
-		columns: [
-			{data: 'order',
-			},
-			{data: null,
-				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
-				}
-			
-			},
-			{data: 'bjcp_rank'},
-			{data: null,
-				render: function (data, type, row) {
-					return row.cicerone + ' ' + row.other_cert;
-				}
-			
-			},
-		],
-        rowReorder: {
-            dataSrc: 'order'
-        },
-    columnDefs: [
-      {
-        targets: 1,
-        createdCell: function (td, cellData, rowData, row, col) {
-          $(td).addClass('draggable_tr');
-        }
-      },
-      {
-      	targets: ['_all'],
-      	orderable: false
-      }
-    ],
-    drawCallback: function () {
-      $("#head-judge tr .draggable_tr").draggable({
-      helper: function(){
-        var selected = $('tr.selectedRow');
-        if (selected.length === 0) {
-          selected = $(this).closest('tr').addClass('selectedRow');
-        }
-        var container = $('<div/>').attr('id', 'draggingContainer');
-        container.append(selected.clone().removeClass("selectedRow"));
-        return container;
-        }
-      })
-      }
-    });
-    
-    
-    
-	sj_table = $('#second-judge').DataTable({
-		dom: 't',
-		order: [[0, 'asc']],
-		columns: [
-			{data: 'order',
-			},
-			{data: null,
-				render: function (data, type, row) {
-					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
-				}
-			
-			},
-			{data: 'bjcp_rank'},
-			{data: null,
-				render: function (data, type, row) {
-					return row.cicerone + ' ' + row.other_cert;
-				}
-			
-			},
-		],
-        rowReorder: {
-            dataSrc: 'order'
-        },
-    columnDefs: [
-      {
-        targets: 1,
-        createdCell: function (td, cellData, rowData, row, col) {
-          $(td).addClass('draggable_tr');
-        }
-      },
-      {
-      	targets: ['_all'],
-      	orderable: false
-      }
-    ],
-    drawCallback: function () {
-      $("#second-judge tr .draggable_tr").draggable({
-      helper: function(){
-        var selected = $('tr.selectedRow');
-        if (selected.length === 0) {
-          selected = $(this).closest('tr').addClass('selectedRow');
-        }
-        var container = $('<div/>').attr('id', 'draggingContainer');
-        container.append(selected.clone().removeClass("selectedRow"));
-        return container;
-        }
-      })
-      }
-	});
-	
-
-}
 
 
 
@@ -636,7 +482,7 @@ function get_session_judges(session_number) {
 
 
 $(document).ready(function() {
-	//drawMainTable();
+	drawMainTable();
 	
 	//drawJudgesTables();
 

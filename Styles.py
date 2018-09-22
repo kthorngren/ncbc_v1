@@ -184,7 +184,7 @@ class Style:
 
 
         sql = sql.format(style_group=style_group, style_type=style_type, req_spec=req_spec, version=version)
-        print(sql)
+        #print(sql)
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)

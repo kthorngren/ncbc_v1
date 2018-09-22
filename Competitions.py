@@ -95,6 +95,17 @@ class Competitions:
 
         return result.get('style_guidelines', '')
 
+
+    def get_categories(self):
+
+        sql = 'select fk_categories_list from competitions where active = "1"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        return result.get('fk_categories_list', '')
+
+
     def name(self, pkid):
         sql = 'select name from competitions where pkid = "{}"'.format(pkid)
 
