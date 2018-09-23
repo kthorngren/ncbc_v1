@@ -247,7 +247,7 @@ class Entrys:
 
     def get_brewer_categories(self, fk_brewers):
 
-        sql = 'SELECT category FROM entries where fk_brewers = "{}"'.format(fk_brewers)
+        sql = 'SELECT distinct category FROM entries where fk_brewers = "{}" order by CAST(category AS UNSIGNED)'.format(fk_brewers)
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)

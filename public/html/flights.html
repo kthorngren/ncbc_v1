@@ -235,7 +235,9 @@ var table;
 var sessions_table;
 
 
-var flight_tracker = {};
+var table_beer_count = {};
+
+var judge_entries = [];
 
 
 function drawMainTable() {
@@ -266,7 +268,7 @@ function drawMainTable() {
 	        		if (type === 'display') {
 	        			table_num = '';
 
-	        			if (data) {
+	        			if (data.sort()) {
 	        				for (var i=0; i<data.length; i++) {
 	        					var element = data[i];
 	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
@@ -296,15 +298,14 @@ function drawMainTable() {
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
          	}       
 	    },
-	    drawCallback: function () {
-	    	var api = this.api();
-	    	
-	    	var data = api.rows().data();
-	    	
-	    	
-	    	
-	    	//console.log(data);
-	    	
+	    rowCallback: function (row, data) {
+			if (judge_entries.indexOf(data.category_id.toString()) > -1) {
+				$(row).css('color', 'Red');
+				$(row).attr('title', 'not');
+			} else {
+				$(row).css('color', '');
+				$(row).attr('title');
+			}
 	    },
     	columnDefs: [
       		{
@@ -378,7 +379,11 @@ function drawSessionsTable() {
 	        	data: 'head_judge',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
-	        			return data.firstname + ' ' + data.lastname
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + cat;	
 	        		}
 	        		return data;
 	        	}
@@ -387,7 +392,11 @@ function drawSessionsTable() {
 	        	data: 'second_judge',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
-	        			return data.firstname + ' ' + data.lastname
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + cat;
 	        		}
 	        		return data;
 	        	}
@@ -396,6 +405,30 @@ function drawSessionsTable() {
 	        	data: 'total',
 	        },
 	    ],
+	    rowCallback: function (row, data, displayNum, displayIndex, dataIndex ) {
+	    	var api = this.api();
+	    	var total = table_beer_count[data.name];
+	    	
+	    	
+	    	if (typeof total != 'undefined') {
+	    		data.total = total;
+	    		api.row(dataIndex).data(data);
+	    		
+	    	}
+	    	if (data.name === 'Table 1') {
+	    	//console.log(total)
+	    	//console.log(data)
+	    	}
+	    },
+	    initComplete: function () {
+	    	var api = this.api();
+	    	
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			table_beer_count[data.name] = 0;
+			} );	    	
+	    	
+	    },
 	    rowGroup: {
 	    	dataSrc: 'session_name',
             startRender: function ( rows, group ) {
@@ -473,6 +506,14 @@ function get_styles_count(full_inventory=true) {
             
             styles_count = styles_count.data;
             
+            //reset table_beer_count counters
+			for (var key in table_beer_count) {
+   				if (table_beer_count.hasOwnProperty(key)) {
+      				table_beer_count[key] = 0;
+   				}
+			}
+			
+            //iterate each row to get category counts and display them in the flights table and judges tables
 			table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
    			 	var data = this.data();
    			 	//console.log(data)
@@ -491,8 +532,13 @@ function get_styles_count(full_inventory=true) {
    			 	} else {
    			 		data.count = 0;
    			 	}
+
+				//update table beer counter with newly loaded data
+   			 	for (var i=0; i<data.tables.length; i++) {
+   			 		table_beer_count[data.tables[i]] = count / data.tables.length;
+   			 	}
    			 	
-    			
+    			//save the number of entries counter to the flights table
     			this.data(data);
 			} );    
 			
@@ -510,82 +556,33 @@ function get_styles_count(full_inventory=true) {
 
 
 
-function reset_session_judges(session_number) {
-
-	$.ajax({
-      	url: "/get_session_judges",
-      	type: 'post',
-      	data: {session_number: session_number},
-      	success: function(json) {
-            var data = JSON.parse(json);
-
-            judges_table.clear().draw();
-            hj_table.clear().draw();
-            sj_table.clear().draw();
-            
-            for (i=0; i<data.all.length; i++) {
-            	data.all[i].order = 0;
-            }
-            
-            judges_table.rows.add(data.all).draw();
-        },
-
-      	error: function (jqXHR, exception) {
-      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
-      	},
-    });
-}
-
-
-
-
-function get_session_judges(session_number) {
-
-	$.ajax({
-      	url: "/get_session_judges",
-      	type: 'post',
-      	data: {session_number: session_number},
-      	success: function(json) {
-            var data = JSON.parse(json);
-            //console.log(data);
-            judges_table.clear().draw();
-            hj_table.clear().draw();
-            sj_table.clear().draw();
-            
-            for (i=0; i<data.all.length; i++) {
-            	data.all[i].order = 0;
-            }
-            //console.log(typeof data.pairing == 'undefined');
-            if (typeof data.pairing == 'undefined' || data.pairing.length === 0) {
-            	judges_table.rows.add(data.all).draw();
-            } else {
-            	var pairs = data.pairing[0];
-            	
-            	var judges = JSON.parse(pairs.judges);
-            	var head_judge = JSON.parse(pairs.head_judge);
-            	var second_judge = JSON.parse(pairs.second_judge);
-            	
-            	//console.log('judges', judges)
-            	
-            	judges_table.rows.add(judges).draw();
-            	hj_table.rows.add(head_judge).draw();
-            	sj_table.rows.add(second_judge).draw();
-            }
-        },
-
-      	error: function (jqXHR, exception) {
-      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
-      	},
-    });
-}
-
-
-
 $(document).ready(function() {
 	drawMainTable();
 	
 	drawSessionsTable();
 	
+	sessions_table.on('select', function ( e, dt, type, indexes ) {
+		var data = sessions_table.row( { selected: true } ).data();
+		
+		//get categories of entries a judge has
+		judge_entries = data.head_judge.categories.concat(data.second_judge.categories);
+		
+		table.draw(false);
+		
+	});
+
+
+	sessions_table.on('deselect', function ( e, dt, type, indexes ) {
+		var data = sessions_table.row( { selected: true } ).data();
+		
+		//reset the judge entries when no judge is selected
+		judge_entries = [];
+		
+		table.draw(false);
+	});
+
+  
+
 	table.on( 'select', function ( e, dt, type, indexes ) {
     	var sessions = sessions_table.row( { selected: true } ).data();
     	
@@ -593,28 +590,42 @@ $(document).ready(function() {
     	
     	if (sessions) {
     		// need to make sure table is not already in list - skip if so
+    		if (judge_entries.indexOf(data.category_id.toString()) === -1) {
     	
-    		data.tables.push(sessions.name);
-    		table.row( { selected: true } ).data(data);
-    		table.rows().deselect();
+    			//remove previous beer count for that style before adding new table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] - num_beers;
+    				//need to find row in session table to update
+    			}
 
-    		if (!flight_tracker[sessions.name]) {
-    			flight_tracker[sessions.name] = 0;
+				//add new table to selected row then deselect for visual
+    			data.tables.push(sessions.name);
+    			table.row( { selected: true } ).data(data);
+    			table.rows().deselect();
+
+    			if (!table_beer_count[sessions.name]) {
+    				table_beer_count[sessions.name] = 0;
+    			}
+    			
+    			//recalc beer count for style after adding new table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
+    				//need to find row in session table to update
+    			}
+    		
+				//then remove these 2 lines
+    			//sessions.total = table_beer_count[sessions.name];
+    			//sessions_table.row( { selected: true } ).data(sessions);
+    		
+    			sessions_table.draw();
+    		} else {
+    			//judge at the table has beers in this category so don't add
+    			table.rows().deselect();
     		}
-    		
-    		var num_beers = data.count ? (data.count / data.tables.length) : data.count;
-    		
-    		for (var i=0; i<data.tables.length; i++) {
-    			console.log(data.tables[i]);
-    			flight_tracker[data.tables[i]] = flight_tracker[data.tables[i]] + num_beers;
-    			//need to find row in session table to update
-    		}
-    		
-			//then remove these 2 lines
-    		sessions.total = flight_tracker[sessions.name];
-    		sessions_table.row( { selected: true } ).data(sessions);
-    		
-    		sessions_table.draw();
     	} else {
     		//code to remove table
     		//maybe an alert with tables to select
@@ -623,6 +634,8 @@ $(document).ready(function() {
     	
 	} );
 	
+	
+
 
 });
 </script>
