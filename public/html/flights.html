@@ -241,9 +241,10 @@ function drawMainTable() {
 		ajax: 'dt_flights',
 		dom: 'Bt',
 		paging: false,
+		scrollY: 1000,
 	    select: {
     	    style: "single",
-        	selector: "td:first-child"
+        	selector: "td:last-child"
    		},
    		order: [[0, 'asc'], [1, 'asc']],
 		columns: [
@@ -327,6 +328,10 @@ function drawSessionsTable() {
 		rowId: 'pkid',
 		paging: false,
    		order: [[2, 'asc']],
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -551,8 +556,18 @@ $(document).ready(function() {
 	drawMainTable();
 	
 	drawSessionsTable();
-
 	
+	table.on( 'select', function ( e, dt, type, indexes ) {
+    	var sessions = sessions_table.row( { selected: true } ).data();
+    	
+    	var data = table.row( { selected: true } ).data();
+    	
+    	data.tables = sessions.name;
+    	
+    	table.row( { selected: true } ).data(data);
+    	table.rows().deselect();
+    	
+	} );
 	
 
 });
