@@ -245,6 +245,20 @@ class Entrys:
         return result
 
 
+    def get_brewer_categories(self, fk_brewers):
+
+        sql = 'SELECT category FROM entries where fk_brewers = "{}"'.format(fk_brewers)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        category_list = []
+
+        for r in result:
+            category_list.append(r['category'])
+
+        return category_list
+
 def test_add_inventory():
     print(Entrys().inventory_status())
     print(Entrys().add_inventory(2))

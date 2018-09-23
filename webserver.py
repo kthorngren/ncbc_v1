@@ -18,6 +18,7 @@ from Email import Email
 from Volunteers import Volunteers
 from Flights import Flights
 from Sessions import Sessions
+from Entrys import Entrys
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -1126,6 +1127,22 @@ class Website:
         for r in result['data']:
             r['head_judge'] = json.loads(r['head_judge'])
             r['second_judge'] = json.loads(r['second_judge'])
+            r['total'] = 0
+
+            brewer = r['head_judge']['fk_brewers']
+
+            if brewer:
+                r['head_judge']['categories'] = Entrys().get_brewer_categories(brewer)
+            else:
+                r['head_judge']['categories'] = []
+
+            brewer = r['second_judge']['fk_brewers']
+
+            if brewer:
+                r['second_judge']['categories'] = Entrys().get_brewer_categories(brewer)
+            else:
+                r['second_judge']['categories'] = []
+
 
         return json.dumps(result, cls=DatetimeEncoder)
 
@@ -1269,13 +1286,46 @@ class Website:
                                'style': style_desc,
                                'category_id': int(cat['category_id']),
                                'sub_category_id': style['style_num'],
-                               'count': 0
+                               'count': 0,
+                               'tables': ''
                                })
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
+    @cherrypy.expose
+    def get_styles_count(self, *args, **kwargs):
+
+        result = 'done'
+
+        try:
+            full_inventory = json.loads(kwargs.get('data', {}))
+        except:
+            full_inventory = True
+
+        if not full_inventory:
+            where = ' where inventory = "1" '
+        else:
+            where = ''
+
+        print(full_inventory)
+
+        sql = 'SELECT count(sub_category), category, sub_category FROM entries {} ' \
+              'group by category, sub_category order by category, sub_category;'.format(where)
+
+        uid = gen_uid()
+        styles_count = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        result = {}
+        for style in styles_count:
+
+            category = style['category']
+            if category not in result:
+                result[category] = {}
+
+            result[category][style['sub_category']] = style['count(sub_category)']
 
 
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
     ######################

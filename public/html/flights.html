@@ -58,7 +58,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Manage People</h4>
+                <h4 id='main-title'>Manage Flights</h4>
               </div>
             </div>
             <div class="row">
@@ -75,7 +75,7 @@
                       
                       <!-- x_title -->
                       <div class="x_title panel-heading">
-                        <h2 id="tests-desc">Session Judges<small id="tests-desc-small"></small></h2>
+                        <h2 id="tests-desc">Flights<small id="tests-desc-small"></small></h2>
 
                         <ul class="nav navbar-right panel_toolbox">
                           <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
@@ -99,10 +99,10 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
-                                <th></th>
                                 <th>Category</th>
                                 <th>Sub Category</th>
                                 <th>Number of Entries</th>
+                                <th>Tables</th>
                               </tr>
                             </thead>
                           </table>
@@ -132,7 +132,7 @@
                       
                       <!-- x_title -->
                       <div class="x_title panel-heading">
-                        <h2 id="tests-desc">Sessions<small id="tests-desc-small"></small></h2>
+                        <h2 id="tests-desc">Sessions and Tables<small id="tests-desc-small"></small></h2>
 
                         <ul class="nav navbar-right panel_toolbox">
                           <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
@@ -156,10 +156,12 @@
                           <table id="sessions" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
-                                <th>Pair</th>
-                                <th>Judge</th>
-                                <th>BJCP</th>
-                                <th>Other</th>
+                                <th>pkid</th>
+                                <th>Table Name</th>
+                                <th>Session</th>
+                                <th>Head Judge</th>
+                                <th>Second Judge</th>
+                                <th>Number Beers</th>
                               </tr>
                             </thead>
                           </table>
@@ -230,26 +232,21 @@
 
 
 var table;
+var sessions_table;
 
 
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_flights',
-		dom: 'Bft',
+		dom: 'Bt',
 		paging: false,
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[1, 'asc'], [2, 'asc']],
+   		order: [[0, 'asc'], [1, 'asc']],
 		columns: [
-	        {
-    	        data: null,
-        	    defaultContent: "",
-            	className: "select-checkbox",
-	            orderable: false
-    	    },
 	        {
 	        	data: 'category',
 	        	visible: false
@@ -259,6 +256,9 @@ function drawMainTable() {
 	        },
 	        {
 	        	data: 'count',
+	        },
+	        {
+	        	data: 'tables',
 	        },
 	    ],
 	    rowGroup: {
@@ -271,8 +271,10 @@ function drawMainTable() {
                     return a + b;
                 	}, 0 );
                     
-                return group +'  - Total Entries in Cat: ' + sum;
-            },
+				return $('<tr/>')
+                    .append( '<td colspan="1">' + group + '</td>' )
+                    .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
+         	}       
 	    },
     columnDefs: [
       {
@@ -283,43 +285,112 @@ function drawMainTable() {
     ],
 	    buttons: [
             {
-                extend: "selectedSingle",
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
-    				var session_number = table.row( { selected: true } ).data()['pkid'];
     	
-    				auto_gen_pairs(session_number);
+    				get_styles_count(true);
     	
 
                 }
             },        
             {
-                extend: "selectedSingle",
                 text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
                 
-                	var data = {};
-
-					data.judges = judges_table.rows().data().toArray();
-					data.hj_judges = hj_table.rows().data().toArray();
-					data.sj_judges = sj_table.rows().data().toArray();
+					get_styles_count(false);
 					
-					data.fk_sessions = table.row( { selected: true } ).data()['pkid'];
-					
-					//console.log('save', data);
-					
-					save_pairs(data);
-
                 }
             },        
             {
-                extend: "selectedSingle",
-                text: 'Reset Judge Pairs',
+                text: 'Save Flights',
                 action: function ( e, dt, node, config ) {
                 
     				var session_number = table.row( { selected: true } ).data()['pkid'];
     	
 					reset_session_judges(session_number);
+                }
+            },        
+    ] 
+	    
+
+	});
+
+
+}
+
+
+
+function drawSessionsTable() {
+	sessions_table = $('#sessions').DataTable({
+		ajax: 'dt_tables',
+		dom: 't',
+		rowId: 'pkid',
+		paging: false,
+   		order: [[2, 'asc']],
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	defaultContent: '',
+	        	visible: false
+	        },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'session_name',
+	        	visible: false
+	        },
+	        {
+	        	data: 'head_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
+	        },
+	        {
+	        	data: 'second_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
+	        },
+	        {
+	        	data: 'total',
+	        },
+	    ],
+	    rowGroup: {
+	    	dataSrc: 'session_name',
+            startRender: function ( rows, group ) {
+                return group +' ('+rows.count()+' Tables)';
+            },
+            startRender: function ( rows, group ) {
+            	var sum = rows
+                    .data()
+                    .pluck('total')
+                    .reduce( function (a, b) {
+                    return a + b;
+                	}, 0 );
+                    
+				return $('<tr/>')
+                    .append( '<td colspan="3">' + group +' ('+rows.count()+' Tables)</td>' )
+                    .append( '<td>Total: ' + sum.toFixed(0) + '</td>' );
+         	}       
+	    },
+	    buttons: [
+            {
+                text: 'Generate Table Assignments',
+                action: function ( e, dt, node, config ) {
+    				generate_tables();
+                }
+            },        
+            {
+                text: 'Save Table Assignments',
+                action: function ( e, dt, node, config ) {
+                	save_tables();
                 }
             },        
     ] 
@@ -357,46 +428,41 @@ function save_pairs(data) {
 
 
 
-function auto_gen_pairs(session_number) {
+function get_styles_count(full_inventory=true) {
 
 	$.ajax({
-      	url: "/auto_generate_pairs",
+      	url: "/get_styles_count",
       	type: 'post',
-      	data: {session_number: session_number},
+      	data: {data: full_inventory},
       	success: function(json) {
-            var data = JSON.parse(json);
-            //console.log(data);
+            var styles_count = JSON.parse(json);
             
-            judges_table.clear().draw();
-            hj_table.clear().draw();
-            sj_table.clear().draw();
-
-            for (i=0; i<data.judges.length; i++) {
-            	data.judges[i].order = 0;
-            }
+            styles_count = styles_count.data;
             
-            judges_table.rows.add(data.judges).draw();
-
-			row_index = 0;
-
-            for (i=0; i<data.pairing.length; i++) {
-            	row_index++;
-            	
-            	hj = data.pairing[i][0];
-            	hj.order = row_index;
-            	
-            	hj_table.row.add(hj);
-            	
-            	sj = data.pairing[i][1];
-            	sj.order = row_index;
-            	
-            	sj_table.row.add(sj);
-
-            	
-            }
-            
-            hj_table.draw();
-            sj_table.draw();
+			table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+   			 	var data = this.data();
+   			 	//console.log(data)
+   			 	
+   			 	category = styles_count[data.category_id];
+   			 	
+   			 	if (category) {
+   			 		var count = styles_count[data.category_id][data.sub_category_id];
+   			 	} else {
+   			 		count = 0;
+   			 	}
+   			 	
+   			 	
+   			 	if (count) {
+   			 		data.count = count;
+   			 	} else {
+   			 		data.count = 0;
+   			 	}
+   			 	
+    			
+    			this.data(data);
+			} );    
+			
+			table.draw();        
 			
             
         },
@@ -484,49 +550,10 @@ function get_session_judges(session_number) {
 $(document).ready(function() {
 	drawMainTable();
 	
-	//drawJudgesTables();
+	drawSessionsTable();
 
-	table.on( 'select', function ( e, dt, type, indexes ) {
-	
-    	var session_number = table.row( { selected: true } ).data()['pkid'];
-    	
-    	get_session_judges(session_number);
-    	
-    	
-	} );
 	
 	
-$("#judges, #head-judge, #second-judge").droppable({
-    drop: function (event, ui) {
-    
-      var dropTable = $(this).DataTable();
-      
-      var draggingTable = $('.selectedRow').closest('table').DataTable();
-      var source = draggingTable.row($('.selectedRow')).data();
-      //console.log(source);
-      
-      dropTable.row.add( source ).draw(false);
-        dropTable.rows( {search:'applied', order:'applied'}).every( function ( rowIdx, tableLoop, rowLoop ) {
-    		var data = this.data();
-   		 	data.order = rowIdx + 1;
-   		 	this.data( data );
-		} ).draw();
-
-      draggingTable.row($('.selectedRow')).remove().draw(false);
-    }
-});
-
-$(document).on("click", ".tablegrid tr", function () {
-  //console.log('toggle class')
-    $(this).toggleClass("selectedRow");
-});
-
-table.on( 'deselect', function ( e, dt, type, indexes ) {
-    judges_table.clear().draw();
-    hj_table.clear().draw();
-    sj_table.clear().draw();
-
-} );
 
 });
 </script>
