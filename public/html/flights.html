@@ -152,6 +152,29 @@
 					  <!-- x_content -->
                       <div class="x_content panel-body">
 
+
+<!-- Modal -->
+<div id="myMODAL" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Remove Table From Style</h4>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button id="cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button id="remove" type="button" class="btn btn-default" data-dismiss="modal">Remove</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
                         <div class="col-md-12 hidden-small">
                           <table id="sessions" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
@@ -654,12 +677,82 @@ $(document).ready(function() {
     	} else {
     		//code to remove table
     		//maybe an alert with tables to select
+    		
+    		var data = table.row( { selected: true } ).data();
+    		
+    		if (data.tables.length > 0) {
+    			
+
+				$('.modal-body').empty();
+				
+				
+				for (var i=0; i<data.tables.length; i++) {
+					$('<div class="radio"><label><input type="radio" ' +
+					'name="optradio" value="' + data.tables[i] + '">' + data.tables[i] + 
+					'</label></div>').appendTo('.modal-body');
+				}
+    		
+    			$('#myMODAL').modal('show'); 
+    		
+    		}
+
     	}
     	
     	
 	} );
 	
-	
+$('#myMODAL .modal-footer button').on('click', function(event) {
+  var $button = $(event.target); // The clicked button
+
+  $(this).closest('.modal').one('hidden.bs.modal', function() {
+    // Fire if the button element 
+    //console.log('The button that closed the modal is: ', $button.attr('id'));
+    
+    if ($button.attr('id') === 'remove') {
+    
+    	var radioValue = $("input[name='optradio']:checked").val();
+    	console.log(radioValue);
+    	
+    	if (radioValue) {
+    			var data = table.row( { selected: true } ).data();
+    			//remove previous beer count for that style before removing table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] - num_beers;
+    				//need to find row in session table to update
+    			}
+    			
+    			
+
+
+				//remove table from selected row then deselect for visual
+
+    			index = data.tables.indexOf(radioValue);
+    			
+    			//only remove if radio button value found in array
+    			if (index > -1) {
+    				data.tables.splice(index, 1);
+    				table.row( { selected: true } ).data(data);
+    			}
+
+    			if (!table_beer_count[sessions.name]) {
+    				table_beer_count[sessions.name] = 0;
+    			}
+    			
+    			//recalc beer count for style after removing table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
+    			}
+    		
+    			sessions_table.draw();
+    			
+    	}
+    }
+    table.rows().deselect();
+  });
+});
 
 
 });
