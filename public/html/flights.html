@@ -693,7 +693,9 @@ $(document).ready(function() {
 				}
     		
     			$('#myMODAL').modal('show'); 
-    		
+    		//no tables in the row
+    		} else {
+    			table.rows().deselect();
     		}
 
     	}
