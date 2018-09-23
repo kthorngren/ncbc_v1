@@ -1287,7 +1287,7 @@ class Website:
                                'category_id': int(cat['category_id']),
                                'sub_category_id': style['style_num'],
                                'count': 0,
-                               'tables': ''
+                               'tables': [],
                                })
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)

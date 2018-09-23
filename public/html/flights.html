@@ -235,6 +235,8 @@ var table;
 var sessions_table;
 
 
+var flight_tracker = {};
+
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
@@ -260,6 +262,23 @@ function drawMainTable() {
 	        },
 	        {
 	        	data: 'tables',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			table_num = '';
+
+	        			if (data) {
+	        				for (var i=0; i<data.length; i++) {
+	        					var element = data[i];
+	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
+	        			 		table_num = table_num + temp;	
+	        				}
+	        			} else {
+	        				table_num = '';
+	        			}
+	        			return  table_num;
+	        		}
+	        		return data;
+	        	}	        	
 	        },
 	    ],
 	    rowGroup: {
@@ -277,13 +296,23 @@ function drawMainTable() {
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
          	}       
 	    },
-    columnDefs: [
-      {
-      	targets: ['_all'],
-      	orderable: false
-      }
+	    drawCallback: function () {
+	    	var api = this.api();
+	    	
+	    	var data = api.rows().data();
+	    	
+	    	
+	    	
+	    	//console.log(data);
+	    	
+	    },
+    	columnDefs: [
+      		{
+      			targets: ['_all'],
+      			orderable: false
+      		}
 
-    ],
+    	],
 	    buttons: [
             {
                 text: 'Use Registered Count',
@@ -347,20 +376,20 @@ function drawSessionsTable() {
 	        },
 	        {
 	        	data: 'head_judge',
-	        	defaultContent: '',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
 	        			return data.firstname + ' ' + data.lastname
 	        		}
+	        		return data;
 	        	}
 	        },
 	        {
 	        	data: 'second_judge',
-	        	defaultContent: '',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
 	        			return data.firstname + ' ' + data.lastname
 	        		}
+	        		return data;
 	        	}
 	        },
 	        {
@@ -468,7 +497,7 @@ function get_styles_count(full_inventory=true) {
 			} );    
 			
 			table.draw();        
-			
+			sessions_table.draw();
             
         },
 
@@ -562,10 +591,35 @@ $(document).ready(function() {
     	
     	var data = table.row( { selected: true } ).data();
     	
-    	data.tables = sessions.name;
+    	if (sessions) {
+    		// need to make sure table is not already in list - skip if so
     	
-    	table.row( { selected: true } ).data(data);
-    	table.rows().deselect();
+    		data.tables.push(sessions.name);
+    		table.row( { selected: true } ).data(data);
+    		table.rows().deselect();
+
+    		if (!flight_tracker[sessions.name]) {
+    			flight_tracker[sessions.name] = 0;
+    		}
+    		
+    		var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    		
+    		for (var i=0; i<data.tables.length; i++) {
+    			console.log(data.tables[i]);
+    			flight_tracker[data.tables[i]] = flight_tracker[data.tables[i]] + num_beers;
+    			//need to find row in session table to update
+    		}
+    		
+			//then remove these 2 lines
+    		sessions.total = flight_tracker[sessions.name];
+    		sessions_table.row( { selected: true } ).data(sessions);
+    		
+    		sessions_table.draw();
+    	} else {
+    		//code to remove table
+    		//maybe an alert with tables to select
+    	}
+    	
     	
 	} );
 	

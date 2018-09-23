@@ -110,7 +110,7 @@ class Sessions:
 
         return result
 
-    def get_session_volunteers(self, session_number, judges=False, stewards=False):
+    def get_session_volunteers(self, session_number, judges=False, stewards=False, all=False):
 
         where = ''
 
@@ -118,6 +118,9 @@ class Sessions:
             where = 'and judge = "0"'
         elif judges and not stewards:
             where = 'and judge = "1"'
+
+        if not all:
+            where += ' and active = "1" '
 
         sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
               'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
