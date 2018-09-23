@@ -124,7 +124,7 @@ class Sessions:
 
         sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
               'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
-                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid ' \
+                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid, p.likes, p.dislikes ' \
                 'from volunteers '\
                 'inner join people as p on p.pkid = fk_people ' \
                 'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \

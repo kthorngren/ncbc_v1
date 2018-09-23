@@ -1023,7 +1023,7 @@ class Website:
             session_pairs = json.loads(kwargs.get('data', {}))
         except:
             session_pairs = {}
-        print(session_pairs.keys())
+        #print(session_pairs.keys())
         if session_pairs:
             save_result = Sessions().save_session_pairs(session_pairs)
 

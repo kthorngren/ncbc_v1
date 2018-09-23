@@ -238,6 +238,8 @@ var sessions_table;
 var table_beer_count = {};
 
 var judge_entries = [];
+var judge_dislikes = [];
+var judge_likes = [];
 
 
 function drawMainTable() {
@@ -299,9 +301,18 @@ function drawMainTable() {
          	}       
 	    },
 	    rowCallback: function (row, data) {
+	    	//console.log(judge_entries);
+	    	//console.log(judge_likes);
+	    	//console.log(judge_dislikes);
 			if (judge_entries.indexOf(data.category_id.toString()) > -1) {
 				$(row).css('color', 'Red');
-				$(row).attr('title', 'not');
+				$(row).attr('title', 'Entry');
+			} else if (judge_dislikes.indexOf(data.category_id.toString()) > -1){
+				$(row).css('color', 'Red');
+				$(row).attr('title', 'Dislikes');
+			} else if (judge_likes.indexOf(data.category_id.toString()) > -1){
+				$(row).css('color', 'Green');
+				$(row).attr('title', 'Likes');
 			} else {
 				$(row).css('color', '');
 				$(row).attr('title');
@@ -567,6 +578,15 @@ $(document).ready(function() {
 		//get categories of entries a judge has
 		judge_entries = data.head_judge.categories.concat(data.second_judge.categories);
 		
+		var hj = data.head_judge.likes ? data.head_judge.likes.split(',') : [];
+		var sj = data.second_judge.likes ? data.second_judge.likes.split(',') : [];
+		judge_likes = hj.concat(sj);
+
+		var hj = data.head_judge.dislikes ? data.head_judge.dislikes.split(',') : [];
+		var sj = data.second_judge.dislikes ? data.second_judge.dislikes.split(',') : [];
+		judge_dislikes = hj.concat(sj);
+
+		console.log(judge_dislikes)
 		table.draw(false);
 		
 	});
@@ -577,6 +597,8 @@ $(document).ready(function() {
 		
 		//reset the judge entries when no judge is selected
 		judge_entries = [];
+		judge_likes = [];
+		judge_dislikes = [];
 		
 		table.draw(false);
 	});
@@ -591,7 +613,8 @@ $(document).ready(function() {
     	if (sessions) {
     		// Make sure judge does not have entries in category and 
     		// make sure table is not already in list - skip if so
-    		if (judge_entries.indexOf(data.category_id.toString()) === -1 && 
+    		if (judge_entries.indexOf(data.category_id.toString()) === -1 &&
+    				judge_dislikes.indexOf(data.category_id.toString()) === -1 && 
     				data.tables.indexOf(sessions.name) == -1) {
     	
     			//remove previous beer count for that style before adding new table
