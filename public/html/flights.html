@@ -589,8 +589,10 @@ $(document).ready(function() {
     	var data = table.row( { selected: true } ).data();
     	
     	if (sessions) {
-    		// need to make sure table is not already in list - skip if so
-    		if (judge_entries.indexOf(data.category_id.toString()) === -1) {
+    		// Make sure judge does not have entries in category and 
+    		// make sure table is not already in list - skip if so
+    		if (judge_entries.indexOf(data.category_id.toString()) === -1 && 
+    				data.tables.indexOf(sessions.name) == -1) {
     	
     			//remove previous beer count for that style before adding new table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
