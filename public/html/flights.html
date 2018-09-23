@@ -413,11 +413,16 @@ function drawSessionsTable() {
 	        	data: 'head_judge',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : ' + data.bjcp_rank;
+	        			}
+	        			
 	        			var cat = '';
 	        			if (data.categories.length > 0) {
 	        				cat = ' (' + data.categories.join() + ')';
 	        			}
-	        			return data.firstname + ' ' + data.lastname + cat;	
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;	
 	        		}
 	        		return data;
 	        	}
@@ -426,11 +431,16 @@ function drawSessionsTable() {
 	        	data: 'second_judge',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : ' + data.bjcp_rank;
+	        			}
+	        			
 	        			var cat = '';
 	        			if (data.categories.length > 0) {
 	        				cat = ' (' + data.categories.join() + ')';
 	        			}
-	        			return data.firstname + ' ' + data.lastname + cat;
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;
 	        		}
 	        		return data;
 	        	}
