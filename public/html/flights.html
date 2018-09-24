@@ -19,7 +19,11 @@
   </head>
 
   <style>
-  
+
+tr.strikeout {
+  text-decoration: line-through;
+}
+
 
   </style>
   <body class="nav-md">
@@ -99,6 +103,7 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
+                                <th>Flight</th>
                                 <th>Category</th>
                                 <th>Sub Category</th>
                                 <th>Number of Entries</th>
@@ -267,7 +272,15 @@ var judge_likes = [];
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_flights',
+		ajax: {
+			url: 'dt_flights',
+			dataSrc: function (data) {
+				for (var i=0; i<data.data.length; i++) {
+					data.data[i].tables = JSON.parse(data.data[i].tables);
+				}
+				return data.data;
+			}
+		},
 		dom: 'Bt',
 		paging: false,
 		scrollY: 1000,
@@ -275,8 +288,11 @@ function drawMainTable() {
     	    style: "single",
         	selector: "td:last-child"
    		},
-   		order: [[0, 'asc'], [1, 'asc']],
+   		order: [[1, 'asc'], [2, 'asc']],
 		columns: [
+	        {
+	        	data: 'number',
+	        },
 	        {
 	        	data: 'category',
 	        	visible: false
@@ -291,8 +307,10 @@ function drawMainTable() {
 	        	data: 'tables',
 	        	render: function (data, type, row) {
 	        		if (type === 'display') {
+	        			if (row.judged == 1) {
+	        				return 'Judged'
+	        			}
 	        			table_num = '';
-
 	        			if (data.sort()) {
 	        				for (var i=0; i<data.length; i++) {
 	        					var element = data[i];
@@ -319,7 +337,7 @@ function drawMainTable() {
                 	}, 0 );
                     
 				return $('<tr/>')
-                    .append( '<td colspan="1">' + group + '</td>' )
+                    .append( '<td colspan="2	">' + group + '</td>' )
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
          	}       
 	    },
@@ -327,7 +345,10 @@ function drawMainTable() {
 	    	//console.log(judge_entries);
 	    	//console.log(judge_likes);
 	    	//console.log(judge_dislikes);
-			if (judge_entries.indexOf(data.category_id.toString()) > -1) {
+	    	if (data.judged == 1) {
+				$(row).addClass('strikeout');
+	    	
+	    	} else if (judge_entries.indexOf(data.category_id.toString()) > -1) {
 				$(row).css('color', 'Red');
 				$(row).attr('title', 'Entry');
 			} else if (judge_dislikes.indexOf(data.category_id.toString()) > -1){
@@ -350,6 +371,15 @@ function drawMainTable() {
     	],
 	    buttons: [
             {
+                text: 'Initialize Flights',
+                action: function ( e, dt, node, config ) {
+    	
+    				init_flights(true);
+    	
+
+                }
+            },        
+            {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
     	
@@ -369,10 +399,7 @@ function drawMainTable() {
             {
                 text: 'Save Flights',
                 action: function ( e, dt, node, config ) {
-                
-    				var session_number = table.row( { selected: true } ).data()['pkid'];
-    	
-					reset_session_judges(session_number);
+                	save_flights();
                 }
             },        
     ] 
@@ -415,7 +442,7 @@ function drawSessionsTable() {
 	        		if (type === 'display') {
 	        			var bjcp = '';
 	        			if (data.bjcp_rank) {
-	        				bjcp = ' : ' + data.bjcp_rank;
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
 	        			}
 	        			
 	        			var cat = '';
@@ -433,7 +460,7 @@ function drawSessionsTable() {
 	        		if (type === 'display') {
 	        			var bjcp = '';
 	        			if (data.bjcp_rank) {
-	        				bjcp = ' : ' + data.bjcp_rank;
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
 	        			}
 	        			
 	        			var cat = '';
@@ -514,19 +541,41 @@ function drawSessionsTable() {
 
 
 
-
-function save_pairs(data) {
+function init_flights() {
 
 	$.ajax({
-      	url: "/save_pairs",
+      	url: "/init_flights",
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+        	//console.log(data);
+            
+            table.clear().draw();
+			table.rows.add(data.data).draw();            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+
+function save_flights() {
+
+	var data = table.rows().data().toArray();
+	$.ajax({
+      	url: "/save_flights",
       	type: 'post',
       	data: {data: JSON.stringify(data)},
       	success: function(json) {
             var data = JSON.parse(json);
             //console.log(data);
             
-            if (data.error) {
-            	alert('Error trying to save judge pairs: ' + data.error);
+            if (data.error && data.error.length > 0) {
+            	console.log('Error trying to save judge pairs: ' + data.error);
             }
             
         },
@@ -648,7 +697,9 @@ $(document).ready(function() {
     		// make sure table is not already in list - skip if so
     		if (judge_entries.indexOf(data.category_id.toString()) === -1 &&
     				judge_dislikes.indexOf(data.category_id.toString()) === -1 && 
-    				data.tables.indexOf(sessions.name) == -1) {
+    				data.tables.indexOf(sessions.name) == -1 &&
+    				data.judged != 1
+    				) {
     	
     			//remove previous beer count for that style before adding new table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
@@ -690,7 +741,7 @@ $(document).ready(function() {
     		
     		var data = table.row( { selected: true } ).data();
     		
-    		if (data.tables.length > 0) {
+    		if (data.tables.length > 0 && data.judged != 1) {
     			
 
 				$('.modal-body').empty();

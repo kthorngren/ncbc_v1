@@ -1264,6 +1264,43 @@ class Website:
     @cherrypy.expose
     def dt_flights(self, *args, **kwargs):
 
+        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def save_flights(self, *args, **kwargs):
+
+        errors = []
+
+        try:
+            flights = json.loads(kwargs.get('data', {}))
+        except:
+            flights = []
+
+        sql = 'delete from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        self.db.db_command(sql=sql)
+
+        for flight in flights:
+            flight['tables'] = escape_sql(json.dumps(flight['tables']))
+            sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
+                  'tables, fk_competitions) ' \
+                  'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
+                  '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=flight,
+                                                                 fk_competitions=Competitions().get_active_competition(),
+                                                                 )
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+
+        return json.dumps({'error': errors})
+
+
+    @cherrypy.expose
+    def init_flights(self, *args, **kwargs):
+
         result = []
 
         fk_categories = Competitions().get_categories().split(',')
@@ -1273,7 +1310,9 @@ class Website:
         uid = gen_uid()
         categories = self.db.db_command(sql=sql, uid=uid).all(uid)
 
+        flight_num = 0
         for cat in categories:
+            flight_num += 1
             styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
 
             for style in styles:
@@ -1288,6 +1327,7 @@ class Website:
                                'sub_category_id': style['style_num'],
                                'count': 0,
                                'tables': [],
+                               'number': flight_num
                                })
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)
