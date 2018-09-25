@@ -17,6 +17,7 @@ from Email import Email
 
 from Import import Import
 from Volunteers import Volunteers
+from Entrys import Entrys
 
 from Competitions import DATABASE
 
@@ -66,6 +67,7 @@ from Database import escape_sql
 
 db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
 
+comp_db = Database(local_host['host'], local_host['user'], local_host['password'], 'competitions')
 
 class BottleLabelFPDF(FPDF, HTMLMixin):
 
@@ -1715,8 +1717,8 @@ def fix_descriptions(pkid=1):
         attendee_id = n.get_field(f, 'attendee_id')
         desc = n.get_field(raw_data, 'Entry Notes')
 
-        if attendee_id == '350854':
-            print('350854:  ', desc)
+        if attendee_id == '352092':
+            print('352092:  ', desc)
 
         """
         if not desc:
@@ -1751,7 +1753,7 @@ def fix_descriptions(pkid=1):
                 #print('update raw_data Row count: {}'.format(db.row_count()))
 
 
-                sql = 'update entries set description = "{}" where fk_raw_data = "{}"'.format(desc, pkid)
+                sql = 'update entries set description = "{}" where fk_raw_data = "{}"'.format(escape_sql(desc), pkid)
                 #print(sql)
                 db.db_command(sql=sql)
                 print('update entries Row count: {}'.format(db.row_count()))
@@ -1762,11 +1764,178 @@ def fix_descriptions(pkid=1):
         else:
             print('Not found in DB')
 
+
+def validate_ncbc(pkid):
+    n = Ncbc(pkid=pkid)
+    n.get_csv_2()
+
+    #print(n.header)
+    result = Entrys().get_entries_and_brewer()
+    #print(result[0])
+
+    validation = []
+    entry_list = []
+
+    for entry in n.entries:
+
+        temp = {
+            'firstname': n.get_field(entry, 'first_name'),
+            'lastname': n.get_field(entry, 'last_name'),
+            'email': n.get_field(entry, 'email'),
+            'organization': n.get_field(entry, 'organization'),
+            'name': n.get_field(entry, 'Name of Beer'),
+            'category': n.get_field(entry, 'BJCP Category Selection'),
+            'sub_category': n.get_field(entry, 'BJCP Subcategory'),
+            'description': n.get_field(entry, 'Entry Notes'),
+            'attendee_id': n.get_field(entry, 'attendee_id'),
+            'entry_id': 0,
+            'differences': []
+        }
+
+        sql = 'select entry_id, name, category, sub_category, description, b.firstname, ' \
+              'b.lastname, b.email, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.name  = "{}" and b.email = "{}" and category = "{}" and ' \
+              'sub_category = "{}"'.format(temp['name'], temp['email'], temp['category'].split('.')[0], temp['sub_category'])
+
+
+        uid = gen_uid()
+        result = comp_db.db_command(sql=sql, uid=uid).all(uid)
+
+        if len(result) > 1:
+            print('**** multiple results', len(result), temp['email'])
+            for rr in result:
+                print(rr)
+
+        elif len(result) == 0:
+            #print('**** No results', temp['email'], temp['name'])
+            pass
+        else:
+            temp['entry_id'] = result[0]['entry_id']
+            entry_list.append(str(temp['entry_id']))
+
+            if result[0]['lastname'].lower() != temp['lastname'].lower():
+                temp['differences'].append('Lastname: CSV: {} DB: {}'.format(temp['lastname'], result[0]['lastname']))
+            if result[0]['organization'].lower() != temp['organization'].lower():
+                temp['differences'].append('Organization: CSV: {} DB: {}'.format(temp['organization'], result[0]['organization']))
+            if result[0]['category'] != temp['category'].split('.')[0]:
+                temp['differences'].append('Category: CSV: {} DB: {}'.format(temp['category'], result[0]['category']))
+            if result[0]['sub_category'] != temp['sub_category']:
+                temp['differences'].append('Sub Category: CSV: {} DB: {}'.format(temp['sub_category'], result[0]['sub_category']))
+            if result[0]['description'].strip() != temp['description'].strip():
+                temp['differences'].append('Description: \n    CSV: "{}"\n     DB: "{}"'.format(escape_sql(temp['description'][:100]), escape_sql(result[0]['description'][:100])))
+
+        validation.append(temp)
+
+    for v in validation:
+
+        if v['entry_id'] == 0:
+            print('No entry found for {} {}'.format(v['organization'], v['name']))
+            continue
+
+        if v['differences']:
+            print('Differences for {}, {}, {}'.format(v['organization'], v['name'], v['entry_id']))
+
+            for r in v['differences']:
+                print('  {}'.format(r))
+
+
+    sql = 'select entry_id, name from entries where entry_id not in ("{}")'.format('","'.join(entry_list))
+
+
+    uid = gen_uid()
+    result = comp_db.db_command(sql=sql, uid=uid).all(uid)
+    for r in result:
+
+        print(r)
+
+
+def validate_ncbc_old(pkid):
+    n = Ncbc(pkid=pkid)
+    n.get_csv_2()
+
+    #print(n.header)
+    result = Entrys().get_entries_and_brewer()
+    #print(result[0])
+
+    validation = []
+
+    for entry in n.entries:
+
+        temp = {
+            'firstname': n.get_field(entry, 'first_name'),
+            'lastname': n.get_field(entry, 'last_name'),
+            'organization': n.get_field(entry, 'organization'),
+            'name': n.get_field(entry, 'Name of Beer'),
+            'category': n.get_field(entry, 'BJCP Category Selection'),
+            'sub_category': n.get_field(entry, 'BJCP Subcategory'),
+            'description': n.get_field(entry, 'Entry Notes'),
+            'attendee_id': n.get_field(entry, 'attendee_id'),
+            'entry_id': 0,
+            'differences': []
+        }
+
+        #print(temp['organization'],temp['name'] )
+        for r in result:
+            #if r['organization'] == temp['organization']:
+            #    print(r['name'])
+            if r['organization'] == temp['organization'] and r['name'] == temp['name']:
+                temp['entry_id'] = r['entry_id']
+
+                if r['firstname'].lower() != temp['firstname'].lower():
+                    temp['differences'].append('Firstname: CSV: {} DB: {}'.format(temp['firstname'], r['firstname']))
+                if r['lastname'].lower() != temp['lastname'].lower():
+                    temp['differences'].append('Lastname: CSV: {} DB: {}'.format(temp['lastname'], r['lastname']))
+                if r['category'] != temp['category'].split('.')[0]:
+                    temp['differences'].append('Category: CSV: {} DB: {}'.format(temp['category'], r['category']))
+                if r['sub_category'] != temp['sub_category']:
+                    temp['differences'].append('Sub Category: CSV: {} DB: {}'.format(temp['sub_category'], r['sub_category']))
+                if r['description'].strip() != temp['description'].strip():
+                    temp['differences'].append('Description: \n,,CSV: "{}"\n,, DB: "{}"'.format(escape_sql(temp['description']), escape_sql(r['description'])))
+
+                continue
+
+
+        validation.append(temp)
+
+    entry_id = []
+
+    print('CSV records not match with DB records')
+    for v in validation:
+        if v['entry_id'] == 0:
+            print(v['organization'], v['name'], v['attendee_id'])
+        else:
+            entry_id.append(v['entry_id'])
+
+        pass
+
+    print()
+
+    #print(entry_id)
+
+    print('DB records not found in CSV via entry ID')
+    for r in result:
+        if r['entry_id'] not in entry_id:
+            print(r['organization'], r['name'], r['entry_id'])
+
+    print()
+    print('Other differences found')
+    for v in validation:
+        if v['differences']:
+
+            print(v['organization'], v['entry_id'], v['attendee_id'])
+            for d in v['differences']:
+                print(',', d)
+
+
+
 if __name__ == '__main__':
 
-    process_new_entries(pkid=1)
+    #process_new_entries(pkid=1)
 
-    process_new_volunteers(pkid=3)
+    #process_new_volunteers(pkid=3)
+
+    validate_ncbc(pkid=1)
 
     #process_import_volunteers(pkid=3)
 

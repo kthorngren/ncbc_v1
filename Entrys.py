@@ -244,6 +244,17 @@ class Entrys:
 
         return result
 
+    def get_entries_and_brewer(self):
+
+        sql = 'select *, b.firstname, b.lastname, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.fk_competitions = "1" '
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
 
 def test_add_inventory():
     print(Entrys().inventory_status())
