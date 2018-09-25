@@ -7,7 +7,7 @@ import re
 import cherrypy
 
 from MySql import local_host
-from Database import Database, gen_uid
+from Database import Database, gen_uid, escape_sql
 from Datatables import Datatables
 
 from Competitions import Competitions
@@ -16,6 +16,9 @@ from Brewers import Brewers
 from Import import Import
 from Email import Email
 from Volunteers import Volunteers
+from Flights import Flights
+from Sessions import Sessions
+from Entrys import Entrys
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -475,6 +478,59 @@ class Website:
 
         return json.dumps({'new': new_result, 'changed': changed_result})
 
+
+    ######################
+    #
+    # Inventory
+    #
+    ######################
+    @cherrypy.expose
+    def categories(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='categories.html')
+        return form
+
+    @cherrypy.expose
+    def dt_categories(self, *args, **kwargs):
+
+        #todo: eventually start using the base guidlelines
+        #result = Style().get_styles(Competitions().get_style_guidelines())
+
+        sql = 'select * from category_strength_rating'
+
+        result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_categories(self, *args, **kwargs):
+
+        errors = []
+
+        result = 'Unable to process catorgories'
+
+        try:
+            categories = json.loads(kwargs.get('data', {}))
+        except:
+            categories = {}
+
+        print(categories)
+
+        if categories:
+
+            categories = [str(x) for x in categories]
+
+            sql = 'update competitions set fk_categories_list = "{}" ' \
+                  'where pkid = "{}"'.format(','.join(categories), Competitions().get_active_competition())
+
+            self.db.db_command(sql=sql)
+
+            result = self.db.sql_error
+
+
+        return result
+
+
     ######################
     #
     # Inventory
@@ -759,6 +815,557 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='sessions', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+
+
+    ######################
+    #
+    #
+    # ** Flights **
+    #
+    #
+    ######################
+
+
+    ######################
+    #
+    # Flights Health Check
+    #
+    ######################
+    @cherrypy.expose
+    def flights_health(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flights_health.html')
+        return form
+
+    @cherrypy.expose
+    def health_check(self, **kwargs):
+
+        data = []
+
+        sessions = Sessions().get_sessions(judging=True)
+
+        for session in sorted(sessions, key=lambda k: k['session_number']):
+
+            #['pkid', 'fk_sessions', 'head_judge', 'second_judge', 'judges']
+            pairing = Flights().get_session_pairing(session['pkid'])
+
+            all_judges = Flights().get_judges_for_session(session['pkid'])
+
+            if len(pairing) == 0:
+                data.append({'name': session['name'], 'status': 'Judge pairing not defined', 'code': 'red'})
+            else:
+                pairing = pairing[0]
+
+                try:
+                    judges = json.loads(pairing['judges'])
+                except:
+                    judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse judges', 'code': 'red'})
+
+                try:
+                    hj_judges = json.loads(pairing['head_judge'])
+                except:
+                    hj_judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse head judges', 'code': 'red'})
+
+                try:
+                    sj_judges = json.loads(pairing['second_judge'])
+                except:
+                    sj_judges = 0
+                    data.append({'name': session['name'], 'status': 'Unable to parse second judges', 'code': 'red'})
+
+                if len(all_judges) == 0:
+                    data.append({'name': session['name'], 'status': 'No judges registerd for session', 'code': 'yellow'})
+                else:
+                    data.append({'name': session['name'], 'status': '{} judges registerd for session'.format(len(all_judges)), 'code': 'green'})
+
+                difference = len(hj_judges) - len(sj_judges)
+
+                if difference == 0:
+                    data.append(
+                        {'name': session['name'], 'status': 'Judge pairs are symmetrical', 'code': 'green'})
+                else:
+                    more = 'Head' if difference > 0 else 'Second'
+                    less = 'Second' if more == 'Head' else 'Head'
+                    data.append({'name': session['name'], 'status': 'More {} judges than {} judges - '
+                                                                    'Head Judges: {}, Second Judges: {}'.format(more, less, len(hj_judges), len(sj_judges)),
+                                 'code': 'red'})
+
+                if len(judges) > 0:
+                    data.append({'name': session['name'], 'status': '{} judges need to be assigned'.format(len(judges)), 'code': 'yellow'})
+
+                all_pkids = [x['pkid'] for x in all_judges]
+                not_in_session = []
+                for judge in judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+
+                for judge in hj_judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                for judge in sj_judges:
+                    try:
+                        pkid_index = all_pkids.index(judge['pkid'])
+                        all_pkids.pop(pkid_index)
+                    except:
+                        not_in_session.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                if not_in_session:
+                    data.append({'name': session['name'],
+                                 'status': 'Judges not assigned to session: {}'.format(', '.join(not_in_session)),
+                                 'code': 'red'})
+
+                if all_pkids:
+                    all_list = []
+
+                    for judge in all_judges:
+                        if judge['pkid'] in all_pkids:
+                            all_list.append('{} {}'.format(judge['firstname'], judge['lastname']))
+
+                    data.append({'name': session['name'],
+                                 'status': 'Session judges not in pairing: {}'.format(', '.join(all_list)),
+                                 'code': 'red'})
+
+                else:
+                    data.append({'name': session['name'],
+                                 'status': 'All session judges accounted for',
+                                 'code': 'green'})
+
+
+
+
+        sql = 'select * from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+        if not result:
+            data.append({'name': 'Tables',
+                         'status': 'Tables are not defined',
+                         'code': 'red'})
+        else:
+            pass
+
+        flights = Flights().get_flights()
+
+        if not flights:
+            data.append({'name': 'Flights',
+                         'status': 'Flights are not defined',
+                         'code': 'red'})
+        else:
+            pass
+
+
+
+        return json.dumps({'data': data}, cls=DatetimeEncoder)
+
+    ######################
+    #
+    # Judge Pairing
+    #
+    ######################
+    @cherrypy.expose
+    def judge_pairing(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_pairing.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_pairing(self, *args, **kwargs):
+
+        sql = 'select * from sessions where judging = "1" and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='sessions', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def auto_generate_pairs(self, *args, **kwargs):
+
+        session_number = kwargs.get('session_number', 0)
+
+        result = Flights().auto_assign_judges(session_number)
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def get_session_judges(self, *args, **kwargs):
+
+        result = {}
+
+        session_number = kwargs.get('session_number', 0)
+
+        result['all'] = Flights().get_judges_for_session(session_number)
+
+        result['pairing'] = Flights().get_session_pairing(session_number)
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_pairs(self, *args, **kwargs):
+
+        errors = []
+
+        result = ''
+
+        try:
+            session_pairs = json.loads(kwargs.get('data', {}))
+        except:
+            session_pairs = {}
+        #print(session_pairs.keys())
+        if session_pairs:
+            save_result = Sessions().save_session_pairs(session_pairs)
+
+            if save_result:
+                result = 'Successfully save judge pairs'
+            else:
+                errors.append('Unable to save judge pairs')
+
+        else:
+            errors.append('Unable to parse judge pairs')
+
+
+
+        return json.dumps({'data': result, 'error': ','.join(errors)}, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    # Find judge entries
+    #
+    ######################
+    @cherrypy.expose
+    def judge_entries(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='judge_entries.html')
+        return form
+
+    @cherrypy.expose
+    def dt_judge_entries(self, *args, **kwargs):
+
+        result = Volunteers().find_volunteer_entries()
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def assign_volunteers_to_brewers(self, **kwargs):
+
+        try:
+            volunteers = json.loads(kwargs.get('data', {}))
+        except:
+            volunteers = []
+
+        errors = []
+
+        for volunteer in volunteers:
+
+            sql = 'update volunteers set fk_brewers = "{d[pkid]}" where pkid = "{d[vol_pkid]}"'.format(d=volunteer)
+
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+        return ','.join(errors)
+
+
+    @cherrypy.expose
+    def unassign_volunteers_to_brewers(self, **kwargs):
+
+        try:
+            volunteers = json.loads(kwargs.get('data', {}))
+        except:
+            volunteers = []
+
+        errors = []
+
+        for volunteer in volunteers:
+
+            sql = 'update volunteers set fk_brewers = "0" where pkid = "{d[vol_pkid]}"'.format(d=volunteer)
+
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+        return ','.join(errors)
+
+
+    ######################
+    #
+    # Table Assignments
+    #
+    ######################
+    @cherrypy.expose
+    def tables(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='tables.html')
+        return form
+
+    @cherrypy.expose
+    def dt_tables(self, *args, **kwargs):
+
+        sql = 'select tables.pkid, tables.name, tables.head_judge, tables.second_judge, ' \
+              's.pkid as session_pikd, s.name as session_name from tables ' \
+              'inner join sessions as s on s.pkid = fk_sessions ' \
+              'where tables.fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+
+        result = self.dt.parse_request(sql=sql, table='tables', debug=True, *args, **kwargs)
+
+        for r in result['data']:
+            r['head_judge'] = json.loads(r['head_judge'])
+            r['second_judge'] = json.loads(r['second_judge'])
+            r['total'] = 0
+
+            brewer = r['head_judge']['fk_brewers']
+
+            if brewer:
+                r['head_judge']['categories'] = Entrys().get_brewer_categories(brewer)
+            else:
+                r['head_judge']['categories'] = []
+
+            brewer = r['second_judge']['fk_brewers']
+
+            if brewer:
+                r['second_judge']['categories'] = Entrys().get_brewer_categories(brewer)
+            else:
+                r['second_judge']['categories'] = []
+
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def generate_tables(self, *args, **kwargs):
+
+        sql = 'select * from sessions where judging = "1" and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+        session_counter = 0
+
+        tables = {}
+
+        for session in result:
+
+
+            sql = 'select * from judge_pairing where fk_sessions = "{}"'.format(session['pkid'])
+
+            uid = gen_uid()
+            judges = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+            judges = judges[0]
+
+            try:
+                head_judge = json.loads(judges['head_judge'])
+            except:
+                head_judge = []
+
+            try:
+                second_judge = json.loads(judges['second_judge'])
+            except:
+                second_judge = []
+
+            number_of_judges = 0
+
+            for j in head_judge:
+                if number_of_judges < j['order']:
+                    number_of_judges = j['order']
+                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+
+                if judges_table not in tables:
+                    tables[judges_table] = {
+                        'name': judges_table,
+                        'session_name': session['name'],
+                        'fk_sessions': session['pkid'],
+                        'head_judge': j,
+                        'second_judge': {}
+                    }
+
+                tables[judges_table]['head_judge'] = j
+
+
+            for j in second_judge:
+                if number_of_judges < j['order']:
+                    number_of_judges = j['order']
+                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+
+                if judges_table not in tables:
+                    tables[judges_table] = {
+                        'name': judges_table,
+                        'session_name': session['name'],
+                        'fk_sessions': session['pkid'],
+                        'head_judge': {},
+                        'second_judge': j
+                    }
+
+                tables[judges_table]['second_judge'] = j
+
+            session_counter += number_of_judges + 5
+
+        tables_list = []
+        for t in tables:
+            tables_list.append(tables[t])
+
+        return json.dumps(tables_list, cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
+    def save_tables(self, *args, **kwargs):
+
+        try:
+            tables = json.loads(kwargs.get('data', {}))
+        except:
+            tables = []
+
+        sql = 'delete from tables where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        self.db.db_command(sql=sql)
+
+        for table in tables:
+
+            head_judge = escape_sql(json.dumps(table['head_judge']))
+            second_judge = escape_sql(json.dumps(table['second_judge']))
+
+            sql = 'insert into tables (name, fk_sessions, fk_competitions, head_judge, second_judge) ' \
+                  'values ("{}", "{}", "{}", "{}", "{}")'.format(table['name'],
+                                                                 table['fk_sessions'],
+                                                                 Competitions().get_active_competition(),
+                                                                 head_judge,
+                                                                 second_judge
+                                                                 )
+            self.db.db_command(sql=sql)
+
+        return self.db.sql_error
+
+
+    ######################
+    #
+    # Flght Assignments
+    #
+    ######################
+    @cherrypy.expose
+    def flights(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flights.html')
+        return form
+
+    @cherrypy.expose
+    def dt_flights(self, *args, **kwargs):
+
+        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def save_flights(self, *args, **kwargs):
+
+        errors = []
+
+        try:
+            flights = json.loads(kwargs.get('data', {}))
+        except:
+            flights = []
+
+        sql = 'delete from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        self.db.db_command(sql=sql)
+
+        for flight in flights:
+            flight['tables'] = escape_sql(json.dumps(flight['tables']))
+            sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
+                  'tables, fk_competitions) ' \
+                  'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
+                  '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=flight,
+                                                                 fk_competitions=Competitions().get_active_competition(),
+                                                                 )
+            self.db.db_command(sql=sql)
+
+            if self.db.sql_error:
+                errors.append(self.db.sql_error)
+
+        return json.dumps({'error': errors})
+
+
+    @cherrypy.expose
+    def init_flights(self, *args, **kwargs):
+
+        result = []
+
+        fk_categories = Competitions().get_categories().split(',')
+
+        sql = 'select * from category_strength_rating where pkid in ("{}")'.format('","'.join(fk_categories))
+
+        uid = gen_uid()
+        categories = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        flight_num = 0
+        for cat in categories:
+            flight_num += 1
+            styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
+
+            for style in styles:
+
+                category_desc = '{} {}'.format(cat['category_id'], cat['category'])
+                style_desc = '{}{} {}'.format(str(int(cat['category_id'])), style['style_num'], style['style_name'])
+
+
+                result.append({'category': category_desc,
+                               'style': style_desc,
+                               'category_id': int(cat['category_id']),
+                               'sub_category_id': style['style_num'],
+                               'count': 0,
+                               'tables': [],
+                               'number': flight_num
+                               })
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def get_styles_count(self, *args, **kwargs):
+
+        result = 'done'
+
+        try:
+            full_inventory = json.loads(kwargs.get('data', {}))
+        except:
+            full_inventory = True
+
+        if not full_inventory:
+            where = ' where inventory = "1" '
+        else:
+            where = ''
+
+        print(full_inventory)
+
+        sql = 'SELECT count(sub_category), category, sub_category FROM entries {} ' \
+              'group by category, sub_category order by category, sub_category;'.format(where)
+
+        uid = gen_uid()
+        styles_count = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        result = {}
+        for style in styles_count:
+
+            category = style['category']
+            if category not in result:
+                result[category] = {}
+
+            result[category][style['sub_category']] = style['count(sub_category)']
+
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
     ######################
@@ -1048,6 +1655,26 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='cert_rank', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
 
+
+
+    ######################
+    #
+    # Category Strength Rating
+    #
+    ######################
+    @cherrypy.expose
+    def strength_rating(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='strength_rating.html')
+        return form
+
+    @cherrypy.expose
+    def dt_strength_rating(self, *args, **kwargs):
+
+        sql = 'select * from category_strength_rating'
+
+        result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
 
 if __name__ == '__main__':
     conf = {

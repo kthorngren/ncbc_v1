@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Certification Rankings Editor</h4>
+                <h4 id='main-title'>Category Strength Rating Editor</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Certifications</h2>
+                    <h2 id="table-title">Categories</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -100,10 +100,10 @@
                             <thead>
                               <tr>
                                 <th>pkid</th>
-                                <th></th>
-                                <th>Name</th>
-                                <th>Organization</th>
-                                <th>Rank</th>
+                                <th>Guidelines</th>
+                                <th>Category ID</th>
+                                <th>Category</th>
+                                <th>Rating (0-3)</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -176,7 +176,7 @@ function initMainEditor() {
 editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
-	ajax: "dt_cert_rank",
+	ajax: "dt_strength_rating",
 	idSrc: 'pkid',
     fields: [
         {
@@ -185,22 +185,14 @@ editor = new $.fn.dataTable.Editor(
             type: "hidden"
         },
         {
-            name: "name",
-            label: "Name:"
-        },
-        {
-            name: "organization",
-            label: "Organization:",
-        },
-        {
-            name: "rank",
-            label: "Cert Rank:",
+            name: "rating",
+            label: "Rating:",
         },
     ]
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:last-child', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -228,35 +220,35 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_cert_rank',
+		ajax: 'dt_strength_rating',
 		dom: 'Bftir',
 		rowId: 'pkid',
 		paging: false,
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-	    select: {
-    	    style: "single",
-        	selector: "td:first-child"
-   		},
-   		order: [[3, 'asc'], [4, 'asc']],
+   		order: [[1, 'asc'], [2, 'asc']],
+	    rowGroup: {
+	    	dataSrc: 'style_guidelines',
+            startRender: function ( rows, group ) {
+                return group +' ('+rows.count()+' Categories)';
+            },
+	    },
 		columns: [
 	        {
 	        	data: 'pkid',
 	        	visible: false
 	        },
 	        {
-    	        data: null,
-        	    defaultContent: "",
-            	className: "select-checkbox",
-	            orderable: false
-    	    },
-	        {
-	        	data: 'name',
+	        	data: 'style_guidelines',
 	        },
 	        {
-	        	data: 'organization',
+	        	data: 'category_id',
 	        },
 	        {
-	        	data: 'rank',
+	        	data: 'category',
+	        },
+	        {
+	        	data: 'rating',
+	        	className: 'editable'
 	        },
 
 	    ],

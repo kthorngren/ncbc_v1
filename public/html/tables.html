@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Certification Rankings Editor</h4>
+                <h4 id='main-title'>Judge Entries</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Certifications</h2>
+                    <h2 id="table-title">Judge Entries</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -100,10 +100,10 @@
                             <thead>
                               <tr>
                                 <th>pkid</th>
-                                <th></th>
-                                <th>Name</th>
-                                <th>Organization</th>
-                                <th>Rank</th>
+                                <th>Table Name</th>
+                                <th>Session</th>
+                                <th>Head Judge</th>
+                                <th>Second Judge</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -166,126 +166,65 @@
 
 <script>
 
-var editor;
-
 var table;
-var child_table;
-
-function initMainEditor() {
-
-editor = new $.fn.dataTable.Editor(
-{
-    table: "#main-table",
-	ajax: "dt_cert_rank",
-	idSrc: 'pkid',
-    fields: [
-        {
-            name: "pkid",
-            label: "pkid:",
-            type: "hidden"
-        },
-        {
-            name: "name",
-            label: "Name:"
-        },
-        {
-            name: "organization",
-            label: "Organization:",
-        },
-        {
-            name: "rank",
-            label: "Cert Rank:",
-        },
-    ]
-});
-
-    // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
-        editor.inline( this, {
-            onBlur: 'submit'
-        } );
-    } );
-
-
-
-    editor
-        .on( 'postCreate postRemove', function () {
-            // After create or edit, a number of other rows might have been effected -
-            // so we need to reload the table, keeping the paging in the current position
-            table.ajax.reload( null, false );
-        } )
-        .on( 'initCreate', function () {
-            // Enable order for create
-            editor.field( 'pkid' ).disable();
-        } )
-        .on( 'initEdit', function () {
-            // Disable for edit (re-ordering is performed by click and drag)
-            editor.field( 'pkid' ).disable();
-        } );
-
-}
-
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_cert_rank',
-		dom: 'Bftir',
+		ajax: 'dt_tables',
+		dom: 'Blftirp',
 		rowId: 'pkid',
 		paging: false,
-		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-	    select: {
-    	    style: "single",
-        	selector: "td:first-child"
-   		},
-   		order: [[3, 'asc'], [4, 'asc']],
+   		order: [[2, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
+	        	defaultContent: '',
 	        	visible: false
 	        },
-	        {
-    	        data: null,
-        	    defaultContent: "",
-            	className: "select-checkbox",
-	            orderable: false
-    	    },
 	        {
 	        	data: 'name',
 	        },
 	        {
-	        	data: 'organization',
+	        	data: 'session_name',
 	        },
 	        {
-	        	data: 'rank',
+	        	data: 'head_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
 	        },
-
+	        {
+	        	data: 'second_judge',
+	        	defaultContent: '',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.firstname + ' ' + data.lastname
+	        		}
+	        	}
+	        },
 	    ],
+	    rowGroup: {
+	    	dataSrc: 'session_name',
+            startRender: function ( rows, group ) {
+                return group +' ('+rows.count()+' Tables)';
+            },
+	    },
 	    buttons: [
-        { extend: "create", editor: editor },
-        { extend: "edit",   editor: editor },
             {
-                extend: "selectedSingle",
-                text: 'Duplicate',
+                text: 'Generate Table Assignments',
                 action: function ( e, dt, node, config ) {
-                    // Place the selected row into edit mode (but hidden),
-                    // then get the values for all fields in the form
-                    var values = editor.edit(
-                            table.row( { selected: true } ).index(),
-                            false
-                        )
-                        .val();
- 
-                    // Create a new entry (discarding the previous edit) and
-                    // set the values from the read values
-                    editor
-                        .create( {
-                            title: 'Duplicate record',
-                            buttons: 'Create from existing'
-                        } )
-                        .set( values );
+    				generate_tables();
                 }
             },        
-        { extend: "remove", editor: editor }
+            {
+                text: 'Save Table Assignments',
+                action: function ( e, dt, node, config ) {
+                	save_tables();
+                }
+            },        
     ] 
 	    
 
@@ -296,10 +235,57 @@ function drawMainTable() {
 
 
 
+function generate_tables() {
+
+	$.ajax({
+      	url: '/generate_tables',
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+            //console.log(data);
+            table.clear().draw();
+            table.rows.add(data).draw();
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+function save_tables() {
+
+	var data = table.rows().data().toArray();
+	
+	data = JSON.stringify(data);
+
+	$.ajax({
+      	url: '/save_tables',
+      	type: 'post',
+      	data: {data: data},
+      	success: function(data) {
+            
+            if (data) {
+            	alert('Error trying to save table assignments: ' + data);
+            } else {
+            	//table.rows().deselect();
+            	table.ajax.reload();
+            	
+            }
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
 
 
 $(document).ready(function() {
-	initMainEditor();
 	drawMainTable();
 
 

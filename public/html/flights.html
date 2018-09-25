@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+    <!-- DataTables RowReorder -->
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.4/css/rowReorder.bootstrap.min.css"/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+    
+  </head>
+
+  <style>
+
+tr.strikeout {
+  text-decoration: line-through;
+}
+
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>                
+                
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Manage Flights</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+
+				  <!-- col-md-6 -->
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                  
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+                      
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Flights<small id="tests-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                      
+                      </div>
+                      <!-- /x_title -->
+                      
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Flight</th>
+                                <th>Category</th>
+                                <th>Sub Category</th>
+                                <th>Number of Entries</th>
+                                <th>Tables</th>
+                                <th>Cat Total</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+                        
+                      </div>
+                      <!-- /x_content -->  
+
+                      
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-6 -->
+
+
+
+ 
+ 
+ 				  <!-- col-md-6 -->
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+                  
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+                      
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Sessions and Tables<small id="tests-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                      
+                      </div>
+                      <!-- /x_title -->
+                      
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+
+<!-- Modal -->
+<div id="myMODAL" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Remove Table From Style</h4>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button id="cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button id="remove" type="button" class="btn btn-default" data-dismiss="modal">Remove</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="sessions" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th>Table Name</th>
+                                <th>Session</th>
+                                <th>Head Judge</th>
+                                <th>Second Judge</th>
+                                <th>Number Beers</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+                        
+                      </div>
+                      <!-- /x_content -->  
+
+                      
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-6 -->
+
+
+              </div>
+            </div>
+            <!-- /row -->
+
+
+
+           
+            
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+    <!-- DataTables RowReorder -->
+	<script type="text/javascript" src="https://cdn.datatables.net/rowreorder/1.2.4/js/dataTables.rowReorder.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Quill -->
+    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+
+var table;
+var sessions_table;
+
+
+var table_beer_count = {};
+
+var judge_entries = [];
+var judge_dislikes = [];
+var judge_likes = [];
+
+
+function drawMainTable() {
+	table = $('#main-table').DataTable({
+		ajax: {
+			url: 'dt_flights',
+			dataSrc: function (data) {
+				for (var i=0; i<data.data.length; i++) {
+					data.data[i].tables = JSON.parse(data.data[i].tables);
+				}
+				return data.data;
+			}
+		},
+		dom: 'Bt',
+		paging: false,
+		scrollY: 1500,
+	    select: {
+    	    style: "single",
+        	selector: "td:last-child"
+   		},
+   		order: [[1, 'asc'], [2, 'asc']],
+		columns: [
+	        {
+	        	data: 'number',
+	        },
+	        {
+	        	data: 'category',
+	        	visible: false
+	        },
+	        {
+	        	data: 'style',
+	        },
+	        {
+	        	data: 'count',
+	        },
+	        {
+	        	data: 'tables',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			if (row.judged == 1) {
+	        				return 'Judged'
+	        			}
+	        			table_num = '';
+	        			if (data.sort()) {
+	        				for (var i=0; i<data.length; i++) {
+	        					var element = data[i];
+	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
+	        			 		table_num = table_num + temp;	
+	        				}
+	        			} else {
+	        				table_num = '';
+	        			}
+	        			return  table_num;
+	        		}
+	        		return data;
+	        	}	        	
+	        },
+	        {
+	        	data: 'cat_total',
+	        	defaultContent: 0,
+	        	visible: false
+	        },
+	    ],
+	    rowGroup: {
+	    	dataSrc: 'category',
+            startRender: function ( rows, group ) {
+
+            	var sum = rows
+                    .data()
+                    .pluck('count')
+                    .reduce( function (a, b) {
+                    return a + b;
+                	}, 0 );
+				
+            	var num_tables = rows
+                    .data()
+                    .pluck('tables')
+                    .reduce( function (a, b) {
+                    
+                    return a + (b ? b.length : 0);
+                	}, 0 );
+                	
+                	
+                var avg_beers = 0;
+                
+                if (rows[0].length > 0) {
+                	avg_beers = num_tables / rows[0].length;
+                }
+                
+                if (avg_beers) {
+                	avg_beers = (sum / avg_beers).toFixed(1);
+                }
+                
+				return $('<tr/>')
+                    .append( '<td colspan="2	">' + group + '</td>' )
+                    .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
+                    .append( '<td>' + avg_beers + '</td>' );
+         	}       
+	    },
+	    rowCallback: function (row, data) {
+	    	//console.log(judge_entries);
+	    	//console.log(judge_likes);
+	    	//console.log(judge_dislikes);
+	    	
+	    	//$(row).data(data);
+	    	
+	    	if (data.judged == 1) {
+				$(row).addClass('strikeout');
+	    	
+	    	} else if (judge_entries.indexOf(data.category_id.toString()) > -1) {
+				$(row).css('color', 'Red');
+				$(row).attr('title', 'Entry');
+			} else if (judge_dislikes.indexOf(data.category_id.toString()) > -1){
+				$(row).css('color', 'Red');
+				$(row).attr('title', 'Dislikes');
+			} else if (judge_likes.indexOf(data.category_id.toString()) > -1){
+				$(row).css('color', 'Green');
+				$(row).attr('title', 'Likes');
+			} else {
+				$(row).css('color', '');
+				$(row).attr('title');
+			}
+	    },
+    	columnDefs: [
+      		{
+      			targets: ['_all'],
+      			orderable: false
+      		}
+
+    	],
+    	drawCallback: function( settings ) {
+        	var api = this.api();
+        	var category_totals = {};
+ 
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			
+    			if (!category_totals[data.category_id]) {
+    				category_totals[data.category_id] = 0;
+    			}
+    			category_totals[data.category_id] = category_totals[data.category_id] + data.count;
+			} ); 			
+
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			
+    			data.cat_total = category_totals[data.category_id];
+    			this.data(data);
+			} ); 			
+
+
+        },
+	    buttons: [
+            {
+                text: 'Initialize Flights',
+                action: function ( e, dt, node, config ) {
+    	
+    				init_flights(true);
+    	
+
+                }
+            },        
+            {
+                text: 'Use Registered Count',
+                action: function ( e, dt, node, config ) {
+    	
+    				get_styles_count(true);
+    	
+
+                }
+            },        
+            {
+                text: 'Use Inventory Count',
+                action: function ( e, dt, node, config ) {
+                
+					get_styles_count(false);
+					
+                }
+            },        
+            {
+                text: 'Save Flights',
+                action: function ( e, dt, node, config ) {
+                	save_flights();
+                }
+            },        
+            {
+                text: 'Order by Category',
+                action: function ( e, dt, node, config ) {
+                	table.order([[1, 'asc'], [2, 'asc']]).draw(false);
+                }
+            },        
+            {
+                text: 'Order by Cat Totals',
+                action: function ( e, dt, node, config ) {
+                	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw(false);
+                }
+            },        
+            {
+                text: 'Refresh Flights Data',
+                action: function ( e, dt, node, config ) {
+                	table.draw(false);
+                }
+            },        
+    ] 
+	    
+
+	});
+
+
+}
+
+
+
+function drawSessionsTable() {
+	sessions_table = $('#sessions').DataTable({
+		ajax: 'dt_tables',
+		dom: 't',
+		rowId: 'pkid',
+		paging: false,
+   		order: [[2, 'asc']],
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	defaultContent: '',
+	        	visible: false
+	        },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'session_name',
+	        	visible: false
+	        },
+	        {
+	        	data: 'head_judge',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
+	        			}
+	        			
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;	
+	        		}
+	        		return data;
+	        	}
+	        },
+	        {
+	        	data: 'second_judge',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
+	        			}
+	        			
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;
+	        		}
+	        		return data;
+	        	}
+	        },
+	        {
+	        	data: 'total',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.toFixed(1)
+	        		}
+	        		return data;
+	        	}
+	        },
+	    ],
+	    rowCallback: function (row, data, displayNum, displayIndex, dataIndex ) {
+	    	var api = this.api();
+	    	var total = table_beer_count[data.name];
+	    	
+	    	//console.log(table_beer_count);	
+	    	if (typeof total != 'undefined') {
+	    		data.total = total;
+	    		api.row(dataIndex).data(data);
+	    		
+	    	}
+	    	if (data.name === 'Table 1') {
+	    	//console.log(total)
+	    	//console.log(data)
+	    	}
+	    },
+	    initComplete: function () {
+	    	var api = this.api();
+	    	
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			table_beer_count[data.name] = 0;
+			} );	    	
+	    	
+	    },
+	    rowGroup: {
+	    	dataSrc: 'session_name',
+            startRender: function ( rows, group ) {
+                return group +' ('+rows.count()+' Tables)';
+            },
+            startRender: function ( rows, group ) {
+            	var sum = rows
+                    .data()
+                    .pluck('total')
+                    .reduce( function (a, b) {
+                    return a + b;
+                	}, 0 );
+                    
+				return $('<tr/>')
+                    .append( '<td colspan="3">' + group +' ('+rows.count()+' Tables)</td>' )
+                    .append( '<td>Total: ' + sum.toFixed(0) + '</td>' )
+                    .append( '<td></td>' );
+         	}       
+	    },
+	    buttons: [
+            {
+                text: 'Generate Table Assignments',
+                action: function ( e, dt, node, config ) {
+    				generate_tables();
+                }
+            },        
+            {
+                text: 'Save Table Assignments',
+                action: function ( e, dt, node, config ) {
+                	save_tables();
+                }
+            },        
+    ] 
+	    
+
+	});
+
+
+}
+
+
+
+function init_flights() {
+
+	$.ajax({
+      	url: "/init_flights",
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+        	//console.log(data);
+            
+            table.clear().draw();
+			table.rows.add(data.data).draw();            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+
+function save_flights() {
+
+	var data = table.rows().data().toArray();
+	$.ajax({
+      	url: "/save_flights",
+      	type: 'post',
+      	data: {data: JSON.stringify(data)},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            //console.log(data);
+            
+            if (data.error && data.error.length > 0) {
+            	console.log('Error trying to save judge pairs: ' + data.error);
+            }
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+function get_styles_count(full_inventory=true) {
+
+	$.ajax({
+      	url: "/get_styles_count",
+      	type: 'post',
+      	data: {data: full_inventory},
+      	success: function(json) {
+            var styles_count = JSON.parse(json);
+            
+            styles_count = styles_count.data;
+            
+            //reset table_beer_count counters
+			for (var key in table_beer_count) {
+   				if (table_beer_count.hasOwnProperty(key)) {
+      				table_beer_count[key] = 0;
+   				}
+			}
+			
+            //iterate each row to get category counts and display them in the flights table and judges tables
+			table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+   			 	var data = this.data();
+   			 	//console.log(data)
+   			 	
+   			 	category = styles_count[data.category_id];
+   			 	
+   			 	if (category) {
+   			 		var count = styles_count[data.category_id][data.sub_category_id];
+   			 		if (typeof count == 'undefined') {
+   			 			count = 0;
+   			 		}
+   			 	} else {
+   			 		count = 0;
+   			 	}
+   			 	
+   			 	
+   			 	if (count) {
+   			 		data.count = count;
+   			 	} else {
+   			 		data.count = 0;
+   			 	}
+   			 	
+   			 	
+   			 	//console.log(data.tables, count)
+
+				//update table beer counter with newly loaded data
+   			 	for (var i=0; i<data.tables.length; i++) {
+   			 		table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + count / data.tables.length;
+   			 	}
+   			 	//console.log(table_beer_count[data.tables[i]]);
+   			 	//console.log(table_beer_count);
+    			//save the number of entries counter to the flights table
+    			this.data(data);
+			} );    
+			
+			table.draw(false);        
+			sessions_table.draw(false);
+            
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+
+$(document).ready(function() {
+	drawMainTable();
+	
+	drawSessionsTable();
+	
+	sessions_table.on('select', function ( e, dt, type, indexes ) {
+		var data = sessions_table.row( { selected: true } ).data();
+		
+		//get categories of entries a judge has
+		judge_entries = data.head_judge.categories.concat(data.second_judge.categories);
+		
+		var hj = data.head_judge.likes ? data.head_judge.likes.split(',') : [];
+		var sj = data.second_judge.likes ? data.second_judge.likes.split(',') : [];
+		judge_likes = hj.concat(sj);
+
+		var hj = data.head_judge.dislikes ? data.head_judge.dislikes.split(',') : [];
+		var sj = data.second_judge.dislikes ? data.second_judge.dislikes.split(',') : [];
+		judge_dislikes = hj.concat(sj);
+
+		console.log(judge_dislikes)
+		table.draw(false);
+		
+	});
+
+
+	sessions_table.on('deselect', function ( e, dt, type, indexes ) {
+		var data = sessions_table.row( { selected: true } ).data();
+		
+		//reset the judge entries when no judge is selected
+		judge_entries = [];
+		judge_likes = [];
+		judge_dislikes = [];
+		
+		table.draw(false);
+	});
+
+  
+
+	table.on( 'select', function ( e, dt, type, indexes ) {
+    	var sessions = sessions_table.row( { selected: true } ).data();
+    	
+    	var data = table.row( { selected: true } ).data();
+    	
+    	if (sessions) {
+    		// Make sure judge does not have entries in category and 
+    		// make sure table is not already in list - skip if so
+    		if (judge_entries.indexOf(data.category_id.toString()) === -1 &&
+    				judge_dislikes.indexOf(data.category_id.toString()) === -1 && 
+    				data.tables.indexOf(sessions.name) == -1 &&
+    				data.judged != 1
+    				) {
+    	
+    			//remove previous beer count for that style before adding new table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] - num_beers;
+    				//need to find row in session table to update
+    			}
+
+				//add new table to selected row then deselect for visual
+    			data.tables.push(sessions.name);
+    			table.row( { selected: true } ).data(data);
+    			table.rows().deselect();
+
+    			if (!table_beer_count[sessions.name]) {
+    				table_beer_count[sessions.name] = 0;
+    			}
+    			
+    			//recalc beer count for style after adding new table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
+    				//need to find row in session table to update
+    			}
+    		
+				//then remove these 2 lines
+    			//sessions.total = table_beer_count[sessions.name];
+    			//sessions_table.row( { selected: true } ).data(sessions);
+    		
+    			sessions_table.draw(false);
+    			table.draw(false);
+    		} else {
+    			//judge at the table has beers in this category so don't add
+    			table.rows().deselect();
+    		}
+    	} else {
+    		//code to remove table
+    		//maybe an alert with tables to select
+    		
+    		var data = table.row( { selected: true } ).data();
+    		
+    		if (data.tables.length > 0 && data.judged != 1) {
+    			
+
+				$('.modal-body').empty();
+				
+				
+				for (var i=0; i<data.tables.length; i++) {
+					$('<div class="radio"><label><input type="radio" ' +
+					'name="optradio" value="' + data.tables[i] + '">' + data.tables[i] + 
+					'</label></div>').appendTo('.modal-body');
+				}
+    		
+    			$('#myMODAL').modal('show'); 
+    		//no tables in the row
+    		} else {
+    			table.rows().deselect();
+    		}
+
+    	}
+    	
+    	
+	} );
+	
+$('#myMODAL .modal-footer button').on('click', function(event) {
+  var $button = $(event.target); // The clicked button
+
+  $(this).closest('.modal').one('hidden.bs.modal', function() {
+    // Fire if the button element 
+    //console.log('The button that closed the modal is: ', $button.attr('id'));
+    
+    if ($button.attr('id') === 'remove') {
+    
+    	var radioValue = $("input[name='optradio']:checked").val();
+    	console.log(radioValue);
+    	
+    	if (radioValue) {
+    			var data = table.row( { selected: true } ).data();
+    			//remove previous beer count for that style before removing table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				//console.log(data.tables[i]);
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] - num_beers;
+    				//need to find row in session table to update
+    			}
+    			
+    			
+
+
+				//remove table from selected row then deselect for visual
+
+    			index = data.tables.indexOf(radioValue);
+    			
+    			//only remove if radio button value found in array
+    			if (index > -1) {
+    				data.tables.splice(index, 1);
+    				table.row( { selected: true } ).data(data);
+    			}
+
+    			if (!table_beer_count[sessions.name]) {
+    				table_beer_count[sessions.name] = 0;
+    			}
+    			
+    			//recalc beer count for style after removing table
+    			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
+    			for (var i=0; i<data.tables.length; i++) {
+    				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
+    			}
+    		
+    			sessions_table.draw(false);
+    			table.draw(false);
+    			
+    	}
+    }
+    table.rows().deselect();
+  });
+});
+
+
+});
+</script>
+
+</body>
+</html>
+

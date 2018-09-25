@@ -1,3 +1,5 @@
+import json
+
 from Tools import Tools
 from Competitions import DATABASE
 from Competitions import Competitions
@@ -108,7 +110,7 @@ class Sessions:
 
         return result
 
-    def get_session_volunteers(self, session_number, judges=False, stewards=False):
+    def get_session_volunteers(self, session_number, judges=False, stewards=False, all=False):
 
         where = ''
 
@@ -117,8 +119,12 @@ class Sessions:
         elif judges and not stewards:
             where = 'and judge = "1"'
 
-        sql = 'select volunteers.firstname, volunteers.lastname, p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
-                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid ' \
+        if not all:
+            where += ' and active = "1" '
+
+        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
+              'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
+                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid, p.likes, p.dislikes ' \
                 'from volunteers '\
                 'inner join people as p on p.pkid = fk_people ' \
                 'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \
@@ -131,6 +137,57 @@ class Sessions:
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
         return result
+
+
+    def save_session_pairs(self, session_pairs):
+
+        result = False
+
+        fk_sessions = session_pairs.get('fk_sessions', 0)
+
+        if fk_sessions:
+
+            data = {}
+
+            data['judges'] = escape_sql(json.dumps(session_pairs.get('judges', '')))
+            data['head_judge'] = escape_sql(json.dumps(session_pairs.get('hj_judges', '')))
+            data['second_judge'] = escape_sql(json.dumps(session_pairs.get('sj_judges', '')))
+
+            print('session pairs', data)
+
+            sql = 'insert ignore into judge_pairing (fk_sessions, judges, head_judge, second_judge) values ' \
+            ' ("{}", "", "", "") '.format(fk_sessions)
+            db.db_command(sql=sql)
+
+            result = False if db.sql_error else True
+
+            if result:
+                sql = 'update judge_pairing set judges = "{d[judges]}", head_judge = "{d[head_judge]}", ' \
+                      'second_judge = "{d[second_judge]}" where fk_sessions = "{fk_sessions}"'.format(d=data,
+                                                                                                       fk_sessions=fk_sessions
+                                                                                                       )
+                db.db_command(sql=sql)
+
+
+            result = False if db.sql_error else True
+
+        return result
+
+    def get_daily_pkids(self, session_number):
+
+        sql = 'select pkid from sessions where day = ' \
+              '(select day from sessions ' \
+              'where pkid = "{}" and fk_competitions = "{}")'.format(session_number, Competitions().get_active_competition())
+        print(sql)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        session_list = []
+
+        for r in result:
+            session_list.append(r['pkid'])
+
+        return session_list
 
 
 def get_session_mapping():

@@ -63,7 +63,7 @@ class Flights:
 
         BJCP_MULTIPLIER = 2  #because BJCP judges are just better ;-)
 
-        result = Sessions().get_session_volunteers(session_number, judges=True)
+        result = self.get_judges_for_session(session_number)
         ranks = Tools().get_cert_rank()
 
         #calculate ranking for all judges in session
@@ -104,7 +104,7 @@ class Flights:
 
             for judge in judges:
                 #get judges don't pair list
-                j_dont_pair = judge['dont_pair'].split(',')
+                j_dont_pair = judge['dont_pair'].split(',') if judge['dont_pair'] else ''
 
                 #if head judge pkid not in judge do not pair with and
                 #judge pkid not in head judge do not pair with then pair the judges
@@ -127,6 +127,45 @@ class Flights:
         return {'pairing': pairing, 'judges': judges}
 
 
+    def get_judges_for_session(self, session_number):
+
+        result = Sessions().get_session_volunteers(session_number, judges=True)
+
+        session_list = Sessions().get_daily_pkids(session_number)
+
+        for r in result:
+
+            count = 0
+            judge_sessions = r['fk_sessions_list'].split(',')
+
+            for s in session_list:
+
+                count += judge_sessions.count(str(s))
+
+            r['total_day'] = count
+            r['total_sessions'] = len(judge_sessions)
+
+        return result
+
+
+    def get_session_pairing(self, session_number):
+
+        sql = 'select * from judge_pairing where fk_sessions = "{}" ' \
+              ''.format(session_number)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
+
+    def get_flights(self):
+
+        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
 
 
 if __name__ == '__main__':

@@ -65,7 +65,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Certification Rankings Editor</h4>
+                <h4 id='main-title'>Flights Health Check</h4>
               </div>
             </div>
             <div class="row">
@@ -73,7 +73,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">Certifications</h2>
+                    <h2 id="table-title">Health</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -99,11 +99,8 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
-                                <th>pkid</th>
-                                <th></th>
                                 <th>Name</th>
-                                <th>Organization</th>
-                                <th>Rank</th>
+                                <th>Status</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -166,129 +163,31 @@
 
 <script>
 
-var editor;
 
 var table;
-var child_table;
-
-function initMainEditor() {
-
-editor = new $.fn.dataTable.Editor(
-{
-    table: "#main-table",
-	ajax: "dt_cert_rank",
-	idSrc: 'pkid',
-    fields: [
-        {
-            name: "pkid",
-            label: "pkid:",
-            type: "hidden"
-        },
-        {
-            name: "name",
-            label: "Name:"
-        },
-        {
-            name: "organization",
-            label: "Organization:",
-        },
-        {
-            name: "rank",
-            label: "Cert Rank:",
-        },
-    ]
-});
-
-    // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child)', function (e) {
-        editor.inline( this, {
-            onBlur: 'submit'
-        } );
-    } );
-
-
-
-    editor
-        .on( 'postCreate postRemove', function () {
-            // After create or edit, a number of other rows might have been effected -
-            // so we need to reload the table, keeping the paging in the current position
-            table.ajax.reload( null, false );
-        } )
-        .on( 'initCreate', function () {
-            // Enable order for create
-            editor.field( 'pkid' ).disable();
-        } )
-        .on( 'initEdit', function () {
-            // Disable for edit (re-ordering is performed by click and drag)
-            editor.field( 'pkid' ).disable();
-        } );
-
-}
-
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_cert_rank',
-		dom: 'Bftir',
+		ajax: 'health_check',
+		dom: 'lftirp',
+		ordering: false,
 		rowId: 'pkid',
 		paging: false,
-		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-	    select: {
-    	    style: "single",
-        	selector: "td:first-child"
-   		},
-   		order: [[3, 'asc'], [4, 'asc']],
 		columns: [
-	        {
-	        	data: 'pkid',
-	        	visible: false
-	        },
-	        {
-    	        data: null,
-        	    defaultContent: "",
-            	className: "select-checkbox",
-	            orderable: false
-    	    },
 	        {
 	        	data: 'name',
 	        },
 	        {
-	        	data: 'organization',
+	        	data: 'status',
 	        },
-	        {
-	        	data: 'rank',
-	        },
-
-	    ],
-	    buttons: [
-        { extend: "create", editor: editor },
-        { extend: "edit",   editor: editor },
-            {
-                extend: "selectedSingle",
-                text: 'Duplicate',
-                action: function ( e, dt, node, config ) {
-                    // Place the selected row into edit mode (but hidden),
-                    // then get the values for all fields in the form
-                    var values = editor.edit(
-                            table.row( { selected: true } ).index(),
-                            false
-                        )
-                        .val();
- 
-                    // Create a new entry (discarding the previous edit) and
-                    // set the values from the read values
-                    editor
-                        .create( {
-                            title: 'Duplicate record',
-                            buttons: 'Create from existing'
-                        } )
-                        .set( values );
-                }
-            },        
-        { extend: "remove", editor: editor }
-    ] 
-	    
-
+		],
+		rowCallback: function (row, data) {
+			if (data.code == 'red') {
+				$(row).css('color', 'Red')
+			} else if (data.code == 'yellow') {
+				$(row).css('color', 'Orange')
+			}
+		}
 	});
 
 
@@ -299,7 +198,6 @@ function drawMainTable() {
 
 
 $(document).ready(function() {
-	initMainEditor();
 	drawMainTable();
 
 
