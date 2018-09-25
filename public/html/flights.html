@@ -342,10 +342,30 @@ function drawMainTable() {
                     .reduce( function (a, b) {
                     return a + b;
                 	}, 0 );
+				
+            	var num_tables = rows
+                    .data()
+                    .pluck('tables')
+                    .reduce( function (a, b) {
+                    
+                    return a + (b ? b.length : 0);
+                	}, 0 );
+                	
+                	
+                var avg_beers = 0;
+                
+                if (rows[0].length > 0) {
+                	avg_beers = num_tables / rows[0].length;
+                }
+                
+                if (avg_beers) {
+                	avg_beers = (sum / avg_beers).toFixed(1);
+                }
                 
 				return $('<tr/>')
                     .append( '<td colspan="2	">' + group + '</td>' )
-                    .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
+                    .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
+                    .append( '<td>' + avg_beers + '</td>' );
          	}       
 	    },
 	    rowCallback: function (row, data) {
@@ -437,13 +457,19 @@ function drawMainTable() {
             {
                 text: 'Order by Category',
                 action: function ( e, dt, node, config ) {
-                	table.order([[1, 'asc'], [2, 'asc']]).draw();
+                	table.order([[1, 'asc'], [2, 'asc']]).draw(false);
                 }
             },        
             {
                 text: 'Order by Cat Totals',
                 action: function ( e, dt, node, config ) {
-                	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw();
+                	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw(false);
+                }
+            },        
+            {
+                text: 'Refresh Flights Data',
+                action: function ( e, dt, node, config ) {
+                	table.draw(false);
                 }
             },        
     ] 
@@ -559,7 +585,8 @@ function drawSessionsTable() {
                     
 				return $('<tr/>')
                     .append( '<td colspan="3">' + group +' ('+rows.count()+' Tables)</td>' )
-                    .append( '<td>Total: ' + sum.toFixed(0) + '</td>' );
+                    .append( '<td>Total: ' + sum.toFixed(0) + '</td>' )
+                    .append( '<td></td>' );
          	}       
 	    },
 	    buttons: [
