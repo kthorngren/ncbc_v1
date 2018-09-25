@@ -284,7 +284,7 @@ function drawMainTable() {
 		},
 		dom: 'Bt',
 		paging: false,
-		scrollY: 1000,
+		scrollY: 1500,
 	    select: {
     	    style: "single",
         	selector: "td:last-child"
@@ -544,6 +544,12 @@ function drawSessionsTable() {
 	        },
 	        {
 	        	data: 'total',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.toFixed(1)
+	        		}
+	        		return data;
+	        	}
 	        },
 	    ],
 	    rowCallback: function (row, data, displayNum, displayIndex, dataIndex ) {
@@ -809,6 +815,7 @@ $(document).ready(function() {
     			//sessions_table.row( { selected: true } ).data(sessions);
     		
     			sessions_table.draw(false);
+    			table.draw(false);
     		} else {
     			//judge at the table has beers in this category so don't add
     			table.rows().deselect();
@@ -888,6 +895,7 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
     			}
     		
     			sessions_table.draw(false);
+    			table.draw(false);
     			
     	}
     }
