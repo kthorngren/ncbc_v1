@@ -1931,11 +1931,11 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=1)
+    process_new_entries(pkid=1)
 
-    #process_new_volunteers(pkid=3)
+    process_new_volunteers(pkid=3)
 
-    validate_ncbc(pkid=1)
+    #validate_ncbc(pkid=1)
 
     #process_import_volunteers(pkid=3)
 
