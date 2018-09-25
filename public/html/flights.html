@@ -108,6 +108,7 @@ tr.strikeout {
                                 <th>Sub Category</th>
                                 <th>Number of Entries</th>
                                 <th>Tables</th>
+                                <th>Cat Total</th>
                               </tr>
                             </thead>
                           </table>
@@ -325,17 +326,23 @@ function drawMainTable() {
 	        		return data;
 	        	}	        	
 	        },
+	        {
+	        	data: 'cat_total',
+	        	defaultContent: 0,
+	        	visible: false
+	        },
 	    ],
 	    rowGroup: {
 	    	dataSrc: 'category',
             startRender: function ( rows, group ) {
+
             	var sum = rows
                     .data()
                     .pluck('count')
                     .reduce( function (a, b) {
                     return a + b;
                 	}, 0 );
-                    
+                
 				return $('<tr/>')
                     .append( '<td colspan="2	">' + group + '</td>' )
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' );
@@ -345,6 +352,9 @@ function drawMainTable() {
 	    	//console.log(judge_entries);
 	    	//console.log(judge_likes);
 	    	//console.log(judge_dislikes);
+	    	
+	    	//$(row).data(data);
+	    	
 	    	if (data.judged == 1) {
 				$(row).addClass('strikeout');
 	    	
@@ -369,6 +379,28 @@ function drawMainTable() {
       		}
 
     	],
+    	drawCallback: function( settings ) {
+        	var api = this.api();
+        	var category_totals = {};
+ 
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			
+    			if (!category_totals[data.category_id]) {
+    				category_totals[data.category_id] = 0;
+    			}
+    			category_totals[data.category_id] = category_totals[data.category_id] + data.count;
+			} ); 			
+
+			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    			var data = this.data();
+    			
+    			data.cat_total = category_totals[data.category_id];
+    			this.data(data);
+			} ); 			
+
+
+        },
 	    buttons: [
             {
                 text: 'Initialize Flights',
@@ -400,6 +432,18 @@ function drawMainTable() {
                 text: 'Save Flights',
                 action: function ( e, dt, node, config ) {
                 	save_flights();
+                }
+            },        
+            {
+                text: 'Order by Category',
+                action: function ( e, dt, node, config ) {
+                	table.order([[1, 'asc'], [2, 'asc']]).draw();
+                }
+            },        
+            {
+                text: 'Order by Cat Totals',
+                action: function ( e, dt, node, config ) {
+                	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw();
                 }
             },        
     ] 
@@ -480,7 +524,7 @@ function drawSessionsTable() {
 	    	var api = this.api();
 	    	var total = table_beer_count[data.name];
 	    	
-	    	
+	    	//console.log(table_beer_count);	
 	    	if (typeof total != 'undefined') {
 	    		data.total = total;
 	    		api.row(dataIndex).data(data);
@@ -615,6 +659,9 @@ function get_styles_count(full_inventory=true) {
    			 	
    			 	if (category) {
    			 		var count = styles_count[data.category_id][data.sub_category_id];
+   			 		if (typeof count == 'undefined') {
+   			 			count = 0;
+   			 		}
    			 	} else {
    			 		count = 0;
    			 	}
@@ -625,18 +672,22 @@ function get_styles_count(full_inventory=true) {
    			 	} else {
    			 		data.count = 0;
    			 	}
+   			 	
+   			 	
+   			 	//console.log(data.tables, count)
 
 				//update table beer counter with newly loaded data
    			 	for (var i=0; i<data.tables.length; i++) {
-   			 		table_beer_count[data.tables[i]] = count / data.tables.length;
+   			 		table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + count / data.tables.length;
    			 	}
-   			 	
+   			 	//console.log(table_beer_count[data.tables[i]]);
+   			 	//console.log(table_beer_count);
     			//save the number of entries counter to the flights table
     			this.data(data);
 			} );    
 			
-			table.draw();        
-			sessions_table.draw();
+			table.draw(false);        
+			sessions_table.draw(false);
             
         },
 
@@ -730,7 +781,7 @@ $(document).ready(function() {
     			//sessions.total = table_beer_count[sessions.name];
     			//sessions_table.row( { selected: true } ).data(sessions);
     		
-    			sessions_table.draw();
+    			sessions_table.draw(false);
     		} else {
     			//judge at the table has beers in this category so don't add
     			table.rows().deselect();
@@ -809,7 +860,7 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
     				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
     			}
     		
-    			sessions_table.draw();
+    			sessions_table.draw(false);
     			
     	}
     }
