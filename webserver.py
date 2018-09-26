@@ -1490,6 +1490,111 @@ class Website:
 
         return result
 
+    @cherrypy.expose
+    def send_volunteer_email(self, **kwargs):
+
+        print(kwargs)
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        print(email_params)
+
+        email_test = email_params.get('to', '')
+
+        result = Volunteers().get_volunteers()
+
+
+        errors = []
+        email_counter = 0
+
+        e = Email('files/kevin.json')
+
+        for r in result:
+            if r['email'] in ('acleme1709@gmail.com', 'Bill_dubas@hotmail.com', 'byer.david@gmail.com',
+                              'catherinepearce15@gmail.com', 'cbowling42@gmail.com'):
+                continue
+
+            if not email_test or email_test == r['email']:
+                print('Processing', r['email'], r['firstname'])
+
+
+                email_params['firstname'] = r['firstname'].title()
+
+                email_params['to'] = r['email']
+
+                filename = email_params.get('filename', '')
+                #print(filename)
+
+                if filename:
+                    if type(filename) != type([]):
+                        filename = [filename]
+
+                    email_params['file_list'] = [x.format(d=r) for x in filename]
+
+                    email_params['file_path'] = 'files/volunteers/'
+
+                    print(email_params['file_list'])
+
+                sessions = Sessions().get_fk_sessions(r['fk_sessions_list'])
+
+                vol_types = []
+                comments = ''
+
+
+                table = '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                         '<thead>' \
+                         '<tr>' \
+                         '<th>Session</th>' \
+                         '<th>Start</th>' \
+                         '<th>End</th>' \
+                         '<th>Comments</th>' \
+                         '</tr>' \
+                         '</thead>' \
+                         '<tbody>'
+
+                for session in sessions:
+
+                    if session['setup'] == 1:
+                        if 'Setup' not in vol_types:
+                            vol_types.append('Setup')
+                        comments = ''
+                    elif 'AM' in session['name']:
+                        comments = 'Light breakfast'
+                    elif 'PM' in session['name']:
+                        comments = 'Lunch'
+
+                    session['session_start'] = session['session_start'].strftime('%m-%d-%Y %H:%M:%S')
+                    session['session_end'] = session['session_end'].strftime('%m-%d-%Y %H:%M:%S')
+
+                    table += '<tr>' \
+                        '<td>{d[name]}</td>' \
+                        '<td>{d[session_start]}</td>' \
+                        '<td>{d[session_end]}</td>' \
+                        '<td>{comments}</td>' \
+                        '</tr>'.format(d=session, comments=comments)
+
+                vol_types.append('Judge' if r['judge'] == 1 else 'Steward')
+
+                table += '</tbody>' \
+                         '</table>'
+
+                table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
+
+                email_params['table'] = table
+
+                message = email_params.get('message', '')
+
+                email_params['msg'] = email_params.get('message', '').format(d=email_params)
+
+                #print('send status', email_params)
+
+                #result = 'fdsd'
+                result = self.send_email(**{'data': json.dumps(email_params)})
+
+        return result
+
 
 
 
@@ -1546,6 +1651,10 @@ class Website:
         file_path = email_params.get('file_path', '')
         file_list = email_params.get('file_list', [])
 
+        if file_path and file_list:
+            send_files = True
+        else:
+            send_files = False
 
 
         #send email if all the fields are populated and the file attachment fields are populated if email_type is file
@@ -1554,23 +1663,14 @@ class Website:
 
             message = None
 
-            if content_type == 'html':
-                message = email.create_html_message(sender=sender,
-                                            to=to,
-                                            bcc=bcc,
-                                            cc=cc,
-                                            subject=subject,
-                                            message_text=msg,
-                                            )
-            elif content_type == 'text':
-                message = email.create_message(sender=sender,
-                                            to=to,
-                                            bcc=bcc,
-                                            cc=cc,
-                                            subject=subject,
-                                            message_text=msg,
-                                            )
-            elif content_type == 'file':
+            for f in file_list:
+                if not os.path.isfile('{}{}'.format(file_path,f)):
+                    send_files = False
+
+
+            if send_files:
+                subject = subject + ' - Hotel Conf Attached'
+                print('sending')
                 message = email.create_message_with_attachment(sender=sender,
                                             to=to,
                                             bcc=bcc,
@@ -1578,8 +1678,30 @@ class Website:
                                             subject=subject,
                                             message_text=msg,
                                             file_dir=file_path,
-                                            filename=file_list
+                                            filename=file_list,
+                                            content_type='html' if content_type == 'html' else ''
                                             )
+                if not message:
+                    errors.append('Unable to attach file, failing over to plain email')
+
+
+            if not message:
+                if content_type == 'html':
+                    message = email.create_html_message(sender=sender,
+                                                to=to,
+                                                bcc=bcc,
+                                                cc=cc,
+                                                subject=subject,
+                                                message_text=msg,
+                                                )
+                elif content_type == 'text':
+                    message = email.create_message(sender=sender,
+                                                to=to,
+                                                bcc=bcc,
+                                                cc=cc,
+                                                subject=subject,
+                                                message_text=msg,
+                                                )
 
             if message:
                 result = email.send_message(message, rcpt=to + cc + bcc)

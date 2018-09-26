@@ -146,7 +146,7 @@ class Email:
         message['subject'] = subject
         return message
 
-    def create_message_with_attachment(self, sender='', to='', cc='', bcc='', subject='', message_text='', file_dir='', filename=''):
+    def create_message_with_attachment(self, sender='', to='', cc='', bcc='', subject='', message_text='', file_dir='', filename='', content_type=''):
         """Create a message with attachment for an email.
 
         Args:
@@ -175,8 +175,10 @@ class Email:
         message['subject'] = subject
 
 
-
-        msg = MIMEText(message_text)
+        if content_type == 'html':
+            msg = MIMEText(message_text, 'html')
+        else:
+            msg = MIMEText(message_text)
         message.attach(msg)
 
 
@@ -192,27 +194,31 @@ class Email:
             main_type, sub_type = content_type.split('/', 1)
 
 
-            if main_type == 'text':
-                fp = open(path, 'rb')
-                msg = MIMEText(fp.read(), _subtype=sub_type)
-                fp.close()
-            elif main_type == 'image':
-                fp = open(path, 'rb')
-                msg = MIMEImage(fp.read(), _subtype=sub_type)
-                fp.close()
-            elif main_type == 'audio':
-                fp = open(path, 'rb')
-                msg = MIMEAudio(fp.read(), _subtype=sub_type)
-                fp.close()
-            elif main_type == 'application':
-                fp = open(path, 'rb')
-                msg = MIMEApplication(fp.read(), _subtype=sub_type)
-                fp.close()
-            else:
-                fp = open(path, 'rb')
-                msg = MIMEBase(main_type, sub_type)
-                msg.set_payload(fp.read())
-                fp.close()
+            try:
+                if main_type == 'text':
+                    fp = open(path, 'rb')
+                    msg = MIMEText(fp.read(), _subtype=sub_type)
+                    fp.close()
+                elif main_type == 'image':
+                    fp = open(path, 'rb')
+                    msg = MIMEImage(fp.read(), _subtype=sub_type)
+                    fp.close()
+                elif main_type == 'audio':
+                    fp = open(path, 'rb')
+                    msg = MIMEAudio(fp.read(), _subtype=sub_type)
+                    fp.close()
+                elif main_type == 'application':
+                    fp = open(path, 'rb')
+                    msg = MIMEApplication(fp.read(), _subtype=sub_type)
+                    fp.close()
+                else:
+                    fp = open(path, 'rb')
+                    msg = MIMEBase(main_type, sub_type)
+                    msg.set_payload(fp.read())
+                    fp.close()
+            except Exception as e:
+                logger.error('Error attaching files; {}'.format(e))
+                return ''
 
             msg.add_header('Content-Disposition', 'attachment', filename=file)
             message.attach(msg)

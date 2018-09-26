@@ -277,7 +277,44 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+            {
+                extend: "selectedSingle",
+                text: 'Send Test Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					data.to = 'kevin.thorngren@gmail.com'
+					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
+					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					//data.cc = ['kevin.thorngren@gmail.com']
+					
+					
+					
+					sendEmail(data);
+					//sendEmail(data);
+				}
+            },        
+             {
+                extend: "selectedSingle",
+                text: 'Send Volunteer Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					//data.to = 'kevin.thorngren@gmail.com'
+					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					//data.cc = ['kevin.thorngren@gmail.com']
+					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
+					
+					sendEmail(data);
+					//sendEmail(data);
+				}
+            },        
+ 
     ] 
 
 	});
@@ -285,6 +322,25 @@ function drawMainTable() {
 }
 
 
+
+function sendEmail(data) {
+	data = JSON.stringify(data);
+	$.ajax({
+		url: "/send_volunteer_email",
+		type: 'post',
+		data: {data: data},
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			console.log(response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}
 
 
 
