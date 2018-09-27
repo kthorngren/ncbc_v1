@@ -851,11 +851,11 @@ class Ncbc:
         #desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"'))
         desc = json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"')
 
-        #print(desc)
 
         temp[self.entry_fields['Entry Notes']] = desc
 
-        values = [temp[v].strip() for k, v in self.entry_fields.items()]
+
+        values = [escape_sql(temp[v].strip()) for k, v in self.entry_fields.items()]
 
         entry_id = self.generate_entry_id()
 

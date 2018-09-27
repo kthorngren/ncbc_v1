@@ -98,7 +98,7 @@ class Entrys:
 
         for k, v in record.items():
             fields.append(str(k))
-            values.append(str(v))
+            values.append(escape_sql(str(v)))
 
         sql = 'insert into entries ({}, updated) values ("{}", NOW())'.format(','.join(fields), '","'.join(values))
         db.db_command(sql=sql)
