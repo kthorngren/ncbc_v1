@@ -270,6 +270,11 @@ class Entrys:
 
         return category_list
 
+
+    def get_entries_by_category(self, all=False):
+
+        pass
+
 def test_add_inventory():
     print(Entrys().inventory_status())
     print(Entrys().add_inventory(2))

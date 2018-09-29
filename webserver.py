@@ -19,6 +19,7 @@ from Volunteers import Volunteers
 from Flights import Flights
 from Sessions import Sessions
 from Entrys import Entrys
+from Reports import Reports
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -627,6 +628,88 @@ class Website:
             r['cat'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
 
         return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    # Check in entries by brewer
+    #
+    ######################
+    @cherrypy.expose
+    def entry_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='entry_report.html')
+        return form
+
+    @cherrypy.expose
+    def cellar_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='cellar_report.html')
+        return form
+
+
+    @cherrypy.expose
+    def dt_entries(self, *args, **kwargs):
+        entries = []
+        sql = 'select *, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        for r in result:
+            entries.append(
+                {
+                    'pkid': r['pkid'],
+                    'category_name': '{}{} {}'.format(r['category'], r['sub_category'], Style('BJCP2015').get_style_name(r['category'], r['sub_category'])),
+                    'entry_id': r['entry_id'],
+                    'name': r['name'],
+                    'location_0': r['location_0'],
+                    'location_1': r['location_1'],
+                    'inventory': r['inventory'],
+                    'judged': r['judged'],
+                    'place': r['place'],
+                    'bos': r['bos'],
+                    'bos_place': r['bos_place'],
+                    'organization': r['organization'],
+                    'category': r['category'],
+                    'sub_category': r['sub_category'],
+                    'one_bottle': r['one_bottle'],
+                    'comments': r['comments']
+                }
+            )
+
+
+
+        return json.dumps({'data': entries}, cls=DatetimeEncoder)
+
+
+
+
+    @cherrypy.expose
+    def flight_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flight_report.html')
+        return form
+
+
+    @cherrypy.expose
+    def dt_flight_report(self, *args, **kwargs):
+
+        sql = 'select * from sessions ' \
+              'where (judging = "1" or bos="1") and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
+
+
+
 
 
     ######################
@@ -1367,6 +1450,18 @@ class Website:
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
+
+    @cherrypy.expose
+    def generate_flights(self, *args, **kwargs):
+
+        result = {}
+        category = kwargs.get('data', 0)
+
+
+
+        result = Reports().flight_pull_sheets(category)
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
     ######################
     #

@@ -116,6 +116,8 @@ tr.strikeout {
                               </tr>
                             </thead>
                           </table>
+
+
                         </div>
                         
                       </div>
@@ -161,6 +163,18 @@ tr.strikeout {
 
 					  <!-- x_content -->
                       <div class="x_content panel-body">
+
+
+                          <table id="flight-sheet" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                          </table>
 
 
 <!-- Modal -->
@@ -268,7 +282,7 @@ tr.strikeout {
 
 var table;
 var sessions_table;
-
+var sheets_table;
 
 var table_beer_count = {};
 
@@ -290,7 +304,7 @@ function drawMainTable() {
 		},
 		dom: 'Bt',
 		paging: false,
-		scrollY: 1500,
+		//scrollY: 1500,
 	    select: {
     	    style: "single",
         	selector: "td:last-child"
@@ -601,25 +615,86 @@ function drawSessionsTable() {
                     .append( '<td></td>' );
          	}       
 	    },
-	    buttons: [
-            {
-                text: 'Generate Table Assignments',
-                action: function ( e, dt, node, config ) {
-    				generate_tables();
-                }
-            },        
-            {
-                text: 'Save Table Assignments',
-                action: function ( e, dt, node, config ) {
-                	save_tables();
-                }
-            },        
-    ] 
 	    
 
 	});
 
 
+}
+
+
+
+function drawFlightSheetTable() {
+	sheets_table = $('#flight-sheet').DataTable({
+		dom: 'Bt',
+		paging: false,
+		ordering: false,
+   		//order: [[0, 'asc']],
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
+   		columnDefs: [
+   			{
+   				targets: 0,
+   				visible: false
+   			}
+   		],
+        buttons: [ {
+            extend: 'excelHtml5',
+            text: 'Flight Sheet',
+            title: '',
+            exportOptions: {
+                columns: [ 1, 2, 3],
+            }
+        } ]	    
+
+	});
+
+
+}
+
+
+
+function generate_flights(data) {
+
+	$.ajax({
+      	url: "/generate_flights",
+      	type: 'post',
+      	data: {data: data},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            
+            data = data.data;
+        	//console.log(data);
+        	
+        	sheets_table.clear().draw();
+            
+            for (table in data) {
+            	//console.log('table', data[table].category_name);
+            	sheets_table.row.add([table, table, '', data[table].category_name]);
+            	sheets_table.row.add([table, 'Head Judge', '', data[table].head_judge]);
+            	sheets_table.row.add([table, 'Judge', '', data[table].second_judge]);
+            	sheets_table.row.add([table, ' ', ' ', ' ']);
+            	
+            	var beers = data[table].beers;
+            	console.log(beers);
+            	for (i=0; i<beers.length; i++) {
+            		sheets_table.row.add([table, '', beers[i].entry_id, beers[i].category + beers[i].sub_category + ' ' + beers[i].style_name])
+            		if (beers[i].is_specialty == 1) {
+            			sheets_table.row.add([table, '', '', beers[i].description]);
+            		}
+            	}
+            	sheets_table.row.add([table, '', '', '']);
+            }
+            
+            sheets_table.draw();
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
 }
 
 
@@ -743,6 +818,7 @@ $(document).ready(function() {
 	drawMainTable();
 	
 	drawSessionsTable();
+	drawFlightSheetTable();
 	
 	sessions_table.on('select', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
@@ -909,6 +985,18 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
   });
 });
 
+
+$('#main-table').on('click', '.group', function() {
+
+	var row = $(this).closest('tr');
+	
+	var cat_number = row.text().split(' ')[0];
+	console.log('click', parseInt(cat_number))
+	
+	generate_flights(parseInt(cat_number));
+	
+	
+}) 
 
 });
 </script>
