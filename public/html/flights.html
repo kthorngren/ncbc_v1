@@ -664,7 +664,7 @@ function generate_flights(data) {
       	data: {data: data},
       	success: function(json) {
             var data = JSON.parse(json);
-            
+            console.log('generate_flights success')
             data = data.data;
         	//console.log(data);
         	
@@ -676,9 +676,10 @@ function generate_flights(data) {
             	sheets_table.row.add([table, 'Head Judge', '', data[table].head_judge]);
             	sheets_table.row.add([table, 'Judge', '', data[table].second_judge]);
             	sheets_table.row.add([table, ' ', ' ', ' ']);
+            	sheets_table.row.add([table, 'Check Off', ' ', ' ']);
             	
             	var beers = data[table].beers;
-            	console.log(beers);
+            	//console.log(beers);
             	for (i=0; i<beers.length; i++) {
             		sheets_table.row.add([table, '', beers[i].entry_id, beers[i].category + beers[i].sub_category + ' ' + beers[i].style_name])
             		if (beers[i].is_specialty == 1) {
@@ -692,6 +693,7 @@ function generate_flights(data) {
         },
 
       	error: function (jqXHR, exception) {
+            console.log('generate_flights error')
       		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
       	},
     });

@@ -80,7 +80,7 @@ class Reports:
 
     def print_round_cup_labels(self):
 
-        LABELS_PER_LINE = 9
+        LABELS_PER_LINE = 11
         PADDING = 5
         l = PDFLabel('050-circle', font = 'Courier', font_size=13)
         l.add_page()
@@ -96,7 +96,7 @@ class Reports:
                     print('space')
                     l.add_label(' ')
                     label_count += 1
-                l.add_label('C: {}'.format(i['category']))
+                l.add_label(i['category'])
                 print('print cat')
                 label_count += 1
                 while label_count % LABELS_PER_LINE != 0:
@@ -110,6 +110,47 @@ class Reports:
             l.add_label('  {:03d}'.format(entry_id))
             l.add_label('  {:03d}'.format(entry_id))
             label_count += 2
+        l.output('files/reports/cup_labels.pdf')
+
+
+    def print_round_bos_cup_labels(self):
+
+        LABELS_PER_LINE = 11
+        PADDING = 5
+
+        sql = 'select entry_id from entries where place = "1" order by LPAD(entries.category, 2, "0"), sub_category'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        print(result)
+
+
+
+        l = PDFLabel('050-circle', font = 'Courier', font_size=13)
+        l.add_page()
+        label_count = 0
+        category = ''
+        for r in result:
+            if r['entry_id'] == 214:
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
+                l.add_label('  {:03d}'.format(r['entry_id']))
         l.output('files/reports/cup_labels.pdf')
 
 
@@ -179,7 +220,7 @@ class Reports:
                 'second_judge': '{} {}\n{}'.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
                 'category': category,
                 'table': table['name'],
-                'category_name': Style('BJCP2015').get_category_name(category),
+                'category_name': '{} {}'.format(category, Style('BJCP2015').get_category_name(category)),
                 'beers': []
             }
 
@@ -189,7 +230,7 @@ class Reports:
 
         sql = 'select * from entries ' \
               '' \
-              'where category = "{}" and fk_competitions = "{}" ' \
+              'where category = "{}" and fk_competitions = "{}" and inventory = "1" ' \
               'order by category, sub_category, entry_id'.format(category, Competitions().get_active_competition())
         uid = gen_uid()
         cat  = db.db_command(sql=sql, uid=uid).all(uid)
@@ -231,5 +272,4 @@ if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels()
     #Reports().print_round_cup_labels()
-    Reports().flight_pull_sheets(89)
-
+    Reports().print_round_bos_cup_labels()

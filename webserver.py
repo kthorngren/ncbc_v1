@@ -170,14 +170,15 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
-        order = ['entries', 'checked_in', 'no_desc', 'judged', 'brewers']
+        order = ['entries', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
 
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
             'brewers': 'Brewers',
             'judged': 'Entries Judged',
-            'no_desc': 'Specialty Entries W/O Description'
+            'no_desc': 'Specialty Entries W/O Description',
+            'remaining': 'Remaining to Judge'
         }
 
         result = Competitions().get_comp_status()
@@ -1425,8 +1426,9 @@ class Website:
         except:
             full_inventory = True
 
+        #todo:  and judged = "0"  - used to filter completed flights.  need antoerh way to do this
         if not full_inventory:
-            where = ' where inventory = "1" '
+            where = ' where inventory = "1" and judged = "0"'
         else:
             where = ''
 
