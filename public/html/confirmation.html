@@ -307,7 +307,7 @@ function drawMainTable() {
 					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
 					//data.to = 'kevin.thorngren@gmail.com'
 					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
-					//data.cc = ['kevin.thorngren@gmail.com']
+					data.cc = ['operations@ncbeer.org']
 					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
 					
 					sendEmail(data);
@@ -324,6 +324,7 @@ function drawMainTable() {
 
 
 function sendEmail(data) {
+	console.log(data);
 	data = JSON.stringify(data);
 	$.ajax({
 		url: "/send_volunteer_email",

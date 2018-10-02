@@ -1590,13 +1590,13 @@ class Website:
     @cherrypy.expose
     def send_volunteer_email(self, **kwargs):
 
-        print(kwargs)
+        #print(kwargs)
         try:
             email_params = json.loads(kwargs['data'])
         except:
             email_params = {}
 
-        print(email_params)
+        #print(email_params)
 
         email_test = email_params.get('to', '')
 
@@ -1609,21 +1609,19 @@ class Website:
         e = Email('files/kevin.json')
 
         for r in result:
-            if r['email'] in ('acleme1709@gmail.com', 'Bill_dubas@hotmail.com', 'byer.david@gmail.com',
-                              'catherinepearce15@gmail.com', 'cbowling42@gmail.com'):
-                continue
 
-            if not email_test or email_test == r['email']:
+            if (not email_test or email_test == r['email']) and r['send_email'] == 0:
                 print('Processing', r['email'], r['firstname'])
-
 
                 email_params['firstname'] = r['firstname'].title()
 
                 email_params['to'] = r['email']
 
+
                 filename = email_params.get('filename', '')
                 #print(filename)
 
+                """
                 if filename:
                     if type(filename) != type([]):
                         filename = [filename]
@@ -1633,6 +1631,7 @@ class Website:
                     email_params['file_path'] = 'files/volunteers/'
 
                     print(email_params['file_list'])
+                """
 
                 sessions = Sessions().get_fk_sessions(r['fk_sessions_list'])
 
