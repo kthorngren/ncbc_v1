@@ -78,6 +78,33 @@ class Style:
 
         return result.get('style_name', '')
 
+    def get_category_name(self, style_group, version=None):
+        """
+        Return sub category style name
+        :param style_group: Category
+        :param style_num: Sub Category
+        :param version: BJCP or BA
+        :return: Style Name or '' if not found
+        """
+
+        if version is None:
+            version = self.version
+
+        try:
+            style_group = '{:02d}'.format(int(style_group))
+        except:
+            pass
+
+        sql = 'select distinct category from baseline_styles where style_group="{}" and version="{}"'.format(style_group, version.upper())
+        print(sql)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        print(result)
+
+        return result.get('category', '')
+
+
 
 
 

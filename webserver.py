@@ -19,6 +19,7 @@ from Volunteers import Volunteers
 from Flights import Flights
 from Sessions import Sessions
 from Entrys import Entrys
+from Reports import Reports
 
 DATABASE = ''
 #https://gist.github.com/igniteflow/1760854
@@ -169,14 +170,15 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
-        order = ['entries', 'checked_in', 'no_desc', 'judged', 'brewers']
+        order = ['entries', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
 
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
             'brewers': 'Brewers',
             'judged': 'Entries Judged',
-            'no_desc': 'Specialty Entries W/O Description'
+            'no_desc': 'Specialty Entries W/O Description',
+            'remaining': 'Remaining to Judge'
         }
 
         result = Competitions().get_comp_status()
@@ -627,6 +629,88 @@ class Website:
             r['cat'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
 
         return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
+    # Check in entries by brewer
+    #
+    ######################
+    @cherrypy.expose
+    def entry_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='entry_report.html')
+        return form
+
+    @cherrypy.expose
+    def cellar_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='cellar_report.html')
+        return form
+
+
+    @cherrypy.expose
+    def dt_entries(self, *args, **kwargs):
+        entries = []
+        sql = 'select *, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        for r in result:
+            entries.append(
+                {
+                    'pkid': r['pkid'],
+                    'category_name': '{}{} {}'.format(r['category'], r['sub_category'], Style('BJCP2015').get_style_name(r['category'], r['sub_category'])),
+                    'entry_id': r['entry_id'],
+                    'name': r['name'],
+                    'location_0': r['location_0'],
+                    'location_1': r['location_1'],
+                    'inventory': r['inventory'],
+                    'judged': r['judged'],
+                    'place': r['place'],
+                    'bos': r['bos'],
+                    'bos_place': r['bos_place'],
+                    'organization': r['organization'],
+                    'category': r['category'],
+                    'sub_category': r['sub_category'],
+                    'one_bottle': r['one_bottle'],
+                    'comments': r['comments']
+                }
+            )
+
+
+
+        return json.dumps({'data': entries}, cls=DatetimeEncoder)
+
+
+
+
+    @cherrypy.expose
+    def flight_report(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flight_report.html')
+        return form
+
+
+    @cherrypy.expose
+    def dt_flight_report(self, *args, **kwargs):
+
+        sql = 'select * from sessions ' \
+              'where (judging = "1" or bos="1") and fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        uid = gen_uid()
+        result = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
+
+
+
 
 
     ######################
@@ -1342,8 +1426,9 @@ class Website:
         except:
             full_inventory = True
 
+        #todo:  and judged = "0"  - used to filter completed flights.  need antoerh way to do this
         if not full_inventory:
-            where = ' where inventory = "1" '
+            where = ' where inventory = "1" and judged = "0"'
         else:
             where = ''
 
@@ -1367,6 +1452,18 @@ class Website:
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
+
+    @cherrypy.expose
+    def generate_flights(self, *args, **kwargs):
+
+        result = {}
+        category = kwargs.get('data', 0)
+
+
+
+        result = Reports().flight_pull_sheets(category)
+
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
     ######################
     #
@@ -1490,6 +1587,110 @@ class Website:
 
         return result
 
+    @cherrypy.expose
+    def send_volunteer_email(self, **kwargs):
+
+        #print(kwargs)
+        try:
+            email_params = json.loads(kwargs['data'])
+        except:
+            email_params = {}
+
+        #print(email_params)
+
+        email_test = email_params.get('to', '')
+
+        result = Volunteers().get_volunteers()
+
+
+        errors = []
+        email_counter = 0
+
+        e = Email('files/kevin.json')
+
+        for r in result:
+
+            if (not email_test or email_test == r['email']) and r['send_email'] == 0:
+                print('Processing', r['email'], r['firstname'])
+
+                email_params['firstname'] = r['firstname'].title()
+
+                email_params['to'] = r['email']
+
+
+                filename = email_params.get('filename', '')
+                #print(filename)
+
+                """
+                if filename:
+                    if type(filename) != type([]):
+                        filename = [filename]
+
+                    email_params['file_list'] = [x.format(d=r) for x in filename]
+
+                    email_params['file_path'] = 'files/volunteers/'
+
+                    print(email_params['file_list'])
+                """
+
+                sessions = Sessions().get_fk_sessions(r['fk_sessions_list'])
+
+                vol_types = []
+                comments = ''
+
+
+                table = '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                         '<thead>' \
+                         '<tr>' \
+                         '<th>Session</th>' \
+                         '<th>Start</th>' \
+                         '<th>End</th>' \
+                         '<th>Comments</th>' \
+                         '</tr>' \
+                         '</thead>' \
+                         '<tbody>'
+
+                for session in sessions:
+
+                    if session['setup'] == 1:
+                        if 'Setup' not in vol_types:
+                            vol_types.append('Setup')
+                        comments = ''
+                    elif 'AM' in session['name']:
+                        comments = 'Light breakfast'
+                    elif 'PM' in session['name']:
+                        comments = 'Lunch'
+
+                    session['session_start'] = session['session_start'].strftime('%m-%d-%Y %H:%M:%S')
+                    session['session_end'] = session['session_end'].strftime('%m-%d-%Y %H:%M:%S')
+
+                    table += '<tr>' \
+                        '<td>{d[name]}</td>' \
+                        '<td>{d[session_start]}</td>' \
+                        '<td>{d[session_end]}</td>' \
+                        '<td>{comments}</td>' \
+                        '</tr>'.format(d=session, comments=comments)
+
+                vol_types.append('Judge' if r['judge'] == 1 else 'Steward')
+
+                table += '</tbody>' \
+                         '</table>'
+
+                table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
+
+                email_params['table'] = table
+
+                message = email_params.get('message', '')
+
+                email_params['msg'] = email_params.get('message', '').format(d=email_params)
+
+                #print('send status', email_params)
+
+                #result = 'fdsd'
+                result = self.send_email(**{'data': json.dumps(email_params)})
+
+        return result
+
 
 
 
@@ -1546,6 +1747,10 @@ class Website:
         file_path = email_params.get('file_path', '')
         file_list = email_params.get('file_list', [])
 
+        if file_path and file_list:
+            send_files = True
+        else:
+            send_files = False
 
 
         #send email if all the fields are populated and the file attachment fields are populated if email_type is file
@@ -1554,23 +1759,14 @@ class Website:
 
             message = None
 
-            if content_type == 'html':
-                message = email.create_html_message(sender=sender,
-                                            to=to,
-                                            bcc=bcc,
-                                            cc=cc,
-                                            subject=subject,
-                                            message_text=msg,
-                                            )
-            elif content_type == 'text':
-                message = email.create_message(sender=sender,
-                                            to=to,
-                                            bcc=bcc,
-                                            cc=cc,
-                                            subject=subject,
-                                            message_text=msg,
-                                            )
-            elif content_type == 'file':
+            for f in file_list:
+                if not os.path.isfile('{}{}'.format(file_path,f)):
+                    send_files = False
+
+
+            if send_files:
+                subject = subject + ' - Hotel Conf Attached'
+                print('sending')
                 message = email.create_message_with_attachment(sender=sender,
                                             to=to,
                                             bcc=bcc,
@@ -1578,8 +1774,30 @@ class Website:
                                             subject=subject,
                                             message_text=msg,
                                             file_dir=file_path,
-                                            filename=file_list
+                                            filename=file_list,
+                                            content_type='html' if content_type == 'html' else ''
                                             )
+                if not message:
+                    errors.append('Unable to attach file, failing over to plain email')
+
+
+            if not message:
+                if content_type == 'html':
+                    message = email.create_html_message(sender=sender,
+                                                to=to,
+                                                bcc=bcc,
+                                                cc=cc,
+                                                subject=subject,
+                                                message_text=msg,
+                                                )
+                elif content_type == 'text':
+                    message = email.create_message(sender=sender,
+                                                to=to,
+                                                bcc=bcc,
+                                                cc=cc,
+                                                subject=subject,
+                                                message_text=msg,
+                                                )
 
             if message:
                 result = email.send_message(message, rcpt=to + cc + bcc)

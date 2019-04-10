@@ -5,13 +5,17 @@
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
-    <!-- DataTables RowReorder -->
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.2.4/css/rowReorder.bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="static/css/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="static/css/select2.min.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
       <!-- Latest compiled and minified CSS -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+      <link rel="stylesheet" href="static/css/bootstrap-select.min.css">
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
@@ -112,6 +116,8 @@ tr.strikeout {
                               </tr>
                             </thead>
                           </table>
+
+
                         </div>
                         
                       </div>
@@ -157,6 +163,18 @@ tr.strikeout {
 
 					  <!-- x_content -->
                       <div class="x_content panel-body">
+
+
+                          <table id="flight-sheet" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                          </table>
 
 
 <!-- Modal -->
@@ -236,21 +254,23 @@ tr.strikeout {
 
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="static/js/jquery-3.3.1.min.js"></script>
 	<!-- debounce -->
     <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
     <!-- Datatables Bootstrp Buttons RowGroup Select-->
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
-    <!-- DataTables RowReorder -->
-	<script type="text/javascript" src="https://cdn.datatables.net/rowreorder/1.2.4/js/dataTables.rowReorder.min.js"></script>
+	<script type="text/javascript" src="static/js/pdfmake.min.js"></script>
+	<script type="text/javascript" src="static/js/vfs_fonts.js"></script>
+	<script type="text/javascript" src="static/js/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="static/js/select2.min.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
       <!-- Latest compiled and minified JavaScript -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-    <!-- Quill -->
-    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
-    <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
+      <script src="static/js/bootstrap-select.min.js"></script>
     <!-- Custom Theme Scripts -->
     <script src="/static/js/custom.min.js"></script>
     <!-- fieldType.toggle -->
@@ -262,7 +282,7 @@ tr.strikeout {
 
 var table;
 var sessions_table;
-
+var sheets_table;
 
 var table_beer_count = {};
 
@@ -284,7 +304,7 @@ function drawMainTable() {
 		},
 		dom: 'Bt',
 		paging: false,
-		scrollY: 1500,
+		//scrollY: 1500,
 	    select: {
     	    style: "single",
         	selector: "td:last-child"
@@ -595,25 +615,88 @@ function drawSessionsTable() {
                     .append( '<td></td>' );
          	}       
 	    },
-	    buttons: [
-            {
-                text: 'Generate Table Assignments',
-                action: function ( e, dt, node, config ) {
-    				generate_tables();
-                }
-            },        
-            {
-                text: 'Save Table Assignments',
-                action: function ( e, dt, node, config ) {
-                	save_tables();
-                }
-            },        
-    ] 
 	    
 
 	});
 
 
+}
+
+
+
+function drawFlightSheetTable() {
+	sheets_table = $('#flight-sheet').DataTable({
+		dom: 'Bt',
+		paging: false,
+		ordering: false,
+   		//order: [[0, 'asc']],
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
+   		columnDefs: [
+   			{
+   				targets: 0,
+   				visible: false
+   			}
+   		],
+        buttons: [ {
+            extend: 'excelHtml5',
+            text: 'Flight Sheet',
+            title: '',
+            exportOptions: {
+                columns: [ 1, 2, 3],
+            }
+        } ]	    
+
+	});
+
+
+}
+
+
+
+function generate_flights(data) {
+
+	$.ajax({
+      	url: "/generate_flights",
+      	type: 'post',
+      	data: {data: data},
+      	success: function(json) {
+            var data = JSON.parse(json);
+            console.log('generate_flights success')
+            data = data.data;
+        	//console.log(data);
+        	
+        	sheets_table.clear().draw();
+            
+            for (table in data) {
+            	//console.log('table', data[table].category_name);
+            	sheets_table.row.add([table, table, '', data[table].category_name]);
+            	sheets_table.row.add([table, 'Head Judge', '', data[table].head_judge]);
+            	sheets_table.row.add([table, 'Judge', '', data[table].second_judge]);
+            	sheets_table.row.add([table, ' ', ' ', ' ']);
+            	sheets_table.row.add([table, 'Check Off', ' ', ' ']);
+            	
+            	var beers = data[table].beers;
+            	//console.log(beers);
+            	for (i=0; i<beers.length; i++) {
+            		sheets_table.row.add([table, '', beers[i].entry_id, beers[i].category + beers[i].sub_category + ' ' + beers[i].style_name])
+            		if (beers[i].is_specialty == 1) {
+            			sheets_table.row.add([table, '', '', beers[i].description]);
+            		}
+            	}
+            	sheets_table.row.add([table, '', '', '']);
+            }
+            
+            sheets_table.draw();
+        },
+
+      	error: function (jqXHR, exception) {
+            console.log('generate_flights error')
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
 }
 
 
@@ -737,6 +820,7 @@ $(document).ready(function() {
 	drawMainTable();
 	
 	drawSessionsTable();
+	drawFlightSheetTable();
 	
 	sessions_table.on('select', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
@@ -903,6 +987,18 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
   });
 });
 
+
+$('#main-table').on('click', '.group', function() {
+
+	var row = $(this).closest('tr');
+	
+	var cat_number = row.text().split(' ')[0];
+	console.log('click', parseInt(cat_number))
+	
+	generate_flights(parseInt(cat_number));
+	
+	
+}) 
 
 });
 </script>

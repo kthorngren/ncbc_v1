@@ -4,21 +4,21 @@
     
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
-    <!-- Datatables Bootstrap Buttons RowGroup Select -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.css"/>
+     <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="static/css/datatables.min.css"/>
     <!-- DataTables Editor -->
     <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
     <!-- Bootstrap Toggle -->
-    <link rel="stylesheet" type="text/css" href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap-toggle.min.css">
     <!-- Select2 -->
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/select2.min.css">
     <!-- Quill -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.quilljs.com/1.2.2/quill.snow.css">
+    <link rel="stylesheet" type="text/css" href="static/css/quill.snow.css">
     <link rel="stylesheet" type="text/css" href="static/css/editor.quill.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
       <!-- Latest compiled and minified CSS -->
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+      <link rel="stylesheet" href="static/css/bootstrap-select.min.css">
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
@@ -133,25 +133,25 @@
 
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="static/js/jquery-3.3.1.min.js"></script>
 	<!-- debounce -->
     <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
     <!-- Datatables Bootstrp Buttons RowGroup Select-->
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-	<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jszip-2.5.0/dt-1.10.18/b-1.5.2/b-html5-1.5.2/b-print-1.5.2/rg-1.0.3/sl-1.2.6/datatables.min.js"></script>
+	<script type="text/javascript" src="static/js/pdfmake.min.js"></script>
+	<script type="text/javascript" src="static/js/vfs_fonts.js"></script>
+	<script type="text/javascript" src="static/js/datatables.min.js"></script>
     <!-- DataTables Editor -->
     <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
     <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
     <!-- Select2 -->
     <script type="text/javascript" src="static/js/editor.select2.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <script type="text/javascript" src="static/js/select2.min.js"></script>
     <!-- Bootstrap Toggle -->
-    <script type="text/javascript" src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
       <!-- Latest compiled and minified JavaScript -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+      <script src="static/js/bootstrap-select.min.js"></script>
     <!-- Quill -->
-    <script type="text/javascript" src="https://cdn.quilljs.com/1.2.2/quill.min.js"></script>
+    <script type="text/javascript" src="static/js/quill.min.js"></script>
     <script type="text/javascript" src="static/js/editor.quill_text.js"></script>
     <!-- Custom Theme Scripts -->
     <script src="/static/js/custom.min.js"></script>
@@ -277,7 +277,44 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+            {
+                extend: "selectedSingle",
+                text: 'Send Test Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					data.to = 'kevin.thorngren@gmail.com'
+					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
+					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					//data.cc = ['kevin.thorngren@gmail.com']
+					
+					
+					
+					sendEmail(data);
+					//sendEmail(data);
+				}
+            },        
+             {
+                extend: "selectedSingle",
+                text: 'Send Volunteer Email',
+                action: function ( e, dt, node, config ) {
+
+					var data = table.row( {selected: true} ).data();
+					
+					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
+					//data.to = 'kevin.thorngren@gmail.com'
+					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
+					data.cc = ['operations@ncbeer.org']
+					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
+					
+					sendEmail(data);
+					//sendEmail(data);
+				}
+            },        
+ 
     ] 
 
 	});
@@ -285,6 +322,26 @@ function drawMainTable() {
 }
 
 
+
+function sendEmail(data) {
+	console.log(data);
+	data = JSON.stringify(data);
+	$.ajax({
+		url: "/send_volunteer_email",
+		type: 'post',
+		data: {data: data},
+		success: function(json) {
+		var response = JSON.parse(json);
+				            			
+			console.log(response);
+
+		},
+		error: function (jqXHR, exception) {
+				      		
+			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+		},
+	});
+}
 
 
 

@@ -98,7 +98,7 @@ class Entrys:
 
         for k, v in record.items():
             fields.append(str(k))
-            values.append(str(v))
+            values.append(escape_sql(str(v)))
 
         sql = 'insert into entries ({}, updated) values ("{}", NOW())'.format(','.join(fields), '","'.join(values))
         db.db_command(sql=sql)
@@ -244,6 +244,17 @@ class Entrys:
 
         return result
 
+    def get_entries_and_brewer(self):
+
+        sql = 'select *, b.firstname, b.lastname, b.organization from entries ' \
+              'inner join brewers as b on b.pkid = fk_brewers ' \
+              'where entries.fk_competitions = "1" '
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
 
     def get_brewer_categories(self, fk_brewers):
 
@@ -258,6 +269,11 @@ class Entrys:
             category_list.append(r['category'])
 
         return category_list
+
+
+    def get_entries_by_category(self, all=False):
+
+        pass
 
 def test_add_inventory():
     print(Entrys().inventory_status())

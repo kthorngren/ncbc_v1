@@ -136,6 +136,7 @@ class Competitions:
         status['entries']['entries'] = int(result.get('entries', 0))
         status['entries']['checked_in'] = int(result.get('checked_in', 0))
         status['entries']['judged'] = int(result.get('judged', 0))
+        status['entries']['remaining'] = int(result.get('checked_in', 0)) - int(result.get('judged', 0))
 
 
         sql = 'select * from sessions where judging = "1" or setup = "1" and ' \
