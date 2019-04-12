@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 from shutil import copyfile
 
-from utils.database import logger
+from competition import logger
 
 def dict_factory(cursor, row):
     d = {}

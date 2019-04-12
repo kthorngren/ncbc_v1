@@ -27,3 +27,14 @@ logger.addHandler(ch)
 
 
 logging.captureWarnings(True)  #eliminate the insecure warnings on the console
+
+def set_log_level(logger, level):
+
+
+    levels = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET']
+
+    if isinstance(level, str) and level.upper() in levels:
+        logger.setLevel(level.upper())
+        logger.handlers[0].setLevel(level.upper())
+
+    return logger

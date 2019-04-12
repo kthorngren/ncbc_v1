@@ -8,7 +8,8 @@ from random import randint
 
 from pymysql import converters
 
-from utils.database import logger
+from competition import logger, set_log_level
+
 
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python

@@ -1,9 +1,9 @@
 
 
-from competition import logger
 
 from utils import MySql
 from utils import DATABASE, CONN
+from competition import logger, set_log_level
 
 db = MySql(**CONN, db=DATABASE)
 

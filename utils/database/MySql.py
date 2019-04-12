@@ -9,7 +9,9 @@ from pymysql import converters
 
 from pymysql.err import ProgrammingError, DataError, IntegrityError, NotSupportedError, OperationalError
 
-from utils.database import logger
+from competition import logger, set_log_level
+
+set_log_level(logger, 'debug')
 
 from .Database import Database
 from .Database import gen_uid, escape_sql
