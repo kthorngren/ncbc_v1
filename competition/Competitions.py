@@ -1,9 +1,11 @@
+import os
+from competition import get_logger, set_log_level
+logger = get_logger(os.path.basename(__file__).split('.')[0])
 
-
+set_log_level(logger, 'info')
 
 from utils import MySql
 from utils import DATABASE, CONN
-from competition import logger, set_log_level
 
 db = MySql(**CONN, db=DATABASE)
 

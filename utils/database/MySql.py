@@ -1,6 +1,12 @@
 import threading
 import copy
 
+import os
+from competition import get_logger, set_log_level
+
+logger = get_logger(os.path.basename(__file__).split('.')[0])
+set_log_level(logger, 'info')
+
 from warnings import filterwarnings
 from warnings import resetwarnings
 
@@ -9,9 +15,7 @@ from pymysql import converters
 
 from pymysql.err import ProgrammingError, DataError, IntegrityError, NotSupportedError, OperationalError
 
-from competition import logger, set_log_level
 
-set_log_level(logger, 'debug')
 
 from .Database import Database
 from .Database import gen_uid, escape_sql
@@ -19,7 +23,7 @@ from .Database import gen_uid, escape_sql
 
 class LockableMysqlConnection:
     def __init__(self, host='', user='', password='', db=''):
-        logger.debug('LockableMysqlConnection.__init__()')
+        logger.info(f'LockableMysqlConnection.__init__(): Initializing using Server: {host} and DB: {db}')
         self.host = host
         self.user = user
         self.password = password
@@ -112,9 +116,8 @@ class LockableMysqlConnection:
 
 class MySql(Database):
 
-    def __init__(self, host='', user='', username='', password='', db=''):
-        logger.debug('Init')
-        user = user or username
+    def __init__(self, host='', user='', password='', db=''):
+        logger.info(f'Initializing using Server: {host} and DB: {db}')
         super().__init__(host, user, password, db)
         self.mysql = LockableMysqlConnection(host, user, password, db)
         self.cursorclass = pymysql.cursors.DictCursor

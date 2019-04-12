@@ -5,10 +5,13 @@ import sys
 import codecs
 from random import randint
 
+import os
+from competition import get_logger, set_log_level
+logger = get_logger(os.path.basename(__file__).split('.')[0], level='info')
+
 
 from pymysql import converters
 
-from competition import logger, set_log_level
 
 
 """
@@ -55,10 +58,10 @@ def escape_sql(data):
 
 class Database:
 
-    def __init__(self, host='', user='', username='', password='', db=''):
-        logger.debug('Database.__init__')
+    def __init__(self, host='', user='', password='', db=''):
+        logger.info(f'Initializing using Server: {host} and DB: {db}')
         self.host = host
-        self.user = user or username
+        self.user = user
         self.password = password
         self._db = db
         self.conn = None  #DB conneciton object
