@@ -145,14 +145,14 @@ class Competitions:
         uid = gen_uid()
         sessions = db.db_command(sql=sql, uid=uid).all(uid)
 
-        sql = 'select fk_sessions_list, judge from volunteers where fk_competitions = "{}"'.format(self.get_active_competition())
+        sql = 'select fk_sessions_list, is_judge from volunteers where fk_competitions = "{}"'.format(self.get_active_competition())
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        sessions_list = {0: [], 1 : [], 2: []}
+        sessions_list = {0: [], 1 : [], 2: []}  # 0=steward, 1=judge, 2=unknown
         for r in result:
-            sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
+            sessions_list[r['is_judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
 
         for r in sorted(sessions, key = lambda k:k['session_number']):
 
@@ -178,7 +178,7 @@ class Competitions:
 
         return status
 
-
+    # Todo: move this to new code
     def validate_ncbc_data(self, entries_report_pkid=0, volunteers_report_pkid=1):
 
         if entries_report_pkid:

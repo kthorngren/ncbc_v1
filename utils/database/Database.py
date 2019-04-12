@@ -8,7 +8,7 @@ from random import randint
 
 from pymysql import converters
 
-
+from utils.database import logger
 
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
@@ -25,26 +25,7 @@ def gen_uid():
 
 
 
-# create logger
-import logging
-import os
-LEVEL = logging.INFO
-logger = logging.getLogger(os.path.basename(__file__).split('.')[0] if __name__ == '__main__' else __name__)
-logger.setLevel(LEVEL)
 
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(LEVEL)
-
-# create formatter
-formatter = logging.Formatter('%(asctime)s.%(msecs)03d: %(levelname)s: %(name)s.%(funcName)s(): %(message)s', datefmt='%m-%d-%Y %H:%M:%S')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
-# end create logger
 
 #global lock variable
 #_lock = threading.Lock()

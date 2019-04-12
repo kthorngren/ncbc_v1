@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from shutil import copyfile
 
+from utils.database import logger
 
 def dict_factory(cursor, row):
     d = {}
@@ -12,27 +13,6 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
-
-# create logger
-import logging
-import os
-LEVEL = logging.INFO
-logger = logging.getLogger(os.path.basename(__file__).split('.')[0] if __name__ == '__main__' else __name__)
-logger.setLevel(LEVEL)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(LEVEL)
-
-# create formatter
-formatter = logging.Formatter('%(asctime)s.%(msecs)03d: %(levelname)s: %(name)s.%(funcName)s(): %(message)s', datefmt='%m-%d-%Y %H:%M:%S')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
-# end create logger
 
 class Sqlite(Database):
 
