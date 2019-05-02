@@ -7,7 +7,7 @@ from random import randint
 
 import os
 from competition import get_logger, set_log_level
-logger = get_logger(os.path.basename(__file__).split('.')[0], level='info')
+logger = get_logger(os.path.basename(__file__).split('.')[0])
 
 
 from pymysql import converters

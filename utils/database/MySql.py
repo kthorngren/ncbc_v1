@@ -5,7 +5,7 @@ import os
 from competition import get_logger, set_log_level
 
 logger = get_logger(os.path.basename(__file__).split('.')[0])
-set_log_level(logger, 'info')
+set_log_level(logger, 'debug')
 
 from warnings import filterwarnings
 from warnings import resetwarnings
