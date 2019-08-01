@@ -22,6 +22,7 @@ from Entrys import Entrys
 from Reports import Reports
 
 DATABASE = ''
+TEST_MODE = True
 #https://gist.github.com/igniteflow/1760854
 try:
     # use the develop database if we are using develop
@@ -32,8 +33,10 @@ try:
     branch = branch.name
     if branch == 'master':
         DATABASE = 'competitions'
+        TEST_MODE = False
     else:
         DATABASE = 'comp_test'
+        TEST_MODE = True
 except ImportError:
     pass
 

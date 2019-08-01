@@ -53,7 +53,29 @@ from MySql import local_host
 from Database import Database
 from Database import escape_sql
 
-db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
+DATABASE = ''
+NCBC_DB = ''
+TEST_MODE = True
+#https://gist.github.com/igniteflow/1760854
+try:
+    # use the develop database if we are using develop
+    import os
+    from git import Repo
+    repo = Repo(os.getcwd())
+    branch = repo.active_branch
+    branch = branch.name
+    if branch == 'master':
+        DATABASE = 'competitions'
+        NCBC_DB = 'ncbc_data'
+        TEST_MODE = False
+    else:
+        DATABASE = 'comp_test'
+        NCBC_DB = 'ncbc_test'
+        TEST_MODE = True
+except ImportError:
+    pass
+
+db = Database(local_host['host'], local_host['user'], local_host['password'], NCBC_DB)
 
 
 class Import:
@@ -125,6 +147,7 @@ class Import:
             return import_result
 
         mapping = Import().get_session_mapping()
+        print('mapping', mapping)
 
         for row in rows:
             result = Tools().find('people', ['firstname', 'nickname', 'lastname', 'alias', 'email'],
@@ -200,6 +223,8 @@ class Import:
 
             record['fk_people'] = fk_people
             record['fk_sessions'] = session['pkid']
+            record['fk_competitions'] = Competitions().get_active_competition()
+            print('adding record', record)
             result, inserted = Volunteers().add_record(record)
 
             if not result:
@@ -229,10 +254,10 @@ class Import:
     def get_ncbc_entries(self):
 
         sql = 'select * from entries where imported = "0" and fk_competitions = "{}"'.format(Competitions().get_active_competition())
-
+        print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
-
+        print(result)
         return result
 
 

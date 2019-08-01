@@ -139,7 +139,7 @@ class Competitions:
         status['entries']['remaining'] = int(result.get('checked_in', 0)) - int(result.get('judged', 0))
 
 
-        sql = 'select * from sessions where judging = "1" or setup = "1" and ' \
+        sql = 'select * from sessions where (judging = "1" or setup = "1") and ' \
               'fk_competitions = "{}" '.format(self.get_active_competition())
 
         uid = gen_uid()
@@ -154,6 +154,7 @@ class Competitions:
         for r in result:
             sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
 
+        print('sessions_list', sessions_list)
         for r in sorted(sessions, key = lambda k:k['session_number']):
 
             session_type = []
