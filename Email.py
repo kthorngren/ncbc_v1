@@ -42,10 +42,13 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 # end create logger
 
+TEST_EMAIL = 'oscar.smoscar+ncbctest@gmail.com'
+CC_TEST_EMAIL = 'fj40.kev+ncbcCCtest@gmail.com'
+BCC_TEST_EMAIL = 'fj40.kev+ncbcBCCtest@gmail.com'
 
 class Email:
 
-    def __init__(self, login):
+    def __init__(self, login, test_mode=True):
         logger.info('Initiating email client using authentication from {}'.format(login if type(login) == type(' ') else 'Dictionary'))
         if type(login) == type({}):
             self.username = login.get('username', '')
@@ -58,6 +61,9 @@ class Email:
             self.username = login.get('username', '')
             self.password = login.get('password', '')
 
+        self.test_mode = test_mode
+        logger.info(f'Email test mode: {test_mode}')
+
 
 
     def send_message(self, message, rcpt=''):
@@ -68,6 +74,7 @@ class Email:
         """
         logger.info('Attempting to send email from {}, to {}'.format(message['From'], message['To']))
         print(rcpt)
+        return False
         try:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             #print 'server created'
@@ -109,13 +116,12 @@ class Email:
         logger.info('Creating message for sender: {}'.format(sender))
         message = MIMEText(message_text)
         if to:
-            message['to'] = to
+            message['to'] = to if not self.test_mode else TEST_EMAIL
         if cc:
-            message['cc'] = cc
+            message['cc'] = cc if not self.test_mode else TEST_EMAIL
         message['from'] = sender
         message['subject'] = subject
-
-
+        print(message)
         return message
 
 
@@ -139,9 +145,9 @@ class Email:
         logger.info('Creating HTML message for sender: {}'.format(sender))
         message = MIMEText(message_text, 'html')
         if to:
-            message['to'] = to
+            message['to'] = to if not self.test_mode else TEST_EMAIL
         if cc:
-            message['cc'] = cc
+            message['cc'] = cc if not self.test_mode else TEST_EMAIL
         message['from'] = sender
         message['subject'] = subject
         return message
@@ -167,9 +173,9 @@ class Email:
         logger.info('Creating message for sender: {} with file: {}'.format(sender, filename))
         message = MIMEMultipart()
         if to:
-            message['to'] = to
+            message['to'] = to if not self.test_mode else TEST_EMAIL
         if cc:
-            message['cc'] = cc
+            message['cc'] = cc if not self.test_mode else TEST_EMAIL
 
         message['from'] = sender
         message['subject'] = subject
@@ -234,14 +240,21 @@ if __name__ == '__main__':
     e = Email('files/kevin.json')
 
     to = 'kevin.thorngren@gmail.com'
-    bcc = 'brewerkev@gmail.com'
-    #message = e.create_message('NC Brewers Cup <kevin.thorngren@gmail.com>', 'kevin.thorngren@gmail.com', 'test 3', 'testing number 3')
+    bcc = 'kthorngr@cisco.com'
+    message = e.create_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                               to=to,
+                               subject='test of create_message',
+                               message_text='testing number 3'
+                               )
+    """
     message = e.create_message_with_attachment(sender='kevin.thorngren@gmail.com',
                                                to=to,
+                                               bcc=bcc,
                                                subject='test 3',
                                                message_text='testing number 3',
                                                file_dir='files/',
-                                               filename='phil@turguabrewing.com_entry_labels.pdf'
+                                               filename='ncbg-logo.png'
                                                )
+    """
 
-    e.send_message(message, rcpt=[to] + [bcc])
+    e.send_message(message, rcpt=[to if not e.test_mode else TEST_EMAIL] + [bcc if not e.test_mode else BCC_TEST_EMAIL])

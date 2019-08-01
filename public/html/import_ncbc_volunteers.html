@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -19,7 +19,7 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
@@ -81,8 +81,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -90,7 +90,7 @@
           <div class="">
             <div class="page-title">
               <div class="title_left">
-                <h4 id='main-title'>Import NCBC Entries</h4>
+                <h4 id='main-title'>Import NCBC Volunteers</h4>
               </div>
             </div>
             <div class="row">
@@ -100,14 +100,14 @@
 
 
       <button class="btn btn-primary" id="import" name="import">
-        Import NCBC Entries
+        Import NCBC Volunteers
       </button>
 
 	<hr>
-	
+
 	<div id="result" style="display: none;">
 	<h3>Import Results:</h3>
-	
+
 	<span><br>Number of Volunteers Inserted: </span><span id="inserted"></span>
 	<span><br>Number of Volunteers Updated: </span><span id="updated"></span>
 	<span><br>Import Errors: </span><span id="error-count"></span>
@@ -181,7 +181,7 @@ function buttonDisable(btn_id) {
 $(document).ready(function() {
 
 	$('#result').hide();
-	
+
 	buttonEnable('#import');
 
 	$('#import').on('click', function () {
@@ -189,7 +189,7 @@ $(document).ready(function() {
 			return
 		}
 		buttonDisable('#import');
-		
+
     	$.ajax({
       		url: "/import_volunteers",
       		type: 'post',
@@ -198,7 +198,7 @@ $(document).ready(function() {
 
             	buttonEnable('#import');
             	$('#result').show();
-            	
+
             	$('#inserted').html(data.inserted);
             	$('#updated').html(data.updated);
             	$('#error-count').html(data.errors.length);
@@ -232,4 +232,3 @@ $(document).ready(function() {
 
 </body>
 </html>
-

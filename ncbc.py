@@ -7,7 +7,7 @@ from time import sleep
 
 
 import qrcode
-from qrcode.image.pure import PymagingImage
+#from qrcode.image.pure import PymagingImage
 
 import requests
 from fpdf import FPDF, HTMLMixin
@@ -65,9 +65,34 @@ from MySql import local_host
 from Database import Database
 from Database import escape_sql
 
-db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
+DATABASE = ''
+NCBC_DB = ''
+TEST_MODE = True
+#https://gist.github.com/igniteflow/1760854
+try:
+    # use the develop database if we are using develop
+    import os
+    from git import Repo
+    repo = Repo(os.getcwd())
+    branch = repo.active_branch
+    branch = branch.name
+    if branch == 'master':
+        DATABASE = 'competitions'
+        NCBC_DB = 'ncbc_data'
+        TEST_MODE = False
+    else:
+        DATABASE = 'comp_test'
+        NCBC_DB = 'ncbc_test'
+        TEST_MODE = True
+except ImportError:
+    pass
 
-comp_db = Database(local_host['host'], local_host['user'], local_host['password'], 'competitions')
+
+db = Database(local_host['host'], local_host['user'], local_host['password'], NCBC_DB)
+
+comp_db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
+
+logger.info(f'NCBC DB: {NCBC_DB}, Competition DB: {DATABASE}')
 
 class BottleLabelFPDF(FPDF, HTMLMixin):
 
@@ -90,7 +115,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
         # set the font for the header, B=Bold
         self.set_font("Arial", style="B", size=15)
         # page title
-        self.cell(epw, 10, "NC Brewers Cup 2018 Entry Labels", border=1, ln=0, align="C")
+        self.cell(epw, 10, "NC Brewers Cup 2019 Entry Labels", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
         self.ln(5)
 
@@ -122,7 +147,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
 
                 ]
         if homebrew:
-            text2 = ['Last year we had over 700 entries, thats over 1400 entries to handle.  ',
+            text2 = ['Last year we had over 600 entries, thats over 1200 entries to handle.  ',
                      'Placing the labels on the entries correctly will help us during ',
                    'inventory, staging and judging the entries.  The labels need to be ',
                    'oriented so they are readable.  Please use only rubberbands to attach ',
@@ -131,7 +156,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
                     ]
         else:
 
-            text2 = ['Last year we had over 700 entries, thats over 1400 entries to handle.  ',
+            text2 = ['Last year we had over 600 entries, thats over 1200 entries to handle.  ',
                      'Placing the labels on the entries correctly will help us during ',
                    'inventory, staging and judging the entries.  The labels need to be ',
                    'oriented so they are readable.  Please use rubberbands or clear packing ',
@@ -200,9 +225,9 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
             self.cell(epw, 0.0, 'Entry Labels for {}'.format(label[0]), align='C')
             self.ln(4 * th)
 
-            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2018', border='LT', align='C')
+            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2019', border='LT', align='C')
             self.cell(5, 2 * th, ' ', border='LR')
-            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2018', border='RT', align='C')
+            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2019', border='RT', align='C')
             self.ln(2 * th)
 
             self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='LB', align='C')
@@ -292,7 +317,7 @@ class InvoiceFPDF(FPDF, HTMLMixin):
         # page title
         self.image("files/ncbg-logo.png", x=12, y=12, w=31)
         self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
-        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2018", border=1, ln=0, align="C")
+        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2019", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
 
         self.ln(5)
@@ -1306,14 +1331,14 @@ class Ncbc:
 def get_schedule_counts():
 
     schedule = {
-        'Thursday, September 27, 9:00am 1:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Thursday, September 27, 1:00am 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Friday, Sept. 28th, 9:00am-1:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Friday, Sept. 28th, 1:00am-5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Saturday, September 29, 8:30am - 12:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Saturday, September 29, 12:30pm - 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Sunday, September 30, 8:30am - 12:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
-        'Sunday, September 29, 12:30pm - 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0}
+        'Thursday, August 14, 9:00am 1:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Thursday, August 14, 1:00am 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Friday, August 15, 9:00am-1:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Friday, August 15, 1:00am-5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Saturday, August 16, 8:30am - 12:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Saturday, August 16, 12:30pm - 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Sunday, August 17, 8:30am - 12:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0},
+        'Sunday, August 17, 12:30pm - 5:00pm': {'Judge': 0, 'Steward': 0, 'Unknown': 0}
     }
 
     sql = 'SELECT count(*), package, judge from volunteers where fk_competitions = "1" group by package, judge'
@@ -1435,7 +1460,7 @@ def email_status(pkid=1, test=False):
 
 def process_new_entries(pkid=1):
 
-    n = Ncbc(pkid=1)
+    n = Ncbc(pkid=pkid)
     n.get_csv_2()
     n.process_new_entries()
     validation_errors = n.validate_entries()
@@ -1456,7 +1481,7 @@ def process_new_entries(pkid=1):
     sent_email_count = 0
 
     for brewer in brewers:
-        #print(brewer)
+        print(brewer)
 
         entries = brewers[brewer]
 
@@ -1486,7 +1511,7 @@ def process_new_entries(pkid=1):
             msg += 'if you have any questions or issues.\n'
             msg += '\n'
             msg += 'Drop off info:\n'
-            msg += 'September 27th & 28th, 2018 (Thursday + Friday)\n'
+            msg += 'August 14th and 15th, 2019 (Thursday + Friday)\n'
             msg += '9am - 5pm\n'
             msg += 'Pro Refrigeration, Inc.\n'
             msg += '319 Farmington Road\n'
@@ -1522,15 +1547,15 @@ def process_new_entries(pkid=1):
 
             if validation_errors:
                 result = False
-            elif DATABASE != 'competitions':
-                logger.info('Skipping email due to using test DB')
-                result = False
+            #elif DATABASE != 'competitions':
+            #    logger.info('Skipping email due to using test DB')
+            #    result = False
+            #else:
+            elif send_email:
+                result = e.send_message(message, rcpt=[brewer])
             else:
-                if send_email:
-                    result = e.send_message(message, rcpt=[brewer])
-                else:
-                    result = False
-                    logger.info('Skipping emailing brewers - please run script again to email')
+                result = False
+                logger.info('Skipping emailing brewers - please run script again to email')
             if result:
                 n.reset_send_labels(brewer)
                 sent_email_count += 1
@@ -1931,9 +1956,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    process_new_entries(pkid=1)
+    #process_new_entries(pkid=4)
 
-    #process_new_volunteers(pkid=3)
+    process_new_volunteers(pkid=5)
 
     #validate_ncbc(pkid=1)
 
