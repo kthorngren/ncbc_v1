@@ -65,14 +65,14 @@ class Style:
 
         if version is None:
             version = self.version
-
+        print(style_group, style_num, version)
         try:
             style_group = '{:02d}'.format(int(style_group))
         except:
             pass
 
         sql = 'select style_name from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
-
+        #logger.info(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
 
@@ -96,11 +96,11 @@ class Style:
             pass
 
         sql = 'select distinct category from baseline_styles where style_group="{}" and version="{}"'.format(style_group, version.upper())
-        print(sql)
+
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
 
-        print(result)
+
 
         return result.get('category', '')
 
@@ -151,6 +151,21 @@ class Style:
 
         return True if result.get('req_spec', 0) else False
 
+    def get_entry_instructions(self, style_group, style_num, version=None):
+        if version is None:
+            version = self.version
+
+        try:
+            style_group = '{:02d}'.format(int(style_group))
+        except:
+            pass
+
+        sql = 'select entry from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        return result.get('entry', '')
 
     def get_styles_for_group(self, style_group, version=None, style_type=None, req_spec=None):
         """
@@ -239,11 +254,11 @@ if __name__ == '__main__':
 
     print(Style().get_versions())
 
-    print(Style('BJCP2015').get_style_name('1', 'c'))
+    print(Style('BJCP2015').get_style_name('35', 'A'))
 
-    result = Style('BJCP2015').get_styles_for_group(-1, style_type=['beer', 1], req_spec=True)
+    #result = Style('BJCP2015').get_styles_for_group(-1, style_type=['beer', 1], req_spec=True)
 
-    for r in result:
-        print(r)
+    #for r in result:
+    #    print(r)
 
 

@@ -48,7 +48,7 @@ BCC_TEST_EMAIL = 'fj40.kev+ncbcBCCtest@gmail.com'
 
 class Email:
 
-    def __init__(self, login, test_mode=True):
+    def __init__(self, login, test_mode=False):
         logger.info('Initiating email client using authentication from {}'.format(login if type(login) == type(' ') else 'Dictionary'))
         if type(login) == type({}):
             self.username = login.get('username', '')
@@ -73,8 +73,8 @@ class Email:
         :return:
         """
         logger.info('Attempting to send email from {}, to {}'.format(message['From'], message['To']))
-        print(rcpt)
-        return False
+        print('rcpt', rcpt)
+
         try:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             #print 'server created'
@@ -180,7 +180,7 @@ class Email:
         message['from'] = sender
         message['subject'] = subject
 
-
+        logger.info('Sending message to {}'.format(message['to']))
         if content_type == 'html':
             msg = MIMEText(message_text, 'html')
         else:
@@ -239,22 +239,60 @@ if __name__ == '__main__':
     #e = Email({'username': 'kevin.thorngren@gmail.com', 'password': 'R3alal3)'})
     e = Email('files/kevin.json')
 
-    to = 'kevin.thorngren@gmail.com'
+    to = 'oscar.smoscar+ncbctest@gmail.com'
     bcc = 'kthorngr@cisco.com'
+    """
     message = e.create_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                to=to,
                                subject='test of create_message',
                                message_text='testing number 3'
                                )
     """
-    message = e.create_message_with_attachment(sender='kevin.thorngren@gmail.com',
-                                               to=to,
-                                               bcc=bcc,
-                                               subject='test 3',
-                                               message_text='testing number 3',
-                                               file_dir='files/',
-                                               filename='ncbg-logo.png'
-                                               )
-    """
+    brewer = 'chris@glass-jug.com'
 
-    e.send_message(message, rcpt=[to if not e.test_mode else TEST_EMAIL] + [bcc if not e.test_mode else BCC_TEST_EMAIL])
+    msg = 'Hi {},\n'.format('Chris')
+    msg += '\n'
+    msg += 'The NC Craft Brewers Guild and I would like to thank you for your entries.  '
+    msg += 'Attached you will find your required entry labels and zero dollar invoice.  '
+    msg += 'The Entry ID is pre-filled on the label.  Please verify the information on the labels.  '
+    msg += 'Each entry will be judged against the Category and Subcategory on the label.  '
+    msg += 'You may leave any branded labels on the submitted containers, as the judged samples '
+    msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
+    msg += '\n'
+    msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
+    msg += 'when they are dropped of at Pro Refrigeration.  Please let Lisa (operations@ncbeer.org) and I know '
+    msg += 'if you have any questions or issues.\n'
+    msg += '\n'
+    msg += 'Drop off info:\n'
+    msg += 'August 15th and 16th, 2019 (Thursday + Friday)\n'
+    msg += '9am - 5pm\n'
+    msg += 'Pro Refrigeration, Inc.\n'
+    msg += '319 Farmington Road\n'
+    msg += 'Mocksville, NC 27028\n'
+    msg += '\n'
+    msg += 'Thanks,\nLisa and Kevin\n\n'
+    msg += 'Lisa Parker\n'
+    msg += 'NC Brewers Cup Superintendent\n'
+    msg += 'NCCBG Operations Manager\n'
+    msg += 'e. operations@ncbeer.org\n'
+    msg += 'c. 919.951.8588\n\n'
+
+    msg += 'Kevin Thorngren\n'
+    msg += 'NC Brewers Cup Manager\n'
+    msg += 'e. kevin.thorngren@gmail.com\n'
+    msg += 'c. 919.418.2350\n'
+
+    message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                               to=to,
+                                               #bcc=bcc,
+                                               subject='NC Brewers Cup Entry Labels34',
+                                               message_text=msg,
+                                               file_dir='files/',
+                                               #filename='ncbg-logo.png'
+                                               filename=['{}_entry_labels.pdf'.format(brewer),
+                                                                        '{}_invoice.pdf'.format(brewer)]
+                                               )
+
+
+    #e.send_message(message, rcpt=[to if not e.test_mode else TEST_EMAIL] + [bcc if not e.test_mode else BCC_TEST_EMAIL])
+    e.send_message(message, rcpt=[to])

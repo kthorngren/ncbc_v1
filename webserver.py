@@ -56,6 +56,9 @@ class Website:
         self.db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
         self.dt = Datatables(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
+        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
+        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
+
 
     def get_instructions(self, page_name):
         """
@@ -173,11 +176,12 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
-        order = ['entries', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
+        order = ['entries', 'average', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
 
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
+            'average': 'Number of Beers Per Judge',
             'brewers': 'Brewers',
             'judged': 'Entries Judged',
             'no_desc': 'Specialty Entries W/O Description',
@@ -454,6 +458,27 @@ class Website:
 
     ######################
     #
+    # NCBC Inventory
+    #
+    ######################
+    @cherrypy.expose
+    def ncbc_inventory(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='ncbc_inventory.html')
+        return form
+
+    @cherrypy.expose
+    def dt_ncbc_inventory(self, *args, **kwargs):
+
+        sql = 'select *, brewer.organization ' \
+              'from entries ' \
+              'inner join people as brewer on brewer.pkid = fk_people '
+
+        result = self.ncbc_dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+    ######################
+    #
     # Import NCBC Volunteers
     #
     ######################
@@ -550,7 +575,9 @@ class Website:
     @cherrypy.expose
     def dt_inventory(self, *args, **kwargs):
 
-        sql = 'select * from entries'
+        sql = 'select *, brewer.organization ' \
+              'from entries ' \
+              'inner join brewers as brewer on brewer.pkid = fk_brewers '
 
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
@@ -1339,7 +1366,7 @@ class Website:
 
     ######################
     #
-    # Flght Assignments
+    # Flight Assignments
     #
     ######################
     @cherrypy.expose
@@ -1468,6 +1495,27 @@ class Website:
 
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
+
+    ######################
+    #
+    # Manage Pull Sheets
+    #
+    ######################
+    @cherrypy.expose
+    def pull_sheets(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='pull_sheets.html')
+        return form
+
+    @cherrypy.expose
+    def dt_pull_sheets(self, *args, **kwargs):
+
+        sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
     ######################
     #
     #
@@ -1578,7 +1626,7 @@ class Website:
 
 
 
-        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2018, 9, 24) - datetime.date.today()).days, table, beers_per_judge)
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2019, 8, 9) - datetime.date.today()).days, table, beers_per_judge)
 
         #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
         #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
@@ -1604,6 +1652,8 @@ class Website:
         email_test = email_params.get('to', '')
 
         result = Volunteers().get_volunteers()
+
+        #print('volunteers', result)
 
 
         errors = []
@@ -1682,10 +1732,14 @@ class Website:
                 table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
 
                 email_params['table'] = table
+                email_params['competition'] = Competitions().name(Competitions().get_active_competition())
 
                 message = email_params.get('message', '')
 
-                email_params['msg'] = email_params.get('message', '').format(d=email_params)
+                #print(message)
+                #print(email_params)
+
+                email_params['msg'] = message.format(d=email_params)
 
                 #print('send status', email_params)
 

@@ -156,7 +156,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
                     ]
         else:
 
-            text2 = ['Last year we had over 600 entries, thats over 1200 entries to handle.  ',
+            text2 = ['Last year we had over 600 entries, thats over 1200 containers to handle.  ',
                      'Placing the labels on the entries correctly will help us during ',
                    'inventory, staging and judging the entries.  The labels need to be ',
                    'oriented so they are readable.  Please use rubberbands or clear packing ',
@@ -874,7 +874,21 @@ class Ncbc:
         """
         #Removed escape_sql as it adds an extra \ in front of the "
         #desc = escape_sql(json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"'))
-        desc = json.dumps(self.get_field(entry, 'Entry Notes')).strip('\"')
+        desc = json.dumps(self.get_field(entry, 'Entry Notes'))  #.replace('"', "'")
+
+        # Remove leading and trailing doulbe quote
+        if desc[0] == '"':
+            desc = desc[1:]
+        if desc[-1] == '"':
+            desc = desc[:-1]
+
+        # Replace remaining double quotes with single
+        desc = desc.replace('"', "'")
+
+        # Todo: do we need to prepend and append the double quotes?
+        #desc = f'"{desc}"'
+
+
 
 
         temp[self.entry_fields['Entry Notes']] = desc
@@ -943,6 +957,10 @@ class Ncbc:
         for row in self.entries:
 
             attendee_id = self.get_field(row, 'attendee_id')
+
+            if attendee_id in ["486934", "486937", "486940", "486942"]:
+                logger.info(f'Skipping corrupted entry attendee ID: {attendee_id}')
+                #continue
             gen_id = self.get_gen_id(attendee_id)
 
             result =  self.get_raw_data_pkid(field='gen_id', data=gen_id)
@@ -1498,20 +1516,23 @@ def process_new_entries(pkid=1):
 
         if n.send_labels(brewer):
 
-            logger.info('sending to bottle labels to: '.format(brewer))
+            logger.info('sending to bottle labels to: {}'.format(brewer))
 
             msg = 'Hi {},\n'.format(entries[0]['first_name'])
             msg += '\n'
-            msg += 'The NC Brewers Guild and I would like to thank you for your entries.  Attached you will find your '
-            msg += 'entry labels and zero dollar invoice.  '
-            msg += 'The Entry ID is on the label.  Please verify the information on the labels.  ' \
-                   'Each entry will be judged against the Category and Subcategory on the label.  ' \
-                   'Please fill in the quantities and include the invoice with your entries '
+            msg += 'The NC Craft Brewers Guild and I would like to thank you for your entries.  '
+            msg += 'Attached you will find your required entry labels and zero dollar invoice.  '
+            msg += 'The Entry ID is pre-filled on the label.  Please verify the information on the labels.  '
+            msg += 'Each entry will be judged against the Category and Subcategory on the label.  '
+            msg += 'You may leave any branded labels on the submitted containers, as the judged samples '
+            msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
+            msg += '\n'
+            msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
             msg += 'when they are dropped of at Pro Refrigeration.  Please let Lisa (operations@ncbeer.org) and I know '
             msg += 'if you have any questions or issues.\n'
             msg += '\n'
             msg += 'Drop off info:\n'
-            msg += 'August 14th and 15th, 2019 (Thursday + Friday)\n'
+            msg += 'August 15th and 16th, 2019 (Thursday + Friday)\n'
             msg += '9am - 5pm\n'
             msg += 'Pro Refrigeration, Inc.\n'
             msg += '319 Farmington Road\n'
@@ -1535,7 +1556,8 @@ def process_new_entries(pkid=1):
 
             e = Email('files/kevin.json')
 
-
+            #if brewer != 'chris@glass-jug.com':
+            #    send_email = False
             message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                            to=brewer,
                                                            subject='NC Brewers Cup Entry Labels',
@@ -1553,6 +1575,7 @@ def process_new_entries(pkid=1):
             #else:
             elif send_email:
                 result = e.send_message(message, rcpt=[brewer])
+                #result = False
             else:
                 result = False
                 logger.info('Skipping emailing brewers - please run script again to email')
@@ -1588,8 +1611,10 @@ def import_bjcp():
         csv_reader = reader(csv_file, delimiter=',')
         lines = 0
         for row in csv_reader:
-            sql = 'insert ignore into bjcp_judges ({}) values ("{}")'.format(','.join(headings), '","'.join(row))
-            db.db_command(sql=sql)
+            print(row)
+            sql = 'insert ignore into bjcp_judges ({}) values ("{}")'.format(','.join(headings), '","'.join([x.strip() for x in row]))
+            print(sql)
+            #db.db_command(sql=sql)
             print(", ".join(row))
             lines += 1
         print('Number of lines: {}'.format(lines))
@@ -1956,9 +1981,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=4)
+    process_new_entries(pkid=4)
 
-    process_new_volunteers(pkid=5)
+    #process_new_volunteers(pkid=5)
 
     #validate_ncbc(pkid=1)
 
@@ -1974,6 +1999,7 @@ if __name__ == '__main__':
     #menu()
 
     #first_bjcp_email()
+    #import_bjcp()
 
 
     pass

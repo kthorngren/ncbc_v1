@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
      <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -22,11 +22,11 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -56,8 +56,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -213,7 +213,7 @@ editor = new $.fn.dataTable.Editor(
     } );
 
 
- 
+
     editor
         .on( 'postCreate postRemove', function () {
             // After create or edit, a number of other rows might have been effected -
@@ -284,7 +284,7 @@ function drawMainTable() {
                             false
                         )
                         .val();
- 
+
                     // Create a new entry (discarding the previous edit) and
                     // set the values from the read values
                     editor
@@ -294,7 +294,7 @@ function drawMainTable() {
                         } )
                         .set( values );
                 }
-            },        
+            },
         { extend: "remove", editor: editor },
             {
                 extend: "selectedSingle",
@@ -302,16 +302,16 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
-					
+
 					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
-					//data.to = 'kevin.thorngren@gmail.com'
+					data.to = 'oscar.smoscar+buttonTest@gmail.com'
 					data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
 					//data.cc = ['kevin.thorngren@gmail.com']
-					
+
 					sendStatus(data);
 					//sendEmail(data);
 				}
-            },        
+            },
             {
                 //extend: "selectedSingle",
 				enabled: false,
@@ -319,15 +319,15 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
-					
+
 					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
 					data.to = ['operations@ncbeer.org', 'jasmine@ncbeer.org',
-                                'erik@mysterybrewing.com', 'hopson@mindspring.com',
+                                'erik@fullsteam.ag', 'hopson@mindspring.com',
                                 'kevin.thorngren@gmail.com']
-					
+
 					sendStatus(data);
 				}
-            },        
+            },
             {
                 extend: "selectedSingle",
 				//enabled: false,
@@ -335,12 +335,12 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
-					
+
 					bccNcbcEmailList(data);
-					
+
 				}
-            },        
-    ] 
+            },
+    ]
 
 	});
 
@@ -355,12 +355,12 @@ function sendStatus(data) {
 		data: {data: data},
 		success: function(json) {
 		var response = JSON.parse(json);
-				            			
+
 			console.log(response);
 
 		},
 		error: function (jqXHR, exception) {
-				      		
+
 			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 		},
 	});
@@ -374,7 +374,7 @@ function bccNcbcEmailList(data) {
 		type: 'post',
 		success: function(json) {
 		var response = JSON.parse(json);
-				            			
+
 			if (response) {
 				data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
 				data.bcc = response
@@ -385,7 +385,7 @@ function bccNcbcEmailList(data) {
 
 		},
 		error: function (jqXHR, exception) {
-				      		
+
 			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 		},
 	});
@@ -404,23 +404,23 @@ function sendEmail(data) {
 		content_type: data.content_type
 	}
 	email = JSON.stringify(email);
-				
+
 	$.ajax({
 		url: "/send_email",
 		type: 'post',
 		data: {data: email},
 		success: function(json) {
 		var response = JSON.parse(json);
-				            
+
 			console.log('returned data', response);
 
 		},
 		error: function (jqXHR, exception) {
-				      		
+
 			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 		},
 	});
-}					
+}
 
 
 
@@ -430,13 +430,13 @@ $(document).ready(function() {
 
 table.on( 'select', function ( e, dt, type, indexes ) {
 	var data = table.row( {selected: true} ).data();
-	
+
 	if (data.type == 'daily status') {
 		table.buttons(5).enable();
 	} else if (data.type == 'bcc all') {
 		table.buttons(6).enable();
 	}
-    
+
 } );
 
 table.on( 'deselect', function ( e, dt, type, indexes ) {
@@ -450,4 +450,3 @@ table.on( 'deselect', function ( e, dt, type, indexes ) {
 
 </body>
 </html>
-

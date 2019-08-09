@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
      <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -22,11 +22,11 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -56,8 +56,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -203,7 +203,7 @@ editor = new $.fn.dataTable.Editor(
     } );
 
 
- 
+
     editor
         .on( 'postCreate postRemove', function () {
             // After create or edit, a number of other rows might have been effected -
@@ -266,7 +266,7 @@ function drawMainTable() {
                             false
                         )
                         .val();
- 
+
                     // Create a new entry (discarding the previous edit) and
                     // set the values from the read values
                     editor
@@ -276,7 +276,7 @@ function drawMainTable() {
                         } )
                         .set( values );
                 }
-            },        
+            },
         { extend: "remove", editor: editor },
             {
                 extend: "selectedSingle",
@@ -284,38 +284,38 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
-					
+
 					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
 					data.to = 'kevin.thorngren@gmail.com'
 					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
 					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
 					//data.cc = ['kevin.thorngren@gmail.com']
-					
-					
-					
+
+
+
 					sendEmail(data);
 					//sendEmail(data);
 				}
-            },        
+            },
              {
                 extend: "selectedSingle",
                 text: 'Send Volunteer Email',
                 action: function ( e, dt, node, config ) {
 
 					var data = table.row( {selected: true} ).data();
-					
+
 					data.from = 'NC Brewers Cup <kevin.thorngren@gmail.com>'
 					//data.to = 'kevin.thorngren@gmail.com'
 					//data.bcc = ['brewerkev@gmail.com', 'kevin.thorngren@gmail.com']
 					data.cc = ['operations@ncbeer.org']
 					data.filename = '{d[firstname]} {d[lastname]} NCBC Hotel.pdf'
-					
+
 					sendEmail(data);
 					//sendEmail(data);
 				}
-            },        
- 
-    ] 
+            },
+
+    ]
 
 	});
 
@@ -332,12 +332,12 @@ function sendEmail(data) {
 		data: {data: data},
 		success: function(json) {
 		var response = JSON.parse(json);
-				            			
+
 			console.log(response);
 
 		},
 		error: function (jqXHR, exception) {
-				      		
+
 			//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 		},
 	});
@@ -349,12 +349,11 @@ function sendEmail(data) {
 $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
-	
-	
+
+
 
 });
 </script>
 
 </body>
 </html>
-

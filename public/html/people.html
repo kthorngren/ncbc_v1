@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -19,12 +19,12 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
-    
+
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -54,8 +54,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -125,8 +125,8 @@
             <!-- /row -->
 
 
-            
-            
+
+
           </div>
         </div>
         <!-- /page content -->
@@ -256,7 +256,7 @@ editor = new $.fn.dataTable.Editor(
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child, :last-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2))', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -294,15 +294,15 @@ function drawMainTable() {
    		order: [[3, 'asc']],
 		columns: [
 	        {
-	        	data: 'pkid',
-	        	visible: false
-	        },
-	        {
     	        data: null,
         	    defaultContent: "",
             	className: "select-checkbox",
 	            orderable: false
     	    },
+          {
+	        	data: 'pkid',
+	        	//visible: false
+	        },
 	        {
 	        	data: 'firstname',
 	        },
@@ -317,18 +317,23 @@ function drawMainTable() {
 	        },
 	        {
 	        	data: 'address2',
+            visible: false
 	        },
 	        {
 	        	data: 'city',
+            visible: false
 	        },
 	        {
 	        	data: 'state',
+            visible: false
 	        },
 	        {
 	        	data: 'zip',
+            visible: false
 	        },
 	        {
 	        	data: 'country',
+            visible: false
 	        },
 	        {
 	        	data: 'phone',
@@ -363,7 +368,7 @@ function drawMainTable() {
                             false
                         )
                         .val();
- 
+
                     // Create a new entry (discarding the previous edit) and
                     // set the values from the read values
                     editor
@@ -373,10 +378,10 @@ function drawMainTable() {
                         } )
                         .set( values );
                 }
-            },        
+            },
         { extend: "remove", editor: editor }
-    ] 
-	    
+    ]
+
 
 	});
 
@@ -397,4 +402,3 @@ $(document).ready(function() {
 
 </body>
 </html>
-

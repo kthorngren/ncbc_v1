@@ -97,14 +97,14 @@ class Flights:
             #get head judge pkid and don't pair list
             hj = head_judges.pop()
             hj_pkid = str(hj['pkid'])
-            hj_dont_pair = hj['dont_pair'].split(',')
+            hj_dont_pair = hj['dont_pair'].split(',') if hj['dont_pair'] else []
 
             #postion of match in judges list
             position = 0
 
             for judge in judges:
                 #get judges don't pair list
-                j_dont_pair = judge['dont_pair'].split(',') if judge['dont_pair'] else ''
+                j_dont_pair = judge['dont_pair'].split(',') if judge['dont_pair'] else []
 
                 #if head judge pkid not in judge do not pair with and
                 #judge pkid not in head judge do not pair with then pair the judges
@@ -128,10 +128,15 @@ class Flights:
 
 
     def get_judges_for_session(self, session_number):
-
+        print('session_number', session_number)
         result = Sessions().get_session_volunteers(session_number, judges=True)
+        print('judges')
+
+        for r in result:
+            print(r)
 
         session_list = Sessions().get_daily_pkids(session_number)
+        print('session list', session_list)
 
         for r in result:
 

@@ -132,11 +132,20 @@ class Competitions:
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
+        logger.info(result)
 
-        status['entries']['entries'] = int(result.get('entries', 0))
-        status['entries']['checked_in'] = int(result.get('checked_in', 0))
-        status['entries']['judged'] = int(result.get('judged', 0))
-        status['entries']['remaining'] = int(result.get('checked_in', 0)) - int(result.get('judged', 0))
+        entries = result.get('entries', 0)
+        entries = 0 if entries is None else int(entries)
+        checked_in = result.get('checked_in', 0)
+        checked_in = 0 if checked_in is None else int(checked_in)
+        judged = result.get('judged', 0)
+        judged = 0 if judged is None else int(judged)
+
+
+        status['entries']['entries'] = entries
+        status['entries']['checked_in'] = checked_in
+        status['entries']['judged'] = judged
+        status['entries']['remaining'] = checked_in - judged
 
 
         sql = 'select * from sessions where (judging = "1" or setup = "1") and ' \
@@ -155,6 +164,9 @@ class Competitions:
             sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
 
         print('sessions_list', sessions_list)
+
+        num_judges = 0
+
         for r in sorted(sessions, key = lambda k:k['session_number']):
 
             session_type = []
@@ -163,6 +175,7 @@ class Competitions:
             if r['judging'] == 1:
                 session_type.append('Judging')
 
+            num_judges += sessions_list[1].count(r['pkid'])
 
             status['sessions'].append({
                 'name': r['name'],
@@ -172,6 +185,7 @@ class Competitions:
                 'other': sessions_list[2].count(r['pkid']),
             })
 
+        status['entries']['average'] = round(entries / (num_judges / 2))
 
         #for s in status['sessions']:
         #    print(s)
