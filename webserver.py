@@ -1626,7 +1626,7 @@ class Website:
 
 
 
-        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2019, 8, 9) - datetime.date.today()).days, table, beers_per_judge)
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2019, 8, 12) - datetime.date.today()).days, table, beers_per_judge)
 
         #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
         #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)

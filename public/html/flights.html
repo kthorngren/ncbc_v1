@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -19,7 +19,7 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
@@ -28,6 +28,19 @@ tr.strikeout {
   text-decoration: line-through;
 }
 
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+
+}
+
+
+.session {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
 
   </style>
   <body class="nav-md">
@@ -57,8 +70,8 @@ tr.strikeout {
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -75,12 +88,12 @@ tr.strikeout {
 
 				  <!-- col-md-6 -->
                   <div class="col-md-6 col-sm-6 col-xs-12">
-                  
+
                     <!-- x_panel -->
                     <div class="x_panel tile fixed_height_420">
                       <!-- panel -->
                       <div id="tests-panel" class="panel panel-default">
-                      
+
                       <!-- x_title -->
                       <div class="x_title panel-heading">
                         <h2 id="tests-desc">Flights<small id="tests-desc-small"></small></h2>
@@ -92,10 +105,10 @@ tr.strikeout {
                           </li>
                         </ul>
                         <div class="clearfix"></div>
-                      
+
                       </div>
                       <!-- /x_title -->
-                      
+
                       </div>
                       <!-- /panel -->
 
@@ -119,11 +132,11 @@ tr.strikeout {
 
 
                         </div>
-                        
-                      </div>
-                      <!-- /x_content -->  
 
-                      
+                      </div>
+                      <!-- /x_content -->
+
+
                     </div>
                     <!-- /x_panel -->
 
@@ -132,19 +145,19 @@ tr.strikeout {
 
 
 
- 
- 
+
+
  				  <!-- col-md-6 -->
-                  <div class="col-md-6 col-sm-6 col-xs-12">
-                  
+                  <div class="col-md-6 col-sm-6 col-xs-12  session">
+
                     <!-- x_panel -->
                     <div class="x_panel tile fixed_height_420">
                       <!-- panel -->
                       <div id="tests-panel" class="panel panel-default">
-                      
+
                       <!-- x_title -->
                       <div class="x_title panel-heading">
-                        <h2 id="tests-desc">Sessions and Tables<small id="tests-desc-small"></small></h2>
+                        <h2 id="tests-desc">Tables<small id="tests-desc-small"></small></h2>
 
                         <ul class="nav navbar-right panel_toolbox">
                           <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
@@ -153,10 +166,10 @@ tr.strikeout {
                           </li>
                         </ul>
                         <div class="clearfix"></div>
-                      
+
                       </div>
                       <!-- /x_title -->
-                      
+
                       </div>
                       <!-- /panel -->
 
@@ -164,7 +177,7 @@ tr.strikeout {
 					  <!-- x_content -->
                       <div class="x_content panel-body">
 
-
+                        <!--
                           <table id="flight-sheet" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
@@ -175,13 +188,15 @@ tr.strikeout {
                               </tr>
                             </thead>
                           </table>
-
+                        -->
 
 <!-- Modal -->
+<!--
 <div id="myMODAL" class="modal fade" role="dialog">
   <div class="modal-dialog">
-
+-->
     <!-- Modal content-->
+    <!--
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -197,7 +212,7 @@ tr.strikeout {
 
   </div>
 </div>
-
+-->
 
                         <div class="col-md-12 hidden-small">
                           <table id="sessions" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
@@ -213,11 +228,11 @@ tr.strikeout {
                             </thead>
                           </table>
                         </div>
-                        
-                      </div>
-                      <!-- /x_content -->  
 
-                      
+                      </div>
+                      <!-- /x_content -->
+
+
                     </div>
                     <!-- /x_panel -->
 
@@ -231,8 +246,8 @@ tr.strikeout {
 
 
 
-           
-            
+
+
           </div>
         </div>
         <!-- /page content -->
@@ -286,9 +301,16 @@ var sheets_table;
 
 var table_beer_count = {};
 
-var judge_entries = [];
-var judge_dislikes = [];
-var judge_likes = [];
+var head_judge = '';
+var second_judge = '';
+
+var hj_judge_likes = [];
+var hj_judge_entries = [];
+var hj_judge_dislikes = [];
+
+var sj_judge_likes = [];
+var sj_judge_entries = [];
+var sj_judge_dislikes = [];
 
 
 function drawMainTable() {
@@ -336,7 +358,7 @@ function drawMainTable() {
 	        				for (var i=0; i<data.length; i++) {
 	        					var element = data[i];
 	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
-	        			 		table_num = table_num + temp;	
+	        			 		table_num = table_num + temp;
 	        				}
 	        			} else {
 	        				table_num = '';
@@ -344,7 +366,7 @@ function drawMainTable() {
 	        			return  table_num;
 	        		}
 	        		return data;
-	        	}	        	
+	        	}
 	        },
 	        {
 	        	data: 'cat_total',
@@ -362,55 +384,78 @@ function drawMainTable() {
                     .reduce( function (a, b) {
                     return a + b;
                 	}, 0 );
-				
+
             	var num_tables = rows
                     .data()
                     .pluck('tables')
                     .reduce( function (a, b) {
-                    
+
                     return a + (b ? b.length : 0);
                 	}, 0 );
-                	
-                	
+
+
                 var avg_beers = 0;
-                
+
                 if (rows[0].length > 0) {
                 	avg_beers = num_tables / rows[0].length;
                 }
-                
+
                 if (avg_beers) {
                 	avg_beers = (sum / avg_beers).toFixed(1);
                 }
-                
+
 				return $('<tr/>')
                     .append( '<td colspan="2	">' + group + '</td>' )
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
                     .append( '<td>' + avg_beers + '</td>' );
-         	}       
+         	}
 	    },
 	    rowCallback: function (row, data) {
 	    	//console.log(judge_entries);
 	    	//console.log(judge_likes);
 	    	//console.log(judge_dislikes);
-	    	
+
 	    	//$(row).data(data);
-	    	
+
+        var categoryId = data.category_id.toString();
+        var color = '';
+        var title = [];
+
 	    	if (data.judged == 1) {
 				$(row).addClass('strikeout');
-	    	
-	    	} else if (judge_entries.indexOf(data.category_id.toString()) > -1) {
-				$(row).css('color', 'Red');
-				$(row).attr('title', 'Entry');
-			} else if (judge_dislikes.indexOf(data.category_id.toString()) > -1){
-				$(row).css('color', 'Red');
-				$(row).attr('title', 'Dislikes');
-			} else if (judge_likes.indexOf(data.category_id.toString()) > -1){
-				$(row).css('color', 'Green');
-				$(row).attr('title', 'Likes');
-			} else {
+
+      } else if (hj_judge_entries.indexOf(categoryId) > -1) {
+				color = 'Red';
+				title.push('Entry: ' + head_judge);
+			}
+      if (hj_judge_dislikes.indexOf(categoryId) > -1) {
+        color = 'Red';
+        title.push('Dislikes: ' + head_judge);
+      }
+      if (hj_judge_likes.indexOf(categoryId) > -1) {
+        color = color === 'Red' ? 'Red' : 'Green';
+        title.push('Likes: ' + head_judge);
+			}
+      if (sj_judge_entries.indexOf(categoryId) > -1) {
+          color = 'Red';
+          title.push('Entry: ' + second_judge);
+      }
+      if (sj_judge_dislikes.indexOf(categoryId) > -1) {
+          color = 'Red';
+          title.push('Dislikes: ' + second_judge);
+			}
+      if (sj_judge_likes.indexOf(categoryId) > -1){
+        color = color === 'Red' ? 'Red' : 'Green';
+        title.push('Likes: ' + second_judge);
+			}
+
+      if (title === '') {
 				$(row).css('color', '');
 				$(row).attr('title');
-			}
+			} else {
+        $(row).css('color', color);
+				$(row).attr('title', title.join('<br>'));
+      }
 	    },
     	columnDefs: [
       		{
@@ -422,22 +467,22 @@ function drawMainTable() {
     	drawCallback: function( settings ) {
         	var api = this.api();
         	var category_totals = {};
- 
+
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
-    			
+
     			if (!category_totals[data.category_id]) {
     				category_totals[data.category_id] = 0;
     			}
     			category_totals[data.category_id] = category_totals[data.category_id] + data.count;
-			} ); 			
+			} );
 
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
-    			
+
     			data.cat_total = category_totals[data.category_id];
     			this.data(data);
-			} ); 			
+			} );
 
 
         },
@@ -445,55 +490,55 @@ function drawMainTable() {
             {
                 text: 'Initialize Flights',
                 action: function ( e, dt, node, config ) {
-    	
+
     				init_flights(true);
-    	
+
 
                 }
-            },        
+            },
             {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
-    	
+
     				get_styles_count(true);
-    	
+
 
                 }
-            },        
+            },
             {
                 text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
-                
+
 					get_styles_count(false);
-					
+
                 }
-            },        
+            },
             {
                 text: 'Save Flights',
                 action: function ( e, dt, node, config ) {
                 	save_flights();
                 }
-            },        
+            },
             {
                 text: 'Order by Category',
                 action: function ( e, dt, node, config ) {
                 	table.order([[1, 'asc'], [2, 'asc']]).draw(false);
                 }
-            },        
+            },
             {
                 text: 'Order by Cat Totals',
                 action: function ( e, dt, node, config ) {
                 	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw(false);
                 }
-            },        
+            },
             {
                 text: 'Refresh Flights Data',
                 action: function ( e, dt, node, config ) {
                 	table.draw(false);
                 }
-            },        
-    ] 
-	    
+            },
+    ]
+
 
 	});
 
@@ -507,6 +552,7 @@ function drawSessionsTable() {
 		ajax: 'dt_tables',
 		dom: 't',
 		rowId: 'pkid',
+    scrollY: '500',
 		paging: false,
    		order: [[2, 'asc']],
 	    select: {
@@ -534,12 +580,12 @@ function drawSessionsTable() {
 	        			if (data.bjcp_rank) {
 	        				bjcp = ' : BJCP ' + data.bjcp_rank;
 	        			}
-	        			
+
 	        			var cat = '';
 	        			if (data.categories.length > 0) {
 	        				cat = ' (' + data.categories.join() + ')';
 	        			}
-	        			return data.firstname + ' ' + data.lastname + bjcp + cat;	
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;
 	        		}
 	        		return data;
 	        	}
@@ -552,7 +598,7 @@ function drawSessionsTable() {
 	        			if (data.bjcp_rank) {
 	        				bjcp = ' : BJCP ' + data.bjcp_rank;
 	        			}
-	        			
+
 	        			var cat = '';
 	        			if (data.categories.length > 0) {
 	        				cat = ' (' + data.categories.join() + ')';
@@ -575,12 +621,12 @@ function drawSessionsTable() {
 	    rowCallback: function (row, data, displayNum, displayIndex, dataIndex ) {
 	    	var api = this.api();
 	    	var total = table_beer_count[data.name];
-	    	
-	    	//console.log(table_beer_count);	
+
+	    	//console.log(table_beer_count);
 	    	if (typeof total != 'undefined') {
 	    		data.total = total;
 	    		api.row(dataIndex).data(data);
-	    		
+
 	    	}
 	    	if (data.name === 'Table 1') {
 	    	//console.log(total)
@@ -589,12 +635,12 @@ function drawSessionsTable() {
 	    },
 	    initComplete: function () {
 	    	var api = this.api();
-	    	
+
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
     			table_beer_count[data.name] = 0;
-			} );	    	
-	    	
+			} );
+
 	    },
 	    rowGroup: {
 	    	dataSrc: 'session_name',
@@ -608,14 +654,14 @@ function drawSessionsTable() {
                     .reduce( function (a, b) {
                     return a + b;
                 	}, 0 );
-                    
+
 				return $('<tr/>')
                     .append( '<td colspan="3">' + group +' ('+rows.count()+' Tables)</td>' )
                     .append( '<td>Total: ' + sum.toFixed(0) + '</td>' )
                     .append( '<td></td>' );
-         	}       
+         	}
 	    },
-	    
+
 
 	});
 
@@ -647,7 +693,7 @@ function drawFlightSheetTable() {
             exportOptions: {
                 columns: [ 1, 2, 3],
             }
-        } ]	    
+        } ]
 
 	});
 
@@ -667,9 +713,9 @@ function generate_flights(data) {
             console.log('generate_flights success')
             data = data.data;
         	//console.log(data);
-        	
+
         	sheets_table.clear().draw();
-            
+
             for (table in data) {
             	//console.log('table', data[table].category_name);
             	sheets_table.row.add([table, table, '', data[table].category_name]);
@@ -677,7 +723,7 @@ function generate_flights(data) {
             	sheets_table.row.add([table, 'Judge', '', data[table].second_judge]);
             	sheets_table.row.add([table, ' ', ' ', ' ']);
             	sheets_table.row.add([table, 'Check Off', ' ', ' ']);
-            	
+
             	var beers = data[table].beers;
             	//console.log(beers);
             	for (i=0; i<beers.length; i++) {
@@ -688,7 +734,7 @@ function generate_flights(data) {
             	}
             	sheets_table.row.add([table, '', '', '']);
             }
-            
+
             sheets_table.draw();
         },
 
@@ -709,9 +755,9 @@ function init_flights() {
       	success: function(json) {
             var data = JSON.parse(json);
         	//console.log(data);
-            
+
             table.clear().draw();
-			table.rows.add(data.data).draw();            
+			table.rows.add(data.data).draw();
         },
 
       	error: function (jqXHR, exception) {
@@ -733,11 +779,11 @@ function save_flights() {
       	success: function(json) {
             var data = JSON.parse(json);
             //console.log(data);
-            
+
             if (data.error && data.error.length > 0) {
             	console.log('Error trying to save judge pairs: ' + data.error);
             }
-            
+
         },
 
       	error: function (jqXHR, exception) {
@@ -756,23 +802,23 @@ function get_styles_count(full_inventory=true) {
       	data: {data: full_inventory},
       	success: function(json) {
             var styles_count = JSON.parse(json);
-            
+
             styles_count = styles_count.data;
-            
+
             //reset table_beer_count counters
 			for (var key in table_beer_count) {
    				if (table_beer_count.hasOwnProperty(key)) {
       				table_beer_count[key] = 0;
    				}
 			}
-			
+
             //iterate each row to get category counts and display them in the flights table and judges tables
 			table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
    			 	var data = this.data();
    			 	//console.log(data)
-   			 	
+
    			 	category = styles_count[data.category_id];
-   			 	
+
    			 	if (category) {
    			 		var count = styles_count[data.category_id][data.sub_category_id];
    			 		if (typeof count == 'undefined') {
@@ -781,15 +827,15 @@ function get_styles_count(full_inventory=true) {
    			 	} else {
    			 		count = 0;
    			 	}
-   			 	
-   			 	
+
+
    			 	if (count) {
    			 		data.count = count;
    			 	} else {
    			 		data.count = 0;
    			 	}
-   			 	
-   			 	
+
+
    			 	//console.log(data.tables, count)
 
 				//update table beer counter with newly loaded data
@@ -800,11 +846,11 @@ function get_styles_count(full_inventory=true) {
    			 	//console.log(table_beer_count);
     			//save the number of entries counter to the flights table
     			this.data(data);
-			} );    
-			
-			table.draw(false);        
+			} );
+
+			table.draw(false);
 			sessions_table.draw(false);
-            
+
         },
 
       	error: function (jqXHR, exception) {
@@ -818,57 +864,69 @@ function get_styles_count(full_inventory=true) {
 
 $(document).ready(function() {
 	drawMainTable();
-	
+
 	drawSessionsTable();
 	drawFlightSheetTable();
-	
+
 	sessions_table.on('select', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
-		
+    console.log(data);
+
+    head_judge = data.head_judge.firstname + ' ' + data.head_judge.lastname
+    second_judge = data.second_judge.firstname + ' ' + data.second_judge.lastname
 		//get categories of entries a judge has
-		judge_entries = data.head_judge.categories.concat(data.second_judge.categories);
-		
-		var hj = data.head_judge.likes ? data.head_judge.likes.split(',') : [];
-		var sj = data.second_judge.likes ? data.second_judge.likes.split(',') : [];
-		judge_likes = hj.concat(sj);
+		hj_judge_entries = data.head_judge.categories;
+    sj_judge_entries  = data.second_judge.categories;
 
-		var hj = data.head_judge.dislikes ? data.head_judge.dislikes.split(',') : [];
-		var sj = data.second_judge.dislikes ? data.second_judge.dislikes.split(',') : [];
-		judge_dislikes = hj.concat(sj);
+		hj_judge_likes = data.head_judge.likes ? data.head_judge.likes.split(',') : [];
+		sj_judge_likes = data.second_judge.likes ? data.second_judge.likes.split(',') : [];
+		//judge_likes = hj.concat(sj);
 
-		console.log(judge_dislikes)
+		hj_judge_dislikes = data.head_judge.dislikes ? data.head_judge.dislikes.split(',') : [];
+		sj_judge_dislikes = data.second_judge.dislikes ? data.second_judge.dislikes.split(',') : [];
+		//judge_dislikes = hj.concat(sj);
+
+		//console.log(judge_dislikes)
 		table.draw(false);
-		
+
 	});
 
 
 	sessions_table.on('deselect', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
-		
+
 		//reset the judge entries when no judge is selected
-		judge_entries = [];
-		judge_likes = [];
-		judge_dislikes = [];
-		
+    head_judge = '';
+    second_judge = '';
+    hj_judge_entries = [];
+		hj_judge_likes = [];
+		hj_judge_dislikes = [];
+    sj_judge_entries = [];
+		sj_judge_likes = [];
+		sj_judge_dislikes = [];
+
 		table.draw(false);
 	});
 
-  
+
 
 	table.on( 'select', function ( e, dt, type, indexes ) {
     	var sessions = sessions_table.row( { selected: true } ).data();
-    	
+
     	var data = table.row( { selected: true } ).data();
-    	
+      var categoryId = data.category_id.toString();
+
     	if (sessions) {
-    		// Make sure judge does not have entries in category and 
+    		// Make sure judge does not have entries in category and
     		// make sure table is not already in list - skip if so
-    		if (judge_entries.indexOf(data.category_id.toString()) === -1 &&
-    				judge_dislikes.indexOf(data.category_id.toString()) === -1 && 
-    				data.tables.indexOf(sessions.name) == -1 &&
+    		if (hj_judge_entries.indexOf(categoryId) === -1 &&
+    				hj_judge_dislikes.indexOf(categoryId) === -1 &&
+            sj_judge_entries.indexOf(categoryId) === -1 &&
+        		sj_judge_dislikes.indexOf(categoryId) === -1 &&
+            data.tables.indexOf(sessions.name) == -1 &&
     				data.judged != 1
     				) {
-    	
+
     			//remove previous beer count for that style before adding new table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
     			for (var i=0; i<data.tables.length; i++) {
@@ -885,7 +943,7 @@ $(document).ready(function() {
     			if (!table_beer_count[sessions.name]) {
     				table_beer_count[sessions.name] = 0;
     			}
-    			
+
     			//recalc beer count for style after adding new table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
     			for (var i=0; i<data.tables.length; i++) {
@@ -893,11 +951,11 @@ $(document).ready(function() {
     				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
     				//need to find row in session table to update
     			}
-    		
+
 				//then remove these 2 lines
     			//sessions.total = table_beer_count[sessions.name];
     			//sessions_table.row( { selected: true } ).data(sessions);
-    		
+
     			sessions_table.draw(false);
     			table.draw(false);
     		} else {
@@ -907,44 +965,44 @@ $(document).ready(function() {
     	} else {
     		//code to remove table
     		//maybe an alert with tables to select
-    		
+
     		var data = table.row( { selected: true } ).data();
-    		
+
     		if (data.tables.length > 0 && data.judged != 1) {
-    			
+
 
 				$('.modal-body').empty();
-				
-				
+
+
 				for (var i=0; i<data.tables.length; i++) {
 					$('<div class="radio"><label><input type="radio" ' +
-					'name="optradio" value="' + data.tables[i] + '">' + data.tables[i] + 
+					'name="optradio" value="' + data.tables[i] + '">' + data.tables[i] +
 					'</label></div>').appendTo('.modal-body');
 				}
-    		
-    			$('#myMODAL').modal('show'); 
+
+    			$('#myMODAL').modal('show');
     		//no tables in the row
     		} else {
     			table.rows().deselect();
     		}
 
     	}
-    	
-    	
+
+
 	} );
-	
+
 $('#myMODAL .modal-footer button').on('click', function(event) {
   var $button = $(event.target); // The clicked button
 
   $(this).closest('.modal').one('hidden.bs.modal', function() {
-    // Fire if the button element 
+    // Fire if the button element
     //console.log('The button that closed the modal is: ', $button.attr('id'));
-    
+
     if ($button.attr('id') === 'remove') {
-    
+
     	var radioValue = $("input[name='optradio']:checked").val();
     	console.log(radioValue);
-    	
+
     	if (radioValue) {
     			var data = table.row( { selected: true } ).data();
     			//remove previous beer count for that style before removing table
@@ -954,14 +1012,14 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
     				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] - num_beers;
     				//need to find row in session table to update
     			}
-    			
-    			
+
+
 
 
 				//remove table from selected row then deselect for visual
 
     			index = data.tables.indexOf(radioValue);
-    			
+
     			//only remove if radio button value found in array
     			if (index > -1) {
     				data.tables.splice(index, 1);
@@ -971,16 +1029,16 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
     			if (!table_beer_count[sessions.name]) {
     				table_beer_count[sessions.name] = 0;
     			}
-    			
+
     			//recalc beer count for style after removing table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
     			for (var i=0; i<data.tables.length; i++) {
     				table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + num_beers;
     			}
-    		
+
     			sessions_table.draw(false);
     			table.draw(false);
-    			
+
     	}
     }
     table.rows().deselect();
@@ -991,18 +1049,17 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
 $('#main-table').on('click', '.group', function() {
 
 	var row = $(this).closest('tr');
-	
+
 	var cat_number = row.text().split(' ')[0];
 	console.log('click', parseInt(cat_number))
-	
+
 	generate_flights(parseInt(cat_number));
-	
-	
-}) 
+
+
+})
 
 });
 </script>
 
 </body>
 </html>
-

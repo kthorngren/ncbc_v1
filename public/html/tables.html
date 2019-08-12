@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -19,11 +19,11 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -53,8 +53,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -112,8 +112,8 @@
             <!-- /row -->
 
 
-            
-            
+
+
           </div>
         </div>
         <!-- /page content -->
@@ -211,15 +211,27 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
     				generate_tables();
                 }
-            },        
+            },
             {
                 text: 'Save Table Assignments',
                 action: function ( e, dt, node, config ) {
                 	save_tables();
                 }
-            },        
-    ] 
-	    
+            },
+            {
+                text: 'Update All Judges Info (Certs, etc)',
+                action: function ( e, dt, node, config ) {
+                	alert('Not implemented - send request to server to update and save all judges info');
+                }
+            },
+            {
+                text: 'Edit Table Assignment (selected)',
+                action: function ( e, dt, node, config ) {
+                	alert('Not implemented - allow for modifying individual table assignments');
+                }
+            },
+    ]
+
 
 	});
 
@@ -238,7 +250,7 @@ function generate_tables() {
             //console.log(data);
             table.clear().draw();
             table.rows.add(data).draw();
-            
+
         },
 
       	error: function (jqXHR, exception) {
@@ -251,7 +263,7 @@ function generate_tables() {
 function save_tables() {
 
 	var data = table.rows().data().toArray();
-	
+
 	data = JSON.stringify(data);
 
 	$.ajax({
@@ -259,15 +271,15 @@ function save_tables() {
       	type: 'post',
       	data: {data: data},
       	success: function(data) {
-            
+
             if (data) {
             	alert('Error trying to save table assignments: ' + data);
             } else {
             	//table.rows().deselect();
             	table.ajax.reload();
-            	
+
             }
-            
+
         },
 
       	error: function (jqXHR, exception) {
@@ -287,4 +299,3 @@ $(document).ready(function() {
 
 </body>
 </html>
-
