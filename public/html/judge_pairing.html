@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -20,11 +20,11 @@
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
 
-    
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -54,8 +54,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -115,12 +115,12 @@
 
 				  <!-- col-md-4 -->
                   <div class="col-md-4 col-sm-4 col-xs-12">
-                  
+
                     <!-- x_panel -->
                     <div class="x_panel tile fixed_height_420">
                       <!-- panel -->
                       <div id="tests-panel" class="panel panel-default">
-                      
+
                       <!-- x_title -->
                       <div class="x_title panel-heading">
                         <h2 id="tests-desc">Session Judges<small id="tests-desc-small"></small></h2>
@@ -132,10 +132,10 @@
                           </li>
                         </ul>
                         <div class="clearfix"></div>
-                      
+
                       </div>
                       <!-- /x_title -->
-                      
+
                       </div>
                       <!-- /panel -->
 
@@ -154,11 +154,11 @@
                             </thead>
                           </table>
                         </div>
-                        
-                      </div>
-                      <!-- /x_content -->  
 
-                      
+                      </div>
+                      <!-- /x_content -->
+
+
                     </div>
                     <!-- /x_panel -->
 
@@ -167,16 +167,16 @@
 
 
 
- 
- 
+
+
  				  <!-- col-md-4 -->
                   <div class="col-md-4 col-sm-4 col-xs-12">
-                  
+
                     <!-- x_panel -->
                     <div class="x_panel tile fixed_height_420">
                       <!-- panel -->
                       <div id="tests-panel" class="panel panel-default">
-                      
+
                       <!-- x_title -->
                       <div class="x_title panel-heading">
                         <h2 id="tests-desc">Head Judge<small id="tests-desc-small"></small></h2>
@@ -188,10 +188,10 @@
                           </li>
                         </ul>
                         <div class="clearfix"></div>
-                      
+
                       </div>
                       <!-- /x_title -->
-                      
+
                       </div>
                       <!-- /panel -->
 
@@ -211,11 +211,11 @@
                             </thead>
                           </table>
                         </div>
-                        
-                      </div>
-                      <!-- /x_content -->  
 
-                      
+                      </div>
+                      <!-- /x_content -->
+
+
                     </div>
                     <!-- /x_panel -->
 
@@ -226,12 +226,12 @@
 
 				  <!-- col-md-4 -->
                   <div class="col-md-4 col-sm-4 col-xs-12">
-                  
+
                     <!-- x_panel -->
                     <div class="x_panel tile fixed_height_420">
                       <!-- panel -->
                       <div id="tests-panel" class="panel panel-default">
-                      
+
                       <!-- x_title -->
                       <div class="x_title panel-heading">
                         <h2 id="tests-desc">Second Judge<small id="tests-desc-small"></small></h2>
@@ -243,10 +243,10 @@
                           </li>
                         </ul>
                         <div class="clearfix"></div>
-                      
+
                       </div>
                       <!-- /x_title -->
-                      
+
                       </div>
                       <!-- /panel -->
 
@@ -266,18 +266,18 @@
                             </thead>
                           </table>
                         </div>
-                        
-                      </div>
-                      <!-- /x_content -->  
 
-                      
+                      </div>
+                      <!-- /x_content -->
+
+
                     </div>
                     <!-- /x_panel -->
 
                     </div>
                     <!-- /col-md-4 -->
-           
-            
+
+
           </div>
         </div>
         <!-- /page content -->
@@ -332,6 +332,13 @@ var judges_table;
 var hj_table;
 var sj_table;  //sj = second judge
 
+/* Create an array with the values of all the input boxes in a column, parsed as numbers */
+$.fn.dataTable.ext.order['dom-text-numeric'] = function  ( settings, col )
+{
+    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+        return $('input', td).val() * 1;
+    } );
+}
 
 
 function drawMainTable() {
@@ -378,43 +385,43 @@ function drawMainTable() {
                 text: 'Auto Generate Judge Pairs',
                 action: function ( e, dt, node, config ) {
     				var session_number = table.row( { selected: true } ).data()['pkid'];
-    	
+
     				auto_gen_pairs(session_number);
-    	
+
 
                 }
-            },        
+            },
             {
                 extend: "selectedSingle",
                 text: 'Save Judge Pairs',
                 action: function ( e, dt, node, config ) {
-                
+
                 	var data = {};
 
 					data.judges = judges_table.rows().data().toArray();
 					data.hj_judges = hj_table.rows().data().toArray();
 					data.sj_judges = sj_table.rows().data().toArray();
-					
+
 					data.fk_sessions = table.row( { selected: true } ).data()['pkid'];
-					
+
 					//console.log('save', data);
-					
+
 					save_pairs(data);
 
                 }
-            },        
+            },
             {
                 extend: "selectedSingle",
                 text: 'Reset Judge Pairs',
                 action: function ( e, dt, node, config ) {
-                
+
     				var session_number = table.row( { selected: true } ).data()['pkid'];
-    	
+
 					reset_session_judges(session_number);
                 }
-            },        
-    ] 
-	    
+            },
+    ]
+
 
 	});
 
@@ -432,14 +439,14 @@ function drawJudgesTables() {
 				render: function (data, type, row) {
 					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
-			
+
 			},
 			{data: 'bjcp_rank'},
 			{data: null,
 				render: function (data, type, row) {
 					return row.cicerone + ' ' + row.other_cert;
 				}
-			
+
 			},
 		],
 
@@ -470,28 +477,32 @@ function drawJudgesTables() {
       });
     }
 	});
-	
-	
-	
-	
+
+
+
+
 	hj_table = $('#head-judge').DataTable({
 		dom: 't',
+    pageLength: -1,
 		order: [[0, 'asc']],
 		columns: [
-			{data: 'order',
+			{data: 'order', "orderDataType": "dom-text-numeric",
+      render: function (data, type, row, meta) {
+        return '<input type="text" id="' + meta.row + '-hj" name="' + meta.row + '-hj" value="' + data + '">';
+      }
 			},
 			{data: null,
 				render: function (data, type, row) {
 					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
-			
+
 			},
 			{data: 'bjcp_rank'},
 			{data: null,
 				render: function (data, type, row) {
 					return row.cicerone + ' ' + row.other_cert;
 				}
-			
+
 			},
 		],
         rowReorder: {
@@ -523,27 +534,31 @@ function drawJudgesTables() {
       })
       }
     });
-    
-    
-    
+
+
+
 	sj_table = $('#second-judge').DataTable({
 		dom: 't',
+    pageLength: -1,
 		order: [[0, 'asc']],
 		columns: [
-			{data: 'order',
+			{data: 'order', "orderDataType": "dom-text-numeric",
+      render: function (data, type, row, meta) {
+        return '<input type="text" id="' + meta.row + '-sj" name="' + meta.row + '-sj" value="' + data + '">';
+      }
 			},
 			{data: null,
 				render: function (data, type, row) {
 					return row.firstname + ' ' + row.lastname + ' (' + row.total_day + ',' + row.total_sessions + ')';
 				}
-			
+
 			},
 			{data: 'bjcp_rank'},
 			{data: null,
 				render: function (data, type, row) {
 					return row.cicerone + ' ' + row.other_cert;
 				}
-			
+
 			},
 		],
         rowReorder: {
@@ -575,7 +590,7 @@ function drawJudgesTables() {
       })
       }
 	});
-	
+
 
 }
 
@@ -583,6 +598,7 @@ function drawJudgesTables() {
 
 function save_pairs(data) {
 
+  console.log(data);
 	$.ajax({
       	url: "/save_pairs",
       	type: 'post',
@@ -590,11 +606,11 @@ function save_pairs(data) {
       	success: function(json) {
             var data = JSON.parse(json);
             //console.log(data);
-            
+
             if (data.error) {
             	alert('Error trying to save judge pairs: ' + data.error);
             }
-            
+
         },
 
       	error: function (jqXHR, exception) {
@@ -614,7 +630,7 @@ function auto_gen_pairs(session_number) {
       	success: function(json) {
             var data = JSON.parse(json);
             //console.log(data);
-            
+
             judges_table.clear().draw();
             hj_table.clear().draw();
             sj_table.clear().draw();
@@ -622,31 +638,31 @@ function auto_gen_pairs(session_number) {
             for (i=0; i<data.judges.length; i++) {
             	data.judges[i].order = 0;
             }
-            
+
             judges_table.rows.add(data.judges).draw();
 
 			row_index = 0;
 
             for (i=0; i<data.pairing.length; i++) {
             	row_index++;
-            	
+
             	hj = data.pairing[i][0];
             	hj.order = row_index;
-            	
+
             	hj_table.row.add(hj);
-            	
+
             	sj = data.pairing[i][1];
             	sj.order = row_index;
-            	
+
             	sj_table.row.add(sj);
 
-            	
+
             }
-            
+
             hj_table.draw();
             sj_table.draw();
-			
-            
+
+
         },
 
       	error: function (jqXHR, exception) {
@@ -670,11 +686,11 @@ function reset_session_judges(session_number) {
             judges_table.clear().draw();
             hj_table.clear().draw();
             sj_table.clear().draw();
-            
+
             for (i=0; i<data.all.length; i++) {
             	data.all[i].order = 0;
             }
-            
+
             judges_table.rows.add(data.all).draw();
         },
 
@@ -699,7 +715,7 @@ function get_session_judges(session_number) {
             judges_table.clear().draw();
             hj_table.clear().draw();
             sj_table.clear().draw();
-            
+
             for (i=0; i<data.all.length; i++) {
             	data.all[i].order = 0;
             }
@@ -708,13 +724,13 @@ function get_session_judges(session_number) {
             	judges_table.rows.add(data.all).draw();
             } else {
             	var pairs = data.pairing[0];
-            	
+
             	var judges = JSON.parse(pairs.judges);
             	var head_judge = JSON.parse(pairs.head_judge);
             	var second_judge = JSON.parse(pairs.second_judge);
-            	
+
             	//console.log('judges', judges)
-            	
+
             	judges_table.rows.add(judges).draw();
             	hj_table.rows.add(head_judge).draw();
             	sj_table.rows.add(second_judge).draw();
@@ -731,28 +747,28 @@ function get_session_judges(session_number) {
 
 $(document).ready(function() {
 	drawMainTable();
-	
+
 	drawJudgesTables();
 
 	table.on( 'select', function ( e, dt, type, indexes ) {
-	
+
     	var session_number = table.row( { selected: true } ).data()['pkid'];
-    	
+
     	get_session_judges(session_number);
-    	
-    	
+
+
 	} );
-	
-	
+
+
 $("#judges, #head-judge, #second-judge").droppable({
     drop: function (event, ui) {
-    
+
       var dropTable = $(this).DataTable();
-      
+
       var draggingTable = $('.selectedRow').closest('table').DataTable();
       var source = draggingTable.row($('.selectedRow')).data();
       //console.log(source);
-      
+
       dropTable.row.add( source ).draw(false);
         dropTable.rows( {search:'applied', order:'applied'}).every( function ( rowIdx, tableLoop, rowLoop ) {
     		var data = this.data();
@@ -776,9 +792,29 @@ table.on( 'deselect', function ( e, dt, type, indexes ) {
 
 } );
 
+
+$('#head-judge').on('change', 'input[type="text"]', function () {
+  var val = $(this).val();
+  var row = $(this).closest('tr');
+
+  var data = hj_table.row( row ).data();
+  data.order = parseInt(val);
+  hj_table.draw(false);
+});
+
+$('#second-judge').on('change', 'input[type="text"]', function () {
+  var val = $(this).val();
+  var row = $(this).closest('tr');
+
+  var data = sj_table.row( row ).data();
+  data.order = parseInt(val);
+
+  console.log('Update value', data.order)
+  sj_table.draw(false);
+});
+
 });
 </script>
 
 </body>
 </html>
-

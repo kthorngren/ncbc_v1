@@ -327,10 +327,10 @@ function drawMainTable() {
 		dom: 'Bt',
 		paging: false,
 		//scrollY: 1500,
-	    select: {
-    	    style: "single",
-        	selector: "td:last-child"
-   		},
+	    //select: {
+    	//    style: "single",
+      //  	selector: "td:last-child"
+   		//},
    		order: [[1, 'asc'], [2, 'asc']],
 		columns: [
 	        {
@@ -1048,15 +1048,113 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
 
 $('#main-table').on('click', '.group', function() {
 
-	var row = $(this).closest('tr');
+  var selected_table = sessions_table.row( { selected: true } ).data();
 
-	var cat_number = row.text().split(' ')[0];
-	console.log('click', parseInt(cat_number))
+  //console.log(selected_table)
 
-	generate_flights(parseInt(cat_number));
+  if (selected_table) {
+    var table_name = selected_table.name;
+
+  	var row = $(this).closest('tr');
+
+  	var categoryId = row.text().split(' ')[0];
+    var entryTotal = 0;
+    //console.log('click', parseInt(cat_number))
+
+    // Get indexes of rows contianing clicked category
+    var indexes = table
+      .rows()
+      .indexes()
+      .filter( function ( value, index ) {
+        return categoryId == table.row(value).data().number;
+      } );
+
+    //console.log(indexes);
+
+    var data = table.rows(indexes).data();
+
+    var assigned_tables = data[0].tables;
+    console.log(assigned_tables);
+    var judged = data[0].judged
+
+    var selectedIndex = assigned_tables.indexOf(table_name);
+
+    if (selectedIndex > -1) {
+      assigned_tables.splice(selectedIndex, 1);
 
 
-})
+      table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
+          var d = this.data();
+          entryTotal += d.count;
+
+          d.tables = assigned_tables; // update data source for the row
+
+          this.invalidate(); // invalidate the data DataTables has cached for this row
+      } );
+
+      // Draw once all updates are done
+    } else {
+      console.log('data.judged', judged)
+      if (hj_judge_entries.indexOf(categoryId) === -1 &&
+          hj_judge_dislikes.indexOf(categoryId) === -1 &&
+          sj_judge_entries.indexOf(categoryId) === -1 &&
+          sj_judge_dislikes.indexOf(categoryId) === -1 &&
+          assigned_tables.indexOf(table_name) == -1 &&
+          judged != 1
+          )
+          {
+
+
+          //add new table to selected row then deselect for visual
+            assigned_tables.push(table_name);
+
+            console.log('new tables', assigned_tables)
+
+            table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
+                var d = this.data();
+                entryTotal += d.count;
+
+                d.tables = assigned_tables; // update data source for the row
+
+                this.invalidate(); // invalidate the data DataTables has cached for this row
+            } );
+          //then remove these 2 lines
+            //sessions.total = table_beer_count[sessions.name];
+            //sessions_table.row( { selected: true } ).data(sessions);
+
+
+          }
+
+        }
+        //if (!table_beer_count[table_name]) {
+        //  table_beer_count[table_name] = 0;
+        //}
+        table_beer_count[table_name] = 0;
+        console.log(entryTotal)
+        //recalc beer count for style after adding new table
+        var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
+        console.log('num_beers', num_beers)
+
+        for (var i=0; i<assigned_tables.length; i++) {
+          table_beer_count[assigned_tables[i]] = num_beers;
+          //need to find row in session table to update
+        }
+
+
+        console.log(table_beer_count)
+
+        sessions_table.draw(false);
+        table.draw(false);
+
+
+
+
+      }
+
+	//generate_flights(parseInt(cat_number));
+
+
+});
 
 });
 </script>
