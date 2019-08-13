@@ -196,8 +196,8 @@ def list_specialty_wo_desc():
 
 if __name__ == '__main__':
 
-    #print_entries(order_by='organization')
+    print_entries(order_by='organization')
 
-    list_specialty_wo_desc()
+    #list_specialty_wo_desc()
 
     pass

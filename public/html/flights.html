@@ -1028,10 +1028,10 @@ $('#myMODAL .modal-footer button').on('click', function(event) {
     				table.row( { selected: true } ).data(data);
     			}
 
-    			if (!table_beer_count[sessions.name]) {
-    				table_beer_count[sessions.name] = 0;
-    			}
-
+    			//if (!table_beer_count[sessions.name]) {
+    			//	table_beer_count[sessions.name] = 0;
+    			//}
+          table_beer_count[sessions.name] = 0;
     			//recalc beer count for style after removing table
     			var num_beers = data.count ? (data.count / data.tables.length) : data.count;
     			for (var i=0; i<data.tables.length; i++) {
@@ -1056,6 +1056,7 @@ $('#main-table').on('click', '.group', function() {
 
   if (selected_table) {
     var table_name = selected_table.name;
+    console.log('tablename', selected_table.name)
 
   	var row = $(this).closest('tr');
     //console.log(row.text().split(' '))
@@ -1063,11 +1064,11 @@ $('#main-table').on('click', '.group', function() {
 
     flightCategories = [];
 
-    table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
-        var data = this.data();
+    //table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+    //    var data = this.data();
 
         //console.log(data);
-    });
+    //});
 
 
     var entryTotal = 0;
@@ -1104,9 +1105,26 @@ $('#main-table').on('click', '.group', function() {
     var selectedIndex = assigned_tables.indexOf(table_name);
 
     if (selectedIndex > -1) {
+      //console.log('selectedIndex > -1')
+      table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
+          var d = this.data();
+          entryTotal += d.count;
+
+      } );
+
+      // Subract number of entreis from each table.
+      var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
+      //console.log('num_beers', num_beers, assigned_tables)
+
+      for (var i=0; i<assigned_tables.length; i++) {
+        table_beer_count[assigned_tables[i]] = table_beer_count[assigned_tables[i]] - num_beers;
+        //need to find row in session table to update
+      }
+
+      // Update table list by removing selected.
       assigned_tables.splice(selectedIndex, 1);
-
-
+      //console.log('assigned_tables.length', assigned_tables.length)
+      entryTotal = 0;
       table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
           var d = this.data();
           entryTotal += d.count;
@@ -1115,6 +1133,16 @@ $('#main-table').on('click', '.group', function() {
 
           this.invalidate(); // invalidate the data DataTables has cached for this row
       } );
+
+      // Update the remaining tables with the number of entries.
+      var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
+      //console.log('num_beers', num_beers, assigned_tables)
+
+      for (var i=0; i<assigned_tables.length; i++) {
+        table_beer_count[assigned_tables[i]] = table_beer_count[assigned_tables[i]] + num_beers;
+        //need to find row in session table to update
+      }
+
 
       // Draw once all updates are done
     } else {
@@ -1140,12 +1168,26 @@ $('#main-table').on('click', '.group', function() {
           )
           {
 
+            // Subract number of entreis from each table.
+            table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
+                var d = this.data();
+                entryTotal += d.count;
+
+            } );
+
+            var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
+            //console.log('num_beers', num_beers, assigned_tables)
+
+            for (var i=0; i<assigned_tables.length; i++) {
+              table_beer_count[assigned_tables[i]] = table_beer_count[assigned_tables[i]] - num_beers;
+              //need to find row in session table to update
+            }
 
           //add new table to selected row then deselect for visual
             assigned_tables.push(table_name);
 
             //console.log('new tables', assigned_tables)
-
+            entryTotal = 0;
             table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
                 var d = this.data();
                 entryTotal += d.count;
@@ -1154,30 +1196,21 @@ $('#main-table').on('click', '.group', function() {
 
                 this.invalidate(); // invalidate the data DataTables has cached for this row
             } );
-          //then remove these 2 lines
-            //sessions.total = table_beer_count[sessions.name];
-            //sessions_table.row( { selected: true } ).data(sessions);
+
+            // Update the remaining tables with the number of entries.
+            var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
+            //console.log('num_beers', num_beers, assigned_tables)
+
+            for (var i=0; i<assigned_tables.length; i++) {
+              table_beer_count[assigned_tables[i]] = table_beer_count[assigned_tables[i]] + num_beers;
+            }
+
+
 
 
           }
 
         }
-        //if (!table_beer_count[table_name]) {
-        //  table_beer_count[table_name] = 0;
-        //}
-        table_beer_count[table_name] = 0;
-        //console.log(entryTotal)
-        //recalc beer count for style after adding new table
-        var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
-        //console.log('num_beers', num_beers)
-
-        for (var i=0; i<assigned_tables.length; i++) {
-          table_beer_count[assigned_tables[i]] = num_beers;
-          //need to find row in session table to update
-        }
-
-
-        //console.log(table_beer_count)
 
         sessions_table.draw(false);
         table.draw(false);
