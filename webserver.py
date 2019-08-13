@@ -1153,6 +1153,37 @@ class Website:
 
         return json.dumps({'data': result, 'error': ','.join(errors)}, cls=DatetimeEncoder)
 
+    ######################
+    #
+    # Define Flights
+    #
+    ######################
+    @cherrypy.expose
+    def define_flights(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='define_flights.html')
+        return form
+
+    @cherrypy.expose
+    def dt_define_flights(self, *args, **kwargs):
+
+
+        sql = 'select pkid, number, category, style, category_id, sub_category_id, count from flights '
+
+        if 'action' not in kwargs:
+            sql += 'where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+
+        if 'action' in kwargs:
+
+            sql = 'update flights set tables = "[]" where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+            self.db.db_command(sql=sql)
+
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
 
 
     ######################
@@ -1426,6 +1457,10 @@ class Website:
         categories = self.db.db_command(sql=sql, uid=uid).all(uid)
 
         flight_num = 0
+
+        sql = 'delete from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+        self.db.db_command(sql=sql)
+
         for cat in categories:
             flight_num += 1
             styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
@@ -1435,7 +1470,24 @@ class Website:
                 category_desc = '{} {}'.format(cat['category_id'], cat['category'])
                 style_desc = '{}{} {}'.format(str(int(cat['category_id'])), style['style_num'], style['style_name'])
 
+                row = {'category': category_desc,
+                               'style': style_desc,
+                               'category_id': int(cat['category_id']),
+                               'sub_category_id': style['style_num'],
+                               'tables': [],
+                               'number': flight_num
+                               }
 
+                sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
+                      'tables, fk_competitions) ' \
+                      'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
+                      '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=row,
+                                                                                           fk_competitions=Competitions().get_active_competition(),
+                                                                                           )
+                self.db.db_command(sql=sql)
+
+                """
+                code when used with flights
                 result.append({'category': category_desc,
                                'style': style_desc,
                                'category_id': int(cat['category_id']),
@@ -1444,8 +1496,9 @@ class Website:
                                'tables': [],
                                'number': flight_num
                                })
+                """
 
-        return json.dumps({'data': result}, cls=DatetimeEncoder)
+        return json.dumps({}, cls=DatetimeEncoder)
 
     @cherrypy.expose
     def get_styles_count(self, *args, **kwargs):

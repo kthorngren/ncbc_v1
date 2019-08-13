@@ -331,7 +331,7 @@ function drawMainTable() {
     	//    style: "single",
       //  	selector: "td:last-child"
    		//},
-   		order: [[1, 'asc'], [2, 'asc']],
+   		order: [[0, 'asc']],
 		columns: [
 	        {
 	        	data: 'number',
@@ -375,9 +375,9 @@ function drawMainTable() {
 	        },
 	    ],
 	    rowGroup: {
-	    	dataSrc: 'category',
+	    	dataSrc: 'number',
             startRender: function ( rows, group ) {
-
+                //console.log(group)
             	var sum = rows
                     .data()
                     .pluck('count')
@@ -405,7 +405,7 @@ function drawMainTable() {
                 }
 
 				return $('<tr/>')
-                    .append( '<td colspan="2	">' + group + '</td>' )
+                    .append( '<td colspan="2	">Flight Number: ' + group + ' </td>' )
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
                     .append( '<td>' + avg_beers + '</td>' );
          	}
@@ -487,6 +487,7 @@ function drawMainTable() {
 
         },
 	    buttons: [
+        /*
             {
                 text: 'Initialize Flights',
                 action: function ( e, dt, node, config ) {
@@ -496,6 +497,7 @@ function drawMainTable() {
 
                 }
             },
+            */
             {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
@@ -870,7 +872,7 @@ $(document).ready(function() {
 
 	sessions_table.on('select', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
-    console.log(data);
+    //console.log(data);
 
     head_judge = data.head_judge.firstname + ' ' + data.head_judge.lastname
     second_judge = data.second_judge.firstname + ' ' + data.second_judge.lastname
@@ -1056,8 +1058,18 @@ $('#main-table').on('click', '.group', function() {
     var table_name = selected_table.name;
 
   	var row = $(this).closest('tr');
+    //console.log(row.text().split(' '))
+  	var flightId = row.text().split(' ')[2];
 
-  	var categoryId = row.text().split(' ')[0];
+    flightCategories = [];
+
+    table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        var data = this.data();
+
+        //console.log(data);
+    });
+
+
     var entryTotal = 0;
     //console.log('click', parseInt(cat_number))
 
@@ -1066,15 +1078,27 @@ $('#main-table').on('click', '.group', function() {
       .rows()
       .indexes()
       .filter( function ( value, index ) {
-        return categoryId == table.row(value).data().number;
+        return flightId == table.row(value).data().number;
       } );
 
     //console.log(indexes);
 
     var data = table.rows(indexes).data();
 
+    //console.log(data);
+
+    // Get an array of categories assigned to flight.
+    var flightCategories = [];
+    $.each(data, function (index, value) {
+        if (flightCategories.indexOf(value.category_id) === -1) {
+          flightCategories.push(value.category_id);
+        }
+    });
+
+    //console.log(flightCategories);
+
     var assigned_tables = data[0].tables;
-    console.log(assigned_tables);
+    //console.log(assigned_tables);
     var judged = data[0].judged
 
     var selectedIndex = assigned_tables.indexOf(table_name);
@@ -1094,11 +1118,23 @@ $('#main-table').on('click', '.group', function() {
 
       // Draw once all updates are done
     } else {
-      console.log('data.judged', judged)
-      if (hj_judge_entries.indexOf(categoryId) === -1 &&
-          hj_judge_dislikes.indexOf(categoryId) === -1 &&
-          sj_judge_entries.indexOf(categoryId) === -1 &&
-          sj_judge_dislikes.indexOf(categoryId) === -1 &&
+      //console.log('data.judged', judged)
+      catFound = false;
+
+      // Loop through flight categories to see if judge is not to be assigned.
+      for (i=0; i < flightCategories.length; i++) {
+        var catId = flightCategories[i].toString();
+
+        if (hj_judge_entries.indexOf(catId) > -1 |
+            hj_judge_dislikes.indexOf(catId) > -1 ||
+            sj_judge_entries.indexOf(catId) > -1 ||
+            sj_judge_dislikes.indexOf(catId) > -1) {
+              catFound = true;
+            }
+      }
+
+      // Allow assignment is category is not restricted, table not already assigned and not judged.
+      if (!catFound &&
           assigned_tables.indexOf(table_name) == -1 &&
           judged != 1
           )
@@ -1108,7 +1144,7 @@ $('#main-table').on('click', '.group', function() {
           //add new table to selected row then deselect for visual
             assigned_tables.push(table_name);
 
-            console.log('new tables', assigned_tables)
+            //console.log('new tables', assigned_tables)
 
             table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
                 var d = this.data();
@@ -1130,10 +1166,10 @@ $('#main-table').on('click', '.group', function() {
         //  table_beer_count[table_name] = 0;
         //}
         table_beer_count[table_name] = 0;
-        console.log(entryTotal)
+        //console.log(entryTotal)
         //recalc beer count for style after adding new table
         var num_beers = entryTotal ? (entryTotal / assigned_tables.length) : entryTotal;
-        console.log('num_beers', num_beers)
+        //console.log('num_beers', num_beers)
 
         for (var i=0; i<assigned_tables.length; i++) {
           table_beer_count[assigned_tables[i]] = num_beers;
@@ -1141,7 +1177,7 @@ $('#main-table').on('click', '.group', function() {
         }
 
 
-        console.log(table_beer_count)
+        //console.log(table_beer_count)
 
         sessions_table.draw(false);
         table.draw(false);

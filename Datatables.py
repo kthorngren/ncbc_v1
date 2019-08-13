@@ -980,6 +980,7 @@ class Datatables:
         """
         logger.debug('verify_updated_table pkid: {}, sql: {}, fields: {}'.format(pkid, sql, fields))
         #print 'checking fields', fields
+        print('pkid', pkid)
         if pkid and type(pkid) == type([]) and pkid[0]:
 
             if sql and 'where' not in sql.lower():
