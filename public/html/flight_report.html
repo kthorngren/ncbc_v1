@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    
+
     <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
     <title id="page-title">NC Brewers Cup</title>
     <!-- Datatables Bootstrap Buttons RowGroup Select -->
@@ -19,11 +19,11 @@
 
     <!-- Custom Theme Style -->
     <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
-    
+
   </head>
 
   <style>
-  
+
 
   </style>
   <body class="nav-md">
@@ -53,8 +53,8 @@
               </div>
             </nav>
           </div>
-        </div>                
-                
+        </div>
+
 
 
         <!-- page content -->
@@ -163,8 +163,8 @@
               </div>
             </div>
             <!-- /row -->
-            
-            
+
+
           </div>
         </div>
         <!-- /page content -->
@@ -221,7 +221,7 @@ function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_flight_report',
 		dom: 'Bftir',
-		paging: false,	
+		paging: false,
 		rowId: 'pkid',
 	    select: {
     	    style: "single",
@@ -244,33 +244,33 @@ function drawMainTable() {
 	        },
 	        {
 	        	data: 'judging',
-	        	render: function ( data, type, row ) 
+	        	render: function ( data, type, row )
 	        		{
-	        			if ( type === 'display' ) {  
+	        			if ( type === 'display' ) {
 	        				return '<input type="checkbox" class="judging-enabled">';
-	        			}  
+	        			}
 	        			return data;
 	        		},
             	className: "dt-body-center"
 	        },
 	        {
 	        	data: 'setup',
-	        	render: function ( data, type, row ) 
+	        	render: function ( data, type, row )
 	        		{
-	        			if ( type === 'display' ) {  
+	        			if ( type === 'display' ) {
 	        				return '<input type="checkbox" class="setup-enabled">';
-	        			}  
+	        			}
 	        			return data;
 	        		},
             	className: "dt-body-center"
 	        },
 	        {
 	        	data: 'bos',
-	        	render: function ( data, type, row ) 
+	        	render: function ( data, type, row )
 	        		{
-	        			if ( type === 'display' ) {  
+	        			if ( type === 'display' ) {
 	        				return '<input type="checkbox" class="bos-enabled">';
-	        			}  
+	        			}
 	        			return data;
 	        		},
             	className: "dt-body-center"
@@ -288,9 +288,9 @@ function drawMainTable() {
 	        	data: 'session_end',
 	        },
 	    ],
-	    
-	    rowCallback: function ( row, data ) 
-	    	{ 
+
+	    rowCallback: function ( row, data )
+	    	{
 	    		console.log('judging', data.judging);
 	    		$('input.judging-enabled', row).prop( 'checked', data.judging == 1 );
 	    		$('input.setup-enabled', row).prop( 'checked', data.setup == 1 );
@@ -316,7 +316,7 @@ function drawChildTable() {
 				return data.data;
 			}
 		},
-		dom: 'Bt',
+		dom: 't',
 		paging: false,
 		//scrollY: 1500,
 	    select: {
@@ -350,7 +350,7 @@ function drawChildTable() {
 	        				for (var i=0; i<data.length; i++) {
 	        					var element = data[i];
 	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
-	        			 		table_num = table_num + temp;	
+	        			 		table_num = table_num + temp;
 	        				}
 	        			} else {
 	        				table_num = '';
@@ -358,7 +358,7 @@ function drawChildTable() {
 	        			return  table_num;
 	        		}
 	        		return data;
-	        	}	        	
+	        	}
 	        },
 	        {
 	        	data: 'cat_total',
@@ -376,42 +376,42 @@ function drawChildTable() {
                     .reduce( function (a, b) {
                     return a + b;
                 	}, 0 );
-				
+
             	var num_tables = rows
                     .data()
                     .pluck('tables')
                     .reduce( function (a, b) {
-                    
+
                     return a + (b ? b.length : 0);
                 	}, 0 );
-                	
-                	
+
+
                 var avg_beers = 0;
-                
+
                 if (rows[0].length > 0) {
                 	avg_beers = num_tables / rows[0].length;
                 }
-                
+
                 if (avg_beers) {
                 	avg_beers = (sum / avg_beers).toFixed(1);
                 }
-                
+
 				return $('<tr/>')
                     .append( '<td colspan="2	">' + group + '</td>' )
                     .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
                     .append( '<td>' + avg_beers + '</td>' );
-         	}       
+         	}
 	    },
 	    rowCallback: function (row, data) {
 	    	//console.log(judge_entries);
 	    	//console.log(judge_likes);
 	    	//console.log(judge_dislikes);
-	    	
+
 	    	//$(row).data(data);
-	    	
+	    	/*
 	    	if (data.judged == 1) {
 				$(row).addClass('strikeout');
-	    	
+
 	    	} else if (judge_entries.indexOf(data.category_id.toString()) > -1) {
 				$(row).css('color', 'Red');
 				$(row).attr('title', 'Entry');
@@ -425,6 +425,7 @@ function drawChildTable() {
 				$(row).css('color', '');
 				$(row).attr('title');
 			}
+      */
 	    },
     	columnDefs: [
       		{
@@ -436,22 +437,22 @@ function drawChildTable() {
     	drawCallback: function( settings ) {
         	var api = this.api();
         	var category_totals = {};
- 
+
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
-    			
+
     			if (!category_totals[data.category_id]) {
     				category_totals[data.category_id] = 0;
     			}
     			category_totals[data.category_id] = category_totals[data.category_id] + data.count;
-			} ); 			
+			} );
 
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
-    			
+
     			data.cat_total = category_totals[data.category_id];
     			this.data(data);
-			} ); 			
+			} );
 
 
         },
@@ -459,55 +460,55 @@ function drawChildTable() {
             {
                 text: 'Initialize Flights',
                 action: function ( e, dt, node, config ) {
-    	
+
     				init_flights(true);
-    	
+
 
                 }
-            },        
+            },
             {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
-    	
+
     				get_styles_count(true);
-    	
+
 
                 }
-            },        
+            },
             {
                 text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
-                
+
 					get_styles_count(false);
-					
+
                 }
-            },        
+            },
             {
                 text: 'Save Flights',
                 action: function ( e, dt, node, config ) {
                 	save_flights();
                 }
-            },        
+            },
             {
                 text: 'Order by Category',
                 action: function ( e, dt, node, config ) {
                 	table.order([[1, 'asc'], [2, 'asc']]).draw(false);
                 }
-            },        
+            },
             {
                 text: 'Order by Cat Totals',
                 action: function ( e, dt, node, config ) {
                 	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw(false);
                 }
-            },        
+            },
             {
                 text: 'Refresh Flights Data',
                 action: function ( e, dt, node, config ) {
                 	table.draw(false);
                 }
-            },        
-    ] 
-	    
+            },
+    ]
+
 
 	});
 
@@ -522,36 +523,36 @@ $(document).ready(function() {
 	drawChildTable();
 
 	table.on( 'select', function ( e, dt, type, indexes ) {
-    	
+
     	if ( type === 'row' ) {
         	var data = table.row( {selected: true} ).data();
-        	        	
+
 		    $.ajax({
 		      	url: "/find_person",
 		      	type: 'post',
 		      	data: {email: data.email, display_name: data.display_name},
 		      	success: function(json) {
 		            var data = JSON.parse(json);
-				            
+
 		            child_table.clear().rows.add( data ).draw();
 
 				},
 				error: function (jqXHR, exception) {
-				      		
+
 					//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
 				},
-				            	
+
 			})
-        	
-    	}    
+
+    	}
 	} );
-	
+
 	table.on( 'deselect', function ( e, dt, type, indexes ) {
-    	
+
     	if ( type === 'row' ) {
 
         	child_table.clear().draw();
-    	}    
+    	}
 	} );
 
 });
@@ -559,4 +560,3 @@ $(document).ready(function() {
 
 </body>
 </html>
-

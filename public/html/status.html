@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="static/css/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="static/css/select2.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="static/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+
+  </head>
+
+  <style>
+
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+
+
+          <!-- top tiles -->
+          <div id="totals" class="row tile_count">
+          </div>
+          <!-- /top tiles -->
+
+
+          <div class="clearfix"></div>
+
+
+
+
+        	<!-- col-md-12 -->
+            <div class="col-md-12 col-sm-12 col-xs-12">
+				<!-- row -->
+				<div class="row">
+
+                    <!-- x_panel -->
+                    <div class="x_panel tile ">
+                      <!-- panel -->
+                      <div id="load-panel" class="panel panel-default">
+
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="load-desc">Competition Status<small id="load-desc-small">Inventory and session status</small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+
+                      </div>
+                      <!-- /x_title -->
+
+                      </div>
+                      <!-- /panel -->
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+
+
+
+
+
+
+				  <!-- col-md-6 -->
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="tests-panel" class="panel panel-default">
+
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="tests-desc">Inventory Status<small id="tests-desc-small">Number of entries and brewers</small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+
+                      </div>
+                      <!-- /x_title -->
+
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="inventory" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                <th>Number</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+
+                      </div>
+                      <!-- /x_content -->
+
+
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-6 -->
+
+
+
+				  <!-- col-md-6 -->
+                  <div class="col-md-6 col-sm-6 col-xs-12">
+
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_420">
+                      <!-- panel -->
+                      <div id="properties-panel" class="panel panel-default">
+
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="properties-desc">Session Status<small id="properties-desc-small">Number of judges and stewards per session</small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+
+                      </div>
+                      <!-- /x_title -->
+
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="sessions" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>Session</th>
+                                <th>Judges</th>
+                                <th>Stewards</th>
+                                <th>Other</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+
+                      </div>
+                      <!-- /x_content -->
+
+
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-6 -->
+
+
+
+
+                      </div>
+                      <!-- /x_content -->
+
+
+					</div>
+					<!--/xpanel -->
+
+
+
+
+
+				</div>
+				<!-- /row -->
+
+
+
+				<!-- row -->
+				<div class="row">
+
+
+                    <!-- x_panel -->
+                    <div class="x_panel tile ">
+                      <!-- panel -->
+                      <div id="load-panel" class="panel panel-default">
+
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="load-desc">Competition Editor<small id="load-desc-small"></small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+
+                      </div>
+                      <!-- /x_title -->
+
+                      </div>
+                      <!-- /panel -->
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+
+				  <!-- col-md-12 -->
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+
+                    <!-- x_panel -->
+                    <div class="x_panel tile fixed_height_390">
+                      <!-- panel -->
+                      <div id="runner-panel" class="panel panel-default">
+
+                      <!-- x_title -->
+                      <div class="x_title panel-heading">
+                        <h2 id="runner-desc">Competitions<small id="runner-desc-small">Placeholder</small></h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                          <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                          </li>
+                          <li><a class="close-link"><i class="fa fa-close"></i></a>
+                          </li>
+                        </ul>
+                        <div class="clearfix"></div>
+
+                      </div>
+                      <!-- /x_title -->
+
+                      </div>
+                      <!-- /panel -->
+
+
+					  <!-- x_content -->
+                      <div class="x_content panel-body">
+
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+
+                        <div class="col-md-12 hidden-small">
+                          <table id="comp" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Guidelines</th>
+                                <th>Registered</th>
+                                <th>Report Due</th>
+                                <th>Report Sent</th>
+                              </tr>
+                            </thead>
+                          </table>
+                        </div>
+
+                      </div>
+                      <!-- /x_content -->
+
+
+                    </div>
+                    <!-- /x_panel -->
+
+                    </div>
+                    <!-- /col-md-12 -->
+
+                      </div>
+                      <!-- /x_content -->
+
+
+					</div>
+					<!--/xpanel -->
+
+				</div>
+				<!-- /row -->
+
+
+
+
+			</div>
+			<!-- col-md-12 -->
+
+
+
+        </div>
+        <!-- /page content -->
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="static/js/pdfmake.min.js"></script>
+	<script type="text/javascript" src="static/js/vfs_fonts.js"></script>
+	<script type="text/javascript" src="static/js/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="static/js/select2.min.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="static/js/bootstrap-select.min.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+
+function uniq(a) {
+    return a.sort().filter(function(item, pos, ary) {
+        return !pos || item != ary[pos - 1];
+    })
+}
+
+
+
+
+function drawCompsTable() {
+	emails_table = $('#comp').DataTable({
+		ajax: 'dt_status',
+		dom: 'lftirp',
+		rowId: 'pkid',
+	    select: {
+    	    style: "multi+shift",
+        	selector: "td:first-child"
+   		},
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	visible: false,
+	        },
+	        {
+    	        data: null,
+        	    defaultContent: "",
+            	className: "select-checkbox",
+	            orderable: false
+    	    },
+	        {
+	        	data: 'name',
+	        },
+	        {
+	        	data: 'date',
+	        },
+	        {
+	        	data: 'style_guidelines',
+	        },
+	        {
+	        	data: 'bjcp_registered',
+	        },
+	        {
+	        	data: 'organizers_report_due_date',
+	        },
+	        {
+	        	data: 'bjcp_report',
+	        },
+	    ],
+	});
+
+}
+
+
+function get_competitions() {
+    $.ajax({
+      	url: "/get_comp_names",
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+            var select = $('<select><option value="">Select Competition</option></select>')
+                .appendTo( $('#select-comp').empty() )
+                .on( 'change', function () {
+                	console.log('change');
+                	$('#runner-desc-small').html('Active competition: ' + $(this).val());
+ 				} );
+
+                $.each( data, function(i, obj) {
+            		select.append(
+                		$('<option></option>')
+                    		.val(obj['pkid'])
+                    		.html(obj['name']));
+            		if (obj['active'] == '1') {
+                		$('select').val(obj['pkid']);
+                		$('#runner-desc-small').html('Active competition: ' + obj['name']);
+            		};
+
+      			})
+      	},
+      	error: function (jqXHR, exception) {
+      		console.log('error')
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+
+}
+
+
+
+function get_comp_stats() {
+    $.ajax({
+      	url: "/get_comp_stats",
+      	type: 'post',
+      	success: function(json) {
+            var data = JSON.parse(json);
+
+            $('#inventory').DataTable({
+            	data: data.entries,
+            	dom: 't',
+            	ordering: false,
+            	columns: [
+            		{data: 'name'},
+            		{data: 'value'}
+            	]
+            });
+
+            $('#sessions').DataTable({
+            	data: data.sessions,
+            	dom: 't',
+            	ordering: false,
+            	scrollY: true,
+            	columns: [
+            		{data: 'name'},
+            		{data: 'judges'},
+            		{data: 'stewards'},
+            		{data: 'other'},
+            	]
+            })
+			var total = 0;
+			for (i=0; i < data.entries.length; i++) {
+				if (data.entries[i].name == 'Total Entries') {
+					total = data.entries[i].value;
+				}
+			}
+			var num_judges = 0;
+
+			for (i=0; i < data.sessions.length; i++) {
+				num_judges = num_judges + data.sessions[i].judges;
+			}
+
+			if (total && num_judges) {
+				beers_per = Math.round(total / (num_judges / 2));
+			} else {
+				beers_per = 0
+			}
+
+			$('#properties-desc-small').html('Number of beers per judge: ' + beers_per);
+
+      	},
+      	error: function (jqXHR, exception) {
+      		console.log('error')
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+
+}
+
+
+
+$(document).ready(function() {
+
+	drawCompsTable();
+
+	get_competitions();
+
+	get_comp_stats();
+
+
+
+});
+</script>
+
+</body>
+</html>

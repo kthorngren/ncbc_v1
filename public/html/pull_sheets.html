@@ -71,7 +71,7 @@
 
                 <div class="x_panel">
                   <div class="x_title">
-                    <h2 id="table-title">People</h2>
+                    <h2 id="table-title">Flights</h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
@@ -97,23 +97,54 @@
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
+                                <th>Flight</th>
+                                <th>Category</th>
+                                <th>Sub Category</th>
+                                <th>Number of Entries</th>
+                                <th>Tables</th>
+                                <th>Cat Total</th>
+                              </tr>
+	                        </thead>
+                          </table>
+                </div>
+                <!-- /x_panel -->
+
+
+
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2 id="table-title">Judges</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <!--
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      -->
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+                          <table id="child-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
                                 <th>pkid</th>
-                                <th></th>
-                                <th>Firstname</th>
-                                <th>Lastname</th>
-                                <th>Email</th>
-                                <th>Address</th>
-                                <th>Address 2</th>
-                                <th>City</th>
-                                <th>State</th>
-                                <th>Zip</th>
-                                <th>Country</th>
-                                <th>Phone</th>
-                                <th>Nickname</th>
-                                <th>BJCP ID</th>
-                                <th>BJCP Rank</th>
-                                <th>Cicerone</th>
-                                <th>Alias</th>
+                                <th>Table Name</th>
+                                <th>Session</th>
+                                <th>Head Judge</th>
+                                <th>Second Judge</th>
+                                <th>Number Beers</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -161,6 +192,8 @@
     <!-- Select2 -->
     <script type="text/javascript" src="static/js/editor.select2.js"></script>
     <script type="text/javascript" src="static/js/select2.min.js"></script>
+    <!-- Natrural -->
+    <script type="text/javascript" src="static/js/natural.js"></script>
     <!-- Bootstrap Toggle -->
     <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
       <!-- Latest compiled and minified JavaScript -->
@@ -255,6 +288,7 @@ editor = new $.fn.dataTable.Editor(
     ]
 });
 
+    /*
     // Activate an inline edit on click of a table cell
     $('#main-table').on( 'click', 'tbody td:not(:first-child, :nth-child(2))', function (e) {
         editor.inline( this, {
@@ -262,7 +296,7 @@ editor = new $.fn.dataTable.Editor(
         } );
     } );
 
-
+    */
 
     editor
         .on( 'postCreate postRemove', function () {
@@ -284,76 +318,64 @@ editor = new $.fn.dataTable.Editor(
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
-		ajax: 'dt_pull_sheets',
+    ajax: {
+			url: 'dt_pull_sheets',
+			dataSrc: function (data) {
+				for (var i=0; i<data.data.length; i++) {
+					data.data[i].tables = JSON.parse(data.data[i].tables);
+				}
+				return data.data;
+			}
+		},
 		dom: 'Blftirp',
 		rowId: 'pkid',
 	    select: {
     	    style: "single",
         	selector: "td:first-child"
    		},
-   		order: [[3, 'asc']],
-		columns: [
-	        {
-    	        data: null,
-        	    defaultContent: "",
-            	className: "select-checkbox",
-	            orderable: false
-    	    },
-          {
-	        	data: 'pkid',
-	        	//visible: false
-	        },
-	        {
-	        	data: 'firstname',
-	        },
-	        {
-	        	data: 'lastname',
-	        },
-	        {
-	        	data: 'email',
-	        },
-	        {
-	        	data: 'address',
-	        },
-	        {
-	        	data: 'address2',
-            visible: false
-	        },
-	        {
-	        	data: 'city',
-            visible: false
-	        },
-	        {
-	        	data: 'state',
-            visible: false
-	        },
-	        {
-	        	data: 'zip',
-            visible: false
-	        },
-	        {
-	        	data: 'country',
-            visible: false
-	        },
-	        {
-	        	data: 'phone',
-	        },
-	        {
-	        	data: 'nickname',
-	        },
-	        {
-	        	data: 'bjcp_id',
-	        },
-	        {
-	        	data: 'bjcp_rank',
-	        },
-	        {
-	        	data: 'cicerone',
-	        },
-	        {
-	        	data: 'alias',
-	        },
-	    ],
+   		order: [[0, 'asc']],
+      columns: [
+  	        {
+  	        	data: 'number',
+  	        },
+  	        {
+  	        	data: 'category',
+  	        	visible: false
+  	        },
+  	        {
+  	        	data: 'style',
+  	        },
+  	        {
+  	        	data: 'count',
+  	        },
+  	        {
+  	        	data: 'tables',
+  	        	render: function (data, type, row) {
+  	        		if (type === 'display') {
+  	        			if (row.judged == 1) {
+  	        				return 'Judged'
+  	        			}
+  	        			table_num = '';
+  	        			if (data.sort()) {
+  	        				for (var i=0; i<data.length; i++) {
+  	        					var element = data[i];
+  	        					var temp = table_num ? ',' + element.split(' ').slice(-1)[0] : element.split(' ').slice(-1)[0];
+  	        			 		table_num = table_num + temp;
+  	        				}
+  	        			} else {
+  	        				table_num = '';
+  	        			}
+  	        			return  table_num;
+  	        		}
+  	        		return data;
+  	        	}
+  	        },
+  	        {
+  	        	data: 'cat_total',
+  	        	defaultContent: 0,
+  	        	visible: false
+  	        },
+  	    ],
 	    buttons: [
         { extend: "create", editor: editor },
         { extend: "edit",   editor: editor },
@@ -380,8 +402,44 @@ function drawMainTable() {
                 }
             },
         { extend: "remove", editor: editor }
-    ]
+    ],
 
+    rowGroup: {
+      dataSrc: 'number',
+          startRender: function ( rows, group ) {
+              //console.log(group)
+            var sum = rows
+                  .data()
+                  .pluck('count')
+                  .reduce( function (a, b) {
+                  return a + b;
+                }, 0 );
+
+            var num_tables = rows
+                  .data()
+                  .pluck('tables')
+                  .reduce( function (a, b) {
+
+                  return a + (b ? b.length : 0);
+                }, 0 );
+
+
+              var avg_beers = 0;
+
+              if (rows[0].length > 0) {
+                avg_beers = num_tables / rows[0].length;
+              }
+
+              if (avg_beers) {
+                avg_beers = (sum / avg_beers).toFixed(1);
+              }
+
+      return $('<tr/>')
+                  .append( '<td colspan="2	">Flight Number: ' + group + ' </td>' )
+                  .append( '<td>Cat Total: ' + sum.toFixed(0) + '</td>' )
+                  .append( '<td>' + avg_beers + '</td>' );
+        }
+    },
 
 	});
 
@@ -389,13 +447,125 @@ function drawMainTable() {
 }
 
 
+function drawChildTable() {
+	child_table = $('#child-table').DataTable({
+    ajax: "dt_tables",
+		dom: 't',
+		rowId: 'pkid',
+		paging: false,
+   		order: [[1, 'asc']],
+	    select: {
+    	    style: "single",
+        	selector: "td:first-child"
+   		},
+      search: {
+        search: "^$",
+        regex: true
+      },
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	defaultContent: '',
+	        	visible: false
+	        },
+	        {
+	        	data: 'name', type: 'natural'
+	        },
+	        {
+	        	data: 'session_name',
+	        	visible: false
+	        },
+	        {
+	        	data: 'head_judge',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
+	        			}
 
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;
+	        		}
+	        		return data;
+	        	}
+	        },
+	        {
+	        	data: 'second_judge',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			var bjcp = '';
+	        			if (data.bjcp_rank) {
+	        				bjcp = ' : BJCP ' + data.bjcp_rank;
+	        			}
+
+	        			var cat = '';
+	        			if (data.categories.length > 0) {
+	        				cat = ' (' + data.categories.join() + ')';
+	        			}
+	        			return data.firstname + ' ' + data.lastname + bjcp + cat;
+	        		}
+	        		return data;
+	        	}
+	        },
+	        {
+	        	data: 'total',
+	        	render: function (data, type, row) {
+	        		if (type === 'display') {
+	        			return data.toFixed(1)
+	        		}
+	        		return data;
+	        	}
+	        },
+	    ],
+
+	});
+
+}
 
 
 $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
+  drawChildTable();
 
+
+  $('#main-table').on('click', '.group', function() {
+
+    var row = $(this).closest('tr');
+    //console.log(row.text().split(' '))
+  	var flightId = row.text().split(' ')[2];
+
+    //console.log(flightId)
+
+    var indexes = table
+      .rows()
+      .indexes()
+      .filter( function ( value, index ) {
+        return flightId == table.row(value).data().number;
+      } );
+
+    //console.log(indexes)
+
+    var data = table.rows(indexes).data();
+
+    //console.log(data[0]);
+
+    judgeTables = data[0].tables.join('\\b|\\b');
+
+    console.log(judgeTables)
+
+    if (judgeTables.length > 0) {
+      child_table.search('\\b' + judgeTables + '\\b', true, false).draw();
+    } else {
+      child_table.search("^$", true, false).draw();
+    }
+    //child_table.search()
+
+  });
 
 });
 </script>

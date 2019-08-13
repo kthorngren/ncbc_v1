@@ -438,6 +438,32 @@ class Website:
 
     ######################
     #
+    # Status
+    #
+    ######################
+    @cherrypy.expose
+    def status(self, *args, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+
+        #with open('public/html/index.html') as f:
+        #    form = f.read()
+        # form = form.replace('<!-- sidebar menu -->', self.get_instructions('sidebar'))
+
+        form = self.build_page(page_name, html_page='status.html')
+        return form
+
+
+    @cherrypy.expose
+    def dt_status(self, *args, **kwargs):
+
+        sql = 'select * from competitions'
+
+        result = self.dt.parse_request(sql=sql, table='competitions', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+    ######################
+    #
     #
     # ** Import section **
     #
