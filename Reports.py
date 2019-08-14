@@ -84,7 +84,7 @@ class Reports:
             category = '{}{}'.format(i['category'], i['sub_category'])
             l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
 
-        l.output('files/reports/bottle_labels.pdf')
+        l.output('public/reports/bottle_labels.pdf')
 
 
     def print_round_cup_labels(self):
@@ -121,7 +121,7 @@ class Reports:
             l.add_label('  {:03d}'.format(entry_id))
             label_count += 2
             print('print entry id', i['entry_id'], label_count)
-        l.output('files/reports/cup_labels.pdf')
+        l.output('public/reports/cup_labels.pdf')
 
 
     def print_round_bos_cup_labels(self):
@@ -154,7 +154,7 @@ class Reports:
                 #l.add_label('  {:03d}{}{}'.format(r['entry_id'],int(r['category']), r['sub_category']))
                 l.add_label('  {:03d}'.format(r['entry_id']))
 
-        l.output('files/reports/bos_cup_labels.pdf')
+        l.output('public/reports/bos_cup_labels.pdf')
 
 
 
@@ -292,7 +292,7 @@ class Reports:
             pdf.intro(judge_info)
             pdf.table(flight['beers'])
 
-            filename = 'files/flights/{}.pdf'.format(f'{f} Flight Number {category}')
+            filename = 'public/flights/{}.pdf'.format(f'{f} Flight Number {category}')
 
 
             pdf.output(filename, 'F')

@@ -5,3 +5,5 @@
 __pycache__
 files/
 .db_config
+public/flights
+public/reports
