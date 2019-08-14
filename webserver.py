@@ -1296,7 +1296,7 @@ class Website:
         result = self.dt.parse_request(sql=sql, table='tables', debug=True, *args, **kwargs)
 
         for r in result['data']:
-            print('\n',r)
+            #print('\n',r)
             r['head_judge'] = json.loads(r['head_judge'])
             r['second_judge'] = json.loads(r['second_judge'])
             r['total'] = 0
@@ -1542,7 +1542,7 @@ class Website:
         else:
             where = ''
 
-        print(full_inventory)
+        #print(full_inventory)
 
         sql = 'SELECT count(sub_category), category, sub_category FROM entries {} ' \
               'group by category, sub_category order by category, sub_category;'.format(where)
@@ -1594,6 +1594,11 @@ class Website:
         sql = 'select * from flights where fk_competitions = "{}"'.format(Competitions().get_active_competition())
 
         result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+
+        if result:
+            for r in result.get('data', []):
+                print('pull_sheet', r['tables'])
+
         return json.dumps(result, cls=DatetimeEncoder)
 
 
