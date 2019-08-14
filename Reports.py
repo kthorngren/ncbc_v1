@@ -1,4 +1,6 @@
 import json
+from textwrap import wrap
+
 
 from Tools import Tools
 from Competitions import DATABASE
@@ -70,46 +72,52 @@ class Reports:
         PADDING = 5
         l = PDFLabel('075-circle', font = 'Courier', font_size=13)
         l.add_page()
+
         labels = Entrys().get_inventory(all=True)
         for i in sorted(labels, key=lambda r: r['entry_id']):
+
+
             entry_id = int(i['entry_id'])
             category = '{}{}'.format(i['category'], i['sub_category'])
-            l.add_label('  {:05d}\n {}\n'.format(entry_id, category))
+            l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
+
         l.output('files/reports/bottle_labels.pdf')
 
 
     def print_round_cup_labels(self):
 
-        LABELS_PER_LINE = 11
+        LABELS_PER_LINE = 9
+        LINES_PER_PAGE = 12
         PADDING = 5
         l = PDFLabel('050-circle', font = 'Courier', font_size=13)
         l.add_page()
-        labels = Entrys().get_inventory(inventory=True)
+        labels = Entrys().get_inventory(inventory=False)
         label_count = 0
         category = ''
-        for i in sorted(labels, key=lambda r: r['category']):
+        for i in sorted(labels, key=lambda r: int(r['category'])):
             print(i['category'])
             if category != i['category']:
                 category = i['category']
                 print('cat change')
-                while label_count % LABELS_PER_LINE != 0:
-                    print('space')
+                while label_count % (LABELS_PER_LINE * LINES_PER_PAGE) != 0:
                     l.add_label(' ')
                     label_count += 1
-                l.add_label(i['category'])
-                print('print cat')
-                label_count += 1
+                    print('space', label_count)
+                l.add_label("===Cat===")
+                l.add_label("==={:03d}===".format(int(i['category'])))
+                label_count += 2
+                print(f"print cat{i['category']}", label_count)
                 while label_count % LABELS_PER_LINE != 0:
-                    print('add space')
                     l.add_label(' ')
                     label_count += 1
+                    print('add space', label_count)
 
 
             entry_id = int(i['entry_id'])
-            print('print entry id')
             l.add_label('  {:03d}'.format(entry_id))
             l.add_label('  {:03d}'.format(entry_id))
             label_count += 2
+            print('print entry id', i['entry_id'], label_count)
         l.output('files/reports/cup_labels.pdf')
 
 
@@ -118,7 +126,7 @@ class Reports:
         LABELS_PER_LINE = 11
         PADDING = 5
 
-        sql = 'select entry_id from entries where place = "1" order by LPAD(entries.category, 2, "0"), sub_category'
+        sql = 'select entry_id, category, sub_category from entries where place = "1" order by LPAD(entries.category, 2, "0"), sub_category'
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
@@ -132,26 +140,18 @@ class Reports:
         label_count = 0
         category = ''
         for r in result:
-            if r['entry_id'] == 214:
+            #if r['entry_id'] == 214:
+            l.add_label("===Cat===")
+            l.add_label("==={:03d}===".format(int(r['category'])))
+
+            for x in range(0, 7):
+                l.add_label(' ')
+
+            for x in range(0, 18):
+                #l.add_label('  {:03d}{}{}'.format(r['entry_id'],int(r['category']), r['sub_category']))
                 l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-                l.add_label('  {:03d}'.format(r['entry_id']))
-        l.output('files/reports/cup_labels.pdf')
+
+        l.output('files/reports/bos_cup_labels.pdf')
 
 
 
@@ -270,6 +270,6 @@ class Reports:
 
 if __name__ == '__main__':
 
-    #Reports().print_round_bottle_labels()
+    Reports().print_round_bottle_labels()
     #Reports().print_round_cup_labels()
-    Reports().print_round_bos_cup_labels()
+    #Reports().print_round_bos_cup_labels()
