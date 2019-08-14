@@ -1573,6 +1573,7 @@ class Website:
 
         result = Reports().flight_pull_sheets(category)
 
+
         return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 

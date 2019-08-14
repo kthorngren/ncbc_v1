@@ -65,7 +65,7 @@ class Style:
 
         if version is None:
             version = self.version
-        print(style_group, style_num, version)
+        #print(style_group, style_num, version)
         try:
             style_group = '{:02d}'.format(int(style_group))
         except:
