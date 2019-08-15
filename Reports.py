@@ -79,10 +79,10 @@ class Reports:
         labels = Entrys().get_inventory(all=True)
         for i in sorted(labels, key=lambda r: r['entry_id']):
 
-
-            entry_id = int(i['entry_id'])
-            category = '{}{}'.format(i['category'], i['sub_category'])
-            l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
+            for x in range(0, 4):
+                entry_id = int(i['entry_id'])
+                category = '{}{}'.format(i['category'], i['sub_category'])
+                l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
 
         l.output('public/reports/bottle_labels.pdf')
 
@@ -457,6 +457,9 @@ class FlightSheet(FPDF, HTMLMixin):
             if beer['is_specialty'] == 1:
                 # https://pymotw.com/2/textwrap/
                 desc = dedent(beer['description']).strip()
+
+                if len(desc) == 0:
+                    desc = '** No description provide by brewer  **'
                 desc = fill(desc, width=110)
 
                 desc = desc.split('\n')
