@@ -161,6 +161,8 @@ class Competitions:
 
         sessions_list = {0: [], 1 : [], 2: []}
         for r in result:
+            print(r)
+            print(r['fk_sessions_list'].split(','))
             sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
 
         print('sessions_list', sessions_list)
@@ -175,7 +177,10 @@ class Competitions:
             if r['judging'] == 1:
                 session_type.append('Judging')
 
+            print(r['pkid'], sessions_list[1].count(r['pkid']))
+            print(sessions_list[1])
             num_judges += sessions_list[1].count(r['pkid'])
+
 
             status['sessions'].append({
                 'name': r['name'],

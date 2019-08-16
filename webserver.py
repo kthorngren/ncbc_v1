@@ -1422,6 +1422,31 @@ class Website:
         return self.db.sql_error
 
 
+
+
+    ######################
+    #
+    # Flight List
+    #
+    ######################
+    @cherrypy.expose
+    def flight_list(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='flights.html')
+        return form
+
+    @cherrypy.expose
+    def dt_flights(self, *args, **kwargs):
+
+        sql = 'select * from flights ' \
+              'inner join entries as e where e.category = flights.category_id and e.sub_category = flights.sub_category_id ' \
+              'where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
     ######################
     #
     # Flight Assignments
@@ -1440,6 +1465,15 @@ class Website:
 
         result = self.dt.parse_request(sql=sql, table='flights', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
+
+    @cherrypy.expose
+    def clear_tables(self, *args, **kwargs):
+
+        sql = 'update flights set tables = "[]" where fk_competitions = "{}"'.format(Competitions().get_active_competition())
+
+        self.db.db_command(sql=sql)
+
+
 
     @cherrypy.expose
     def save_flights(self, *args, **kwargs):
@@ -1749,7 +1783,7 @@ class Website:
 
         for r in result:
 
-            if (not email_test or email_test == r['email']) and r['send_email'] == 0:
+            if (not email_test or email_test == r['email']) and r['send_email'] == 1:
                 print('Processing', r['email'], r['firstname'])
 
                 email_params['firstname'] = r['firstname'].title()

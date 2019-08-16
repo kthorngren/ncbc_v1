@@ -282,6 +282,8 @@ tr.strikeout {
     <!-- Select2 -->
     <script type="text/javascript" src="static/js/editor.select2.js"></script>
     <script type="text/javascript" src="static/js/select2.min.js"></script>
+    <!-- Natrural -->
+    <script type="text/javascript" src="static/js/natural.js"></script>
     <!-- Bootstrap Toggle -->
     <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
       <!-- Latest compiled and minified JavaScript -->
@@ -312,6 +314,21 @@ var sj_judge_likes = [];
 var sj_judge_entries = [];
 var sj_judge_dislikes = [];
 
+function clear_tables() {
+
+	$.ajax({
+      	url: "/clear_tables",
+      	type: 'post',
+      	success: function(json) {
+
+          table.ajax.reload();
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
@@ -343,6 +360,7 @@ function drawMainTable() {
 	        },
 	        {
 	        	data: 'style',
+            type: 'natural'
 	        },
 	        {
 	        	data: 'count',
@@ -529,13 +547,13 @@ function drawMainTable() {
             {
                 text: 'Order by Category',
                 action: function ( e, dt, node, config ) {
-                	table.order([[0, 'asc'], [3, 'asc']]).draw(false);
+                	table.order([[0, 'asc'], [2, 'asc']]).draw(false);
                 }
             },
             {
                 text: 'Order by Cat Totals',
                 action: function ( e, dt, node, config ) {
-                	table.order([[5, 'desc'], [0, 'asc'], [3, 'asc']]).draw(false);
+                	table.order([[5, 'desc'], [0, 'asc'], [2, 'asc']]).draw(false);
                 }
             },
             {
@@ -544,6 +562,16 @@ function drawMainTable() {
                 	table.draw(false);
                 }
             },
+            {
+                text: 'Clear Tables',
+                action: function ( e, dt, node, config ) {
+
+    				        clear_tables();
+
+
+                }
+            },
+            {extend: 'excel'}
     ]
 
 
@@ -559,7 +587,7 @@ function drawSessionsTable() {
 		ajax: 'dt_tables',
 		dom: 't',
 		rowId: 'pkid',
-    scrollY: '500',
+    scrollY: '650',
 		paging: false,
    		order: [[2, 'asc']],
 	    select: {

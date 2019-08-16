@@ -1981,9 +1981,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    process_new_entries(pkid=4)
+    #process_new_entries(pkid=4)
 
-    #   process_new_volunteers(pkid=5)
+    process_new_volunteers(pkid=5)
 
     #validate_ncbc(pkid=1)
 

@@ -212,12 +212,34 @@ def list_specialty():
                                                                                            ))
                 print('\n\n')
 
+
+def list_specialty_ipa():
+
+    print('Specialty IPA entries')
+    result = Brewers().get_brewers(order_by='organization')
+
+    for r in result:
+        entries = Entrys().get_entries_by_brewer(r['pkid'], order_by='category')
+
+        for entry in entries:
+
+            if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'], entry['sub_category']) and entry['sub_category'] == 'B7':
+                print('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}:  '
+                      '{e[entry_id]:05} - {e[name]}: {e[category]}{e[sub_category]} {cat_name}\nDescription: {description}'.format(d=r, e=entry,
+                                            cat_name=Style(Competitions().get_style_guidelines()).get_style_name(entry['category'], entry['sub_category']),
+                                            description=entry['description'],
+
+                                                                                           ))
+                print()
+
+
 if __name__ == '__main__':
 
     #print_entries(order_by='organization')
 
     #list_specialty_wo_desc()
 
-    list_specialty()
+    #list_specialty()
+    list_specialty_ipa()
 
     pass
