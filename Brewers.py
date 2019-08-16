@@ -193,11 +193,31 @@ def list_specialty_wo_desc():
                                             instructions=Style(Competitions().get_style_guidelines()).get_entry_instructions(entry['category'], entry['sub_category'])
                                                                                            ))
 
+def list_specialty():
+
+    print('Specialty entries')
+    result = Brewers().get_brewers(order_by='organization')
+
+    for r in result:
+        entries = Entrys().get_entries_by_brewer(r['pkid'], order_by='category')
+
+        for entry in entries:
+
+            if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'], entry['sub_category']):
+                print('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}:  '
+                      '{e[entry_id]:05} - {e[name]}: {e[category]}{e[sub_category]} {cat_name}\n\nDescription: {description}\n\nBJCP Instructions: {instructions}'.format(d=r, e=entry,
+                                            cat_name=Style(Competitions().get_style_guidelines()).get_style_name(entry['category'], entry['sub_category']),
+                                            description=entry['description'],
+                                            instructions=Style(Competitions().get_style_guidelines()).get_entry_instructions(entry['category'], entry['sub_category'])
+                                                                                           ))
+                print('\n\n')
 
 if __name__ == '__main__':
 
-    print_entries(order_by='organization')
+    #print_entries(order_by='organization')
 
     #list_specialty_wo_desc()
+
+    list_specialty()
 
     pass

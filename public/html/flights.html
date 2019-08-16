@@ -331,7 +331,8 @@ function drawMainTable() {
     	//    style: "single",
       //  	selector: "td:last-child"
    		//},
-   		order: [[0, 'asc']],
+   		//order: [[0, 'asc']],
+      order: [[0, 'asc', 3, 'asc']],
 		columns: [
 	        {
 	        	data: 'number',
@@ -468,19 +469,23 @@ function drawMainTable() {
         	var api = this.api();
         	var category_totals = {};
 
+
+
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
+          var flight = data.number;
 
-    			if (!category_totals[data.category_id]) {
-    				category_totals[data.category_id] = 0;
+    			if (!category_totals[flight]) {
+    				category_totals[flight] = 0;
     			}
-    			category_totals[data.category_id] = category_totals[data.category_id] + data.count;
+    			category_totals[flight] = category_totals[flight] + data.count;
 			} );
 
 			api.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
     			var data = this.data();
+          var flight = data.number;
 
-    			data.cat_total = category_totals[data.category_id];
+    			data.cat_total = category_totals[flight];
     			this.data(data);
 			} );
 
@@ -524,13 +529,13 @@ function drawMainTable() {
             {
                 text: 'Order by Category',
                 action: function ( e, dt, node, config ) {
-                	table.order([[1, 'asc'], [2, 'asc']]).draw(false);
+                	table.order([[0, 'asc'], [3, 'asc']]).draw(false);
                 }
             },
             {
                 text: 'Order by Cat Totals',
                 action: function ( e, dt, node, config ) {
-                	table.order([[5, 'desc'], [1, 'asc'], [2, 'asc']]).draw(false);
+                	table.order([[5, 'desc'], [0, 'asc'], [3, 'asc']]).draw(false);
                 }
             },
             {

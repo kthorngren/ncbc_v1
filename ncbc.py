@@ -1574,8 +1574,8 @@ def process_new_entries(pkid=1):
             #    result = False
             #else:
             elif send_email:
-                result = e.send_message(message, rcpt=[brewer])
-                #result = False
+                #result = e.send_message(message, rcpt=[brewer])
+                result = False
             else:
                 result = False
                 logger.info('Skipping emailing brewers - please run script again to email')
