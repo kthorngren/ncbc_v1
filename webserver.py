@@ -1613,6 +1613,35 @@ class Website:
 
     ######################
     #
+    # Manual Flight Assignemnts
+    #
+    ######################
+    # Todo: not implemneted inteended to be used for manaul flight assignments
+    @cherrypy.expose
+    def manual_flights(self, **kwargs):
+        page_name = sys._getframe().f_code.co_name
+        form = self.build_page(page_name, html_page='manual_flights.html')
+        return form
+
+    @cherrypy.expose
+    def dt_manual_flights(self, *args, **kwargs):
+
+        #result = {}
+
+        session_number = kwargs.get('session_number', 0)
+
+        result = Flights().get_judges_for_session(session_number)
+
+        #result['pairing'] = Flights().get_session_pairing(session_number)
+
+
+
+        return json.dumps(result, cls=DatetimeEncoder)
+
+
+
+    ######################
+    #
     # Manage Pull Sheets
     #
     ######################

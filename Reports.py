@@ -1,5 +1,6 @@
 import json
 from textwrap import wrap, dedent, fill
+import csv
 
 
 from Tools import Tools
@@ -157,150 +158,254 @@ class Reports:
         l.output('public/reports/bos_cup_labels.pdf')
 
 
+    def flight_round_cup_labels(self, entries, flight, filename):
 
-    def flight_pull_sheets(self, category):
+        LABELS_PER_LINE = 9
+        LINES_PER_PAGE = 12
+        PADDING = 5
+        l = PDFLabel('050-circle', font = 'Courier', font_size=13)
+        l.add_page()
+        labels = Entrys().get_inventory(inventory=False)
+        label_count = 0
+        category = ''
+        print(entries)
 
-        flights = {}
-        table_list = []
-        filenames = {}
+        count = 0
 
-        #print('category', category)
+        if entries:
+            l.add_label("===Flt===")
+            l.add_label("==={:03d}===".format(int(flight)))
+            label_count += 2
 
-        sql = 'select * from flights where category_id = "{}" and ' \
-              'fk_competitions = "{}"'.format(category, Competitions().get_active_competition())
+            while label_count % LABELS_PER_LINE != 0:
+                l.add_label(' ')
+                label_count += 1
+            # print('add space', label_count)
+
+            for i in sorted(entries, key=lambda r: int(r['category'])):
+                print(i)
+                #if category != i['category']:
+                category = i['category']
+                #print('cat change')
+                #print(f"print cat{i['category']}", label_count)
+
+
+                entry_id = int(i['entry_id'])
+                l.add_label('  {:03d}'.format(entry_id))
+                l.add_label('  {:03d}'.format(entry_id))
+                l.add_label('  {:03d}'.format(entry_id))
+                l.add_label('  {:03d}'.format(entry_id))
+                label_count += 4
+
+                if count % 2 == 0:
+                    l.add_label(' ')
+                    label_count += 1
+
+                count += 1
+                #print('print entry id', i['entry_id'], label_count)
+            l.output(f'public/flights/{filename}.pdf')
+
+
+    def flight_pull_sheets(self, my_flights):
+
+
+        for category in my_flights:
+
+            flights = {}
+            table_list = []
+            filenames = {}
+
+            #print('category', category)
+
+            sql = 'select * from flights where number = "{}" and ' \
+                  'fk_competitions = "{}"'.format(category, Competitions().get_active_competition())
+
+            uid = gen_uid()
+            result = db.db_command(sql=sql, uid=uid).all(uid)
+
+
+            flight_cat = []
+            flight_sub_cat = []
+
+            # Flight categories
+
+            list_of_categories = []
+            for r in result:
+                print(r)
+                list_of_categories.append(f'{r["category_id"]}{r["sub_category_id"]}')
+
+
+
+            try:
+                tables_list = json.loads(result[0]['tables'])
+            except:
+                tables_list = []
+
+            # Tables
+            print(tables_list)
+
+
+
+            sql = 'select * from tables where name in ("{}") and fk_competitions = "{}"'.format('","'.join(tables_list), Competitions().get_active_competition())
+
+
+            uid = gen_uid()
+            tables = db.db_command(sql=sql, uid=uid).all(uid)
+
+            # Assigned judges
+            #for t in tables:
+            #    print(t)
+
+
+            for table in tables:
+
+                table_list.append(table)
+
+                try:
+                    head_judge = json.loads(table['head_judge'])
+                except:
+                    head_judge = {}
+                hj_certs = []
+
+                if head_judge['bjcp_rank']:
+                    hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
+                if head_judge['cicerone']:
+                    hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
+                if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
+                    hj_certs.append(head_judge['other_cert'])
+
+
+                try:
+                    second_judge = json.loads(table['second_judge'])
+                except:
+                    second_judge = {}
+                sj_certs = []
+
+                if second_judge['bjcp_rank']:
+                    sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
+                if second_judge['cicerone']:
+                    sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
+                if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
+                    sj_certs.append(second_judge['other_cert'])
+
+                flights[table['name']] = {
+                    # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                    'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
+                    'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
+                    'category': category,
+                    'table': table['name'],
+                    'category_name': '{} {}'.format(category, Style('BJCP2015').get_category_name(category)),
+                    'beers': []
+                }
+
+            category_list = []
+
+
+            sql = 'select * from entries ' \
+                  '' \
+                  'where CONCAT(category, sub_category) in ("{}")  and fk_competitions = "{}" and inventory = "1" ' \
+                  'order by category, sub_category, entry_id'.format('","'.join(list_of_categories), Competitions().get_active_competition())
+            uid = gen_uid()
+            cat  = db.db_command(sql=sql, uid=uid).all(uid)
+
+            dup_cat = cat.copy()
+
+            categories = {}
+
+
+            entry = {}
+            for c in cat:
+                #print(c)
+                if Style('BJCP2015').is_specialty(str(c['category']), str(c['sub_category']) ):
+                    c['is_specialty'] = 1
+                else:
+                    c['is_specialty'] = 0
+
+                c['style_name'] = Style('BJCP2015').get_style_name(str(c['category']), str(c['sub_category']))
+
+
+
+                if c['category'] not in categories:
+                    categories[c['category']] = []
+                categories[c['category']].append(c)
+
+            while len(cat) > 0 and flights:
+                #print('cat', flights)
+                for f in flights:
+                    if cat:
+                        #print(cat)
+                        flights[f]['beers'].append(cat.pop(0))
+
+            #for f in flights:
+            #    print(flights[f])
+            #    for b in flights[f]['beers']:
+            #        print(b)
+
+            for f in flights:
+                #print(f)
+
+                flight = flights[f]
+
+                judge_info = {
+                    'head_judge': flight['head_judge'],
+                    'second_judge': flight['second_judge']
+                }
+
+
+                pdf = FlightSheet()
+
+                pdf.flight = f'{f}: Flight Number: {category}: # of Entries: {len(flight["beers"])}'
+
+                #print(pdf.flight)
+
+                pdf.alias_nb_pages()
+                pdf.add_page()
+
+                pdf.intro(judge_info)
+                pdf.table(flight['beers'])
+
+                filename = 'public/flights/{}.pdf'.format(f'Flight: {category} {f} ')
+
+
+                pdf.output(filename, 'F')
+
+                filenames[f] = filename
+
+            self.flight_round_cup_labels(dup_cat, category, f'Flight Number {category} Cup Labels')
+
+        # todo: plan is to return filenames to web page for links
+        #return filenames
+
+
+    def print_checkin(self, session):
+
+        sql = 'select name from sessions where pkid = "{}"'.format(session)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        session_name = result['name']
+
+        checkin = [[session_name, ''], ['','']]
+
+
+        sql = 'select firstname, lastname, fk_sessions_list from volunteers where fk_competitions = "{}" order by lastname'.format(Competitions().get_active_competition())
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        try:
-            tables_list = json.loads(result[0]['tables'])
-        except:
-            tables_list = []
+        print(result)
+        for r in result:
 
-        #print(tables_list)
+            sessions = r['fk_sessions_list'].split(',')
 
+            if str(session) in sessions:
+                checkin.append(['', f'{r["lastname"]}, {r["firstname"]}'])
 
-
-        sql = 'select * from tables where name in ("{}")'.format('","'.join(tables_list))
-
-
-        uid = gen_uid()
-        tables = db.db_command(sql=sql, uid=uid).all(uid)
-
-
-        for table in tables:
-
-            table_list.append(table)
-
-            try:
-                head_judge = json.loads(table['head_judge'])
-            except:
-                head_judge = {}
-            hj_certs = []
-
-            if head_judge['bjcp_rank']:
-                hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
-            if head_judge['cicerone']:
-                hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
-            if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
-                hj_certs.append(head_judge['other_cert'])
-
-
-            try:
-                second_judge = json.loads(table['second_judge'])
-            except:
-                second_judge = {}
-            sj_certs = []
-
-            if second_judge['bjcp_rank']:
-                sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
-            if second_judge['cicerone']:
-                sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
-            if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
-                sj_certs.append(second_judge['other_cert'])
-
-            flights[table['name']] = {
-                # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
-                'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
-                'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
-                'category': category,
-                'table': table['name'],
-                'category_name': '{} {}'.format(category, Style('BJCP2015').get_category_name(category)),
-                'beers': []
-            }
-
-        category_list = []
-
-
-
-        sql = 'select * from entries ' \
-              '' \
-              'where category = "{}" and fk_competitions = "{}" and inventory = "0" ' \
-              'order by category, sub_category, entry_id'.format(category, Competitions().get_active_competition())
-        uid = gen_uid()
-        cat  = db.db_command(sql=sql, uid=uid).all(uid)
-
-        categories = {}
-
-
-        entry = {}
-        for c in cat:
-            #print(c)
-            if Style('BJCP2015').is_specialty(str(c['category']), str(c['sub_category']) ):
-                c['is_specialty'] = 1
-            else:
-                c['is_specialty'] = 0
-
-            c['style_name'] = Style('BJCP2015').get_style_name(str(c['category']), str(c['sub_category']))
-
-
-
-            if c['category'] not in categories:
-                categories[c['category']] = []
-            categories[c['category']].append(c)
-
-        while len(cat) > 0:
-            for f in flights:
-                if cat:
-                    flights[f]['beers'].append(cat.pop(0))
-
-        #for f in flights:
-        #    print(flights[f])
-        #    for b in flights[f]['beers']:
-        #        print(b)
-
-        for f in flights:
-            #print(f)
-
-            flight = flights[f]
-
-            judge_info = {
-                'head_judge': flight['head_judge'],
-                'second_judge': flight['second_judge']
-            }
-
-
-            pdf = FlightSheet()
-
-            pdf.flight = f'{f}: Flight Number: {category}: # of Entries: {len(flight["beers"])}'
-
-            #print(pdf.flight)
-
-            pdf.alias_nb_pages()
-            pdf.add_page()
-
-            pdf.intro(judge_info)
-            pdf.table(flight['beers'])
-
-            filename = 'public/flights/{}.pdf'.format(f'{f} Flight Number {category}')
-
-
-            pdf.output(filename, 'F')
-
-            filenames[f] = filename
-
-
-        return filenames
+        with open(f'public/flights/{session_name} check in sheet.csv', 'w') as writeFile:
+            writer = csv.writer(writeFile)
+            writer.writerows(checkin)
+        writeFile.close()
 
 
 class FlightSheet(FPDF, HTMLMixin):
@@ -600,12 +705,18 @@ class FlightSheet(FPDF, HTMLMixin):
 
 if __name__ == '__main__':
 
-    Reports().print_round_bottle_labels()
+    #Reports().print_round_bottle_labels()
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
-    result = Reports().flight_pull_sheets(21)
-    print(result)
+
+    session = 98
+    Reports().print_checkin(session)
+
+
+    #flights = [17, 13, 23, 18]
+    #result = Reports().flight_pull_sheets(flights)
+    #print(result)
 
     """
     for r in result:

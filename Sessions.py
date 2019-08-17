@@ -212,5 +212,8 @@ if __name__ == '__main__':
 
     #    print(session)
 
+    result = Sessions().get_session_volunteers(98, judges=True)
+    for r in result:
+        print(r)
 
     pass
