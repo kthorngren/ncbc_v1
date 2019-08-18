@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <title id="page-title">NC Brewers Cup</title>
+    <!-- Datatables Bootstrap Buttons RowGroup Select -->
+    <link rel="stylesheet" type="text/css" href="static/css/datatables.min.css"/>
+    <!-- DataTables Editor -->
+    <link rel="stylesheet" type="text/css" href="static/css/editor.bootstrap.min.css">
+    <!-- Autofill -->
+    <link rel="stylesheet" type="text/css" href="static/css/autoFill.bootstrap.min.css"/>
+    <!-- Bootstrap Toggle -->
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap-toggle.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" type="text/css" href="static/css/select2.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="static/css/bootstrap-select.min.css">
+
+    <!-- Custom Theme Style -->
+    <link rel="stylesheet" type="text/css" href="static/css/custom.min.css">
+
+  </head>
+
+  <style>
+
+
+  </style>
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- sidebar -->
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="index" class="site_title"><i class="fa fa-home"></i> <span id="nav-title"> NC Brewers Cup</span></a>
+            </div>
+            <div class="clearfix"></div>
+            <!-- sidebar menu -->
+            <!-- /sidebar menu -->
+
+          </div>
+        </div>
+        <!-- sidebar -->
+
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav class="" role="navigation">
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+            </nav>
+          </div>
+        </div>
+
+
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h4 id='main-title'>Define Flights</h4>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 col-sm-12 col-xs-12">
+
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2 id="table-title">Flights</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <!--
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      -->
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">Place instructions here</p>
+    			  </div>
+                          <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                            <thead>
+                              <tr>
+                                <th>pkid</th>
+                                <th>Number</th>
+                                <th>Qty</th>
+                                <th>Sub Category</th>
+                                <th>Category</th>
+                              </tr>
+	                        </thead>
+                          </table>
+                </div>
+                <!-- /x_panel -->
+
+              </div>
+            </div>
+            <!-- /row -->
+
+
+
+
+          </div>
+        </div>
+        <!-- /page content -->
+
+
+
+        <!-- footer content -->
+        <footer class="right_col_background">
+          <div class="pull-right right_col_background">
+            NC Brewers Cup
+          </div>
+          <div class="clearfix right_col_background"></div>
+        </footer>
+        <!-- /footer content -->
+
+      </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <script src="static/js/jquery-3.3.1.min.js"></script>
+	<!-- debounce -->
+    <script src="static/js/jquery.ba-throttle-debounce.min.js"></script>
+    <!-- Datatables Bootstrp Buttons RowGroup Select-->
+	<script type="text/javascript" src="static/js/pdfmake.min.js"></script>
+	<script type="text/javascript" src="static/js/vfs_fonts.js"></script>
+	<script type="text/javascript" src="static/js/datatables.min.js"></script>
+    <!-- DataTables Editor -->
+    <script type="text/javascript" src="static/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" src="static/js/editor.bootstrap.min.js"></script>
+    <!-- Autofill -->
+    <script type="text/javascript" src="static/js/dataTables.autoFill.min.js"></script>
+    <script type="text/javascript" src="static/js/autoFill.bootstrap.min.js"></script>
+    <!-- Select2 -->
+    <script type="text/javascript" src="static/js/editor.select2.js"></script>
+    <script type="text/javascript" src="static/js/select2.min.js"></script>
+    <!-- Natrural -->
+    <script type="text/javascript" src="static/js/natural.js"></script>
+    <!-- Bootstrap Toggle -->
+    <script type="text/javascript" src="static/js/bootstrap-toggle.min.js"></script>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="static/js/bootstrap-select.min.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="/static/js/custom.min.js"></script>
+    <!-- fieldType.toggle -->
+    <script src="/static/js/field_type_toggle_plugin.js"></script>
+
+
+<script>
+var editor;
+var table;
+var styles_count = {};
+
+
+function get_styles_count(full_inventory=true) {
+
+	$.ajax({
+      	url: "/get_styles_count",
+      	type: 'post',
+      	data: {data: full_inventory},
+      	success: function(json) {
+            var styles_count = JSON.parse(json);
+
+            styles_count = styles_count.data;
+
+            table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+         			 	var data = this.data();
+                var count = 0;
+
+                if (styles_count.hasOwnProperty(data.category_id)) {
+                  if (styles_count[data.category_id].hasOwnProperty(data.sub_category_id)) {
+                    count = styles_count[data.category_id][data.sub_category_id]
+                  }
+                }
+                data.count = count;
+
+            });
+            table.rows().invalidate();
+
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+function initMainEditor() {
+
+editor = new $.fn.dataTable.Editor(
+{
+    table: "#main-table",
+	ajax: "dt_manual_flights",
+	idSrc: 'pkid',
+    fields: [
+        {
+            name: "pkid",
+            label: "pkid:",
+            type: "hidden"
+        },
+        {
+            name: "number",
+            label: "Number:"
+        },
+
+    ]
+});
+
+// Activate an inline edit on click of a table cell
+$('#main-table').on( 'click', 'tbody td:first-child', function (e) {
+    editor.inline( this, {
+        onBlur: 'submit'
+    } );
+} );
+
+
+
+editor
+    .on( 'postCreate postRemove', function () {
+        // After create or edit, a number of other rows might have been effected -
+        // so we need to reload the table, keeping the paging in the current position
+        table.ajax.reload( null, false );
+    } )
+    .on( 'initCreate', function () {
+        // Enable order for create
+        editor.field( 'pkid' ).disable();
+    } )
+    .on( 'initEdit', function () {
+        // Disable for edit (re-ordering is performed by click and drag)
+        editor.field( 'pkid' ).disable();
+    } );
+}
+
+
+function drawMainTable() {
+	table = $('#main-table').DataTable({
+		ajax: 'dt_manual_flights',
+		dom: 'Blftirp',
+		rowId: 'pkid',
+    autoFill: {
+      columns: 1,
+      editor: editor
+    },
+		paging: false,
+	    //select: {
+    	//    style: "multi+shift",
+      //  	selector: "td:first-child"
+   		//},
+   		order: [[3, 'asc']],
+		columns: [
+	        {
+	        	data: 'pkid',
+	        	visible: false
+	        },
+	        {
+	        	data: 'number',
+	        },
+          {
+            data: 'count'
+          },
+          {
+	        	data: 'style', type: 'natural'
+	        },
+	        {
+	        	data: 'category',
+	        },
+	    ],
+
+      buttons: [
+
+            {
+                text: 'Initialize Flights',
+                action: function ( e, dt, node, config ) {
+
+    				        init_flights(true);
+
+
+                }
+            },
+            {
+                text: 'Use Registered Count',
+                action: function ( e, dt, node, config ) {
+
+    				          get_styles_count(true);
+
+
+                }
+            },
+            {
+                text: 'Use Inventory Count',
+                action: function ( e, dt, node, config ) {
+
+					             get_styles_count(false);
+
+                }
+            },
+            {extend: 'excel'}
+        ]
+
+	});
+
+
+}
+
+function init_flights() {
+
+	$.ajax({
+      	url: "/init_flights",
+      	type: 'post',
+      	success: function(json) {
+
+          table.ajax.reload();
+        },
+
+      	error: function (jqXHR, exception) {
+      		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      	},
+    });
+}
+
+
+
+$(document).ready(function() {
+  initMainEditor();
+	drawMainTable();
+
+
+});
+</script>
+
+</body>
+</html>

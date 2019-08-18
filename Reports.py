@@ -193,13 +193,13 @@ class Reports:
                 entry_id = int(i['entry_id'])
                 l.add_label('  {:03d}'.format(entry_id))
                 l.add_label('  {:03d}'.format(entry_id))
-                l.add_label('  {:03d}'.format(entry_id))
-                l.add_label('  {:03d}'.format(entry_id))
-                label_count += 4
+                #l.add_label('  {:03d}'.format(entry_id))
+                #l.add_label('  {:03d}'.format(entry_id))
+                label_count += 2
 
-                if count % 2 == 0:
-                    l.add_label(' ')
-                    label_count += 1
+                #if count % 2 == 0:
+                #    l.add_label(' ')
+                #    label_count += 1
 
                 count += 1
                 #print('print entry id', i['entry_id'], label_count)
@@ -256,6 +256,7 @@ class Reports:
             #for t in tables:
             #    print(t)
 
+            cup_labels = {}
 
             for table in tables:
 
@@ -328,12 +329,12 @@ class Reports:
                 if c['category'] not in categories:
                     categories[c['category']] = []
                 categories[c['category']].append(c)
-
+            print('doing cat')
             while len(cat) > 0 and flights:
                 #print('cat', flights)
                 for f in flights:
                     if cat:
-                        #print(cat)
+                        print(cat)
                         flights[f]['beers'].append(cat.pop(0))
 
             #for f in flights:
@@ -376,6 +377,64 @@ class Reports:
         # todo: plan is to return filenames to web page for links
         #return filenames
 
+    def flight_round_cup_labels_new(self, entries, flight, filename):
+
+        LABELS_PER_LINE = 9
+        LINES_PER_PAGE = 12
+        PADDING = 5
+        l = PDFLabel('050-circle', font = 'Courier', font_size=13)
+        l.add_page()
+        labels = Entrys().get_inventory(inventory=False)
+        label_count = 0
+        category = ''
+        print(entries)
+
+        count = 0
+
+        if entries:
+            l.add_label("===Flt===")
+            l.add_label("==={:03d}===".format(int(flight)))
+            label_count += 2
+
+            for e in entries:
+                while label_count % LABELS_PER_LINE != 0:
+                    l.add_label(' ')
+                    label_count += 1
+                # print('add space', label_count)
+                print('e', e)
+                l.add_label("===tbl===")
+                l.add_label("==={:03d}===".format(int(e.split(' ')[-1])))
+                label_count += 2
+
+                while label_count % LABELS_PER_LINE != 0:
+                    l.add_label(' ')
+                    label_count += 1
+
+                for i in sorted(entries[e], key=lambda r: int(r['category'])):
+                    print(i)
+                    #if category != i['category']:
+                    category = i['category']
+                    #print('cat change')
+                    #print(f"print cat{i['category']}", label_count)
+
+
+                    entry_id = int(i['entry_id'])
+                    l.add_label('  {:03d}'.format(entry_id))
+                    l.add_label('  {:03d}'.format(entry_id))
+                    l.add_label('  {:03d}'.format(entry_id))
+                    l.add_label('  {:03d}'.format(entry_id))
+                    label_count += 4
+
+                    if count % 2 == 0:
+                        l.add_label(' ')
+                        label_count += 1
+
+                    count += 1
+                    #print('print entry id', i['entry_id'], label_count)
+                l.output(f'public/flights/{filename}.pdf')
+
+
+
 
     def print_checkin(self, session):
 
@@ -386,7 +445,7 @@ class Reports:
 
         session_name = result['name']
 
-        checkin = [[session_name, ''], ['','']]
+        checkin = [[session_name, ''], ['','*Please initial you name or add it to the list if not listed'], ['', '']]
 
 
         sql = 'select firstname, lastname, fk_sessions_list from volunteers where fk_competitions = "{}" order by lastname'.format(Competitions().get_active_competition())
@@ -394,7 +453,7 @@ class Reports:
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        print(result)
+        #print(result)
         for r in result:
 
             sessions = r['fk_sessions_list'].split(',')
@@ -402,6 +461,7 @@ class Reports:
             if str(session) in sessions:
                 checkin.append(['', f'{r["lastname"]}, {r["firstname"]}'])
 
+        #print(checkin)
         with open(f'public/flights/{session_name} check in sheet.csv', 'w') as writeFile:
             writer = csv.writer(writeFile)
             writer.writerows(checkin)
@@ -428,8 +488,8 @@ class FlightSheet(FPDF, HTMLMixin):
         # set the font for the header, B=Bold
         self.set_font("Arial", style="B", size=15)
         # page title
-        self.image("files/ncbg-logo.png", x=12, y=12, w=31)
-        self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
+        #self.image("files/ncbg-logo.png", x=12, y=12, w=31)
+        #self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
         #self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2019", border=1, ln=0, align="C")
         self.cell(epw, 16, self.flight, border=1, ln=0, align="C")
         # insert a line break of 20 pixels
@@ -711,11 +771,25 @@ if __name__ == '__main__':
 
 
     session = 98
-    Reports().print_checkin(session)
+    #Reports().print_checkin(session)
 
 
-    #flights = [17, 13, 23, 18]
-    #result = Reports().flight_pull_sheets(flights)
+    #flights = [17, 13, 29, 11]
+    #flights = [19,2,26,3]
+    #flights = [26]
+    # Sat Pm extra
+    #flights = [4, 1]
+    #flights = [12]
+    #flights = [7]
+    #flights = [20]
+    #flights = [6]
+    #flights = [10]
+    #flights = [8]
+    #flights = [5]
+
+    flights = []
+
+    result = Reports().flight_pull_sheets(flights)
     #print(result)
 
     """
