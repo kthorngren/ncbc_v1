@@ -1,7 +1,7 @@
 import json
 from textwrap import wrap, dedent, fill
 import csv
-
+import re
 
 from Tools import Tools
 from Competitions import DATABASE
@@ -151,7 +151,7 @@ class Reports:
             for x in range(0, 7):
                 l.add_label(' ')
 
-            for x in range(0, 18):
+            for x in range(0, 9):
                 #l.add_label('  {:03d}{}{}'.format(r['entry_id'],int(r['category']), r['sub_category']))
                 l.add_label('  {:03d}'.format(r['entry_id']))
 
@@ -377,6 +377,100 @@ class Reports:
         # todo: plan is to return filenames to web page for links
         #return filenames
 
+
+    def bos_flight_pull_sheets(self):
+
+
+
+
+        category_list = []
+
+
+        sql = 'select * from entries ' \
+              'where fk_competitions = "{}" and place = "1" ' \
+              'order by LPAD(entries.category, 2, "0"), sub_category'.format(Competitions().get_active_competition())
+        uid = gen_uid()
+        cat  = db.db_command(sql=sql, uid=uid).all(uid)
+
+        dup_cat = cat.copy()
+
+        categories = {}
+
+
+        entry = {}
+        for c in cat:
+            if Style('BJCP2015').is_specialty(str(c['category']), str(c['sub_category']) ):
+                c['is_specialty'] = 1
+            else:
+                c['is_specialty'] = 0
+
+            c['style_name'] = Style('BJCP2015').get_style_name(str(c['category']), str(c['sub_category']))
+
+
+
+            if c['category'] not in categories:
+                categories[c['category']] = []
+            categories[c['category']].append(c)
+            #print(c)
+
+            print(f'{c["entry_id"]},{c["category"]}{c["sub_category"]},{c["style_name"].replace(",",";")}')
+
+            if int(c['is_specialty']) == 1 or c['category'] == '35':
+                print(' , ,{}'.format(c['description'].replace('\n', '').replace(',',  ';')))
+
+        #for c in categories:
+        #    print(c)
+
+        return
+
+
+        while len(cat) > 0:
+            #print('cat', flights)
+            if cat:
+                print(cat)
+                flights[f]['beers'].append(cat.pop(0))
+
+        #for f in flights:
+        #    print(flights[f])
+        #    for b in flights[f]['beers']:
+        #        print(b)
+
+        for f in flights:
+            #print(f)
+
+            flight = flights[f]
+
+            judge_info = {
+                'head_judge': flight['head_judge'],
+                'second_judge': flight['second_judge']
+            }
+
+        pdf = FlightSheet()
+
+        pdf.flight = f'NC Brewers Cup BOS 2019'
+
+        #print(pdf.flight)
+
+        pdf.alias_nb_pages()
+        pdf.add_page()
+
+
+
+        #pdf.intro(judge_info)
+        pdf.table(flight['beers'])
+
+        filename = 'public/flights/BOS Flights.pdf'
+
+
+        pdf.output(filename, 'F')
+
+
+
+        # todo: plan is to return filenames to web page for links
+        #return filenames
+
+
+
     def flight_round_cup_labels_new(self, entries, flight, filename):
 
         LABELS_PER_LINE = 9
@@ -549,6 +643,8 @@ class FlightSheet(FPDF, HTMLMixin):
 
         hj = judges['head_judge'].split('|')
         sj = judges['second_judge'].split('|')
+        hj=['','','']
+        sj=['','','']
 
         for j in range(0, 3):
             self.cell(col_width, line_ht * th, '  {}'.format(hj[j]), border='L', align=align)
@@ -619,9 +715,9 @@ class FlightSheet(FPDF, HTMLMixin):
         # Here we add more padding by passing 2*th as height
         for beer in beers:
             # Get list of description lines.
-            if beer['is_specialty'] == 1:
+            if beer['is_specialty'] == 1 or beer['category'] == '35':
                 # https://pymotw.com/2/textwrap/
-                desc = dedent(beer['description']).strip()
+                desc = dedent(beer['description']).strip().replace(u"\u2019", "")
 
                 if len(desc) == 0:
                     desc = '** No description provide by brewer  **'
@@ -770,7 +866,7 @@ if __name__ == '__main__':
     #Reports().print_round_bos_cup_labels()
 
 
-    session = 98
+    #session = 100
     #Reports().print_checkin(session)
 
 
@@ -787,11 +883,14 @@ if __name__ == '__main__':
     #flights = [8]
     #flights = [5]
 
-    flights = []
+    #flights = [15, 16, 22, 25, 28, 31]
+    #flights = [14, 18, 21, 24, 30, 27]
+    #flights = [18, 21, 16, 31, 22]
 
-    result = Reports().flight_pull_sheets(flights)
+    #result = Reports().flight_pull_sheets(flights)
     #print(result)
 
+    Reports().bos_flight_pull_sheets()
     """
     for r in result:
         #print(r)
