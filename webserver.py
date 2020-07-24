@@ -32,7 +32,7 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'competitions'
+        DATABASE = 'ncbc-2020'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -56,8 +56,8 @@ class Website:
         self.db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
         self.dt = Datatables(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
-        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
-        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc_data')
+        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2020')
+        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2020')
 
 
     def get_instructions(self, page_name):
@@ -2119,7 +2119,7 @@ if __name__ == '__main__':
     webapp = Website()
     cherrypy.config.update(
         {'server.socket_host': '0.0.0.0',
-         'server.socket_port': 8080,
+         'server.socket_port': 5000,
          'log.screen': True,
          'log.error_file': '',
          'log.access_file': ''

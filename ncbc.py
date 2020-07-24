@@ -77,8 +77,8 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'competitions'
-        NCBC_DB = 'ncbc_data'
+        DATABASE = 'ncbc-2020'
+        NCBC_DB = 'ncbc-data-2020'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -601,50 +601,23 @@ class Ncbc:
                     r = s.get(self.url)
 
                     if r.status_code == 200:
-                        data = r.text
+                        entries = r.content.replace(b'\x00', b'').decode('ascii','ignore').splitlines()
+                        logger.info('Retrieved {} CSV file with {} lines including heading'.format(self.name, len(entries)))
 
-                        match = re.search(r'number of records:(\d+)<', data)
+                        header = True
+                        #self.header = entries.pop(0).replace('"', '').split(',')
+                        #print(self.header)
+                        #self.header = [x.decode('utf-8') for x in self.header]
 
-                        if match:
-                            try:
-                                record_count = int(match.group(1))
-                                if record_count:
-                                    record_count -= 1
-                                recourd_count = str(record_count)
-                            except:
-                                record_count = match.group(1)
-                            logger.info('Number of records in CSV: {}'.format(record_count))
-                            match = re.search(r'/docs/(.*\.csv)"', data)
-
-                            if match:
-                                csv_file = match.group(1)
-                                logger.info('Found CSV File: {}'.format(csv_file))
-                                csv_url = 'https://www.memberleap.com/members/secure/evr/docs/{}'.format(csv_file)
-                                logger.info('attempting to download {} CSV from URL: {}'.format(self.name, csv_url))
-                                r = s.get(csv_url)
-
-                                entries = r.content.replace(b'\x00', b'').decode('ascii','ignore').splitlines()
-                                logger.info('Retrieved {} CSV file with {} lines including heading'.format(self.name, len(entries)))
-
-                                header = True
-                                #self.header = entries.pop(0).replace('"', '').split(',')
+                        for e in reader(entries, escapechar='\\', doublequote=False):
+                            if header:
+                                self.header = [x.replace('""', '"').replace('"', r'\"') for x in e]
                                 #print(self.header)
-                                #self.header = [x.decode('utf-8') for x in self.header]
-
-                                for e in reader(entries, escapechar='\\', doublequote=False):
-                                    if header:
-                                        self.header = [x.strip('\"') for x in e]
-                                        #print(self.header)
-                                        header = False
-                                    else:
-                                        self.entries.append([x.strip('\"').strip() for x in e])
-                                        #print([x.strip('\"').strip() for x in e])
-
-
+                                header = False
                             else:
-                                logger.error('Unable to find CSV Filename in response')
-                        else:
-                            logger.error('Unable to find "number of records" in response')
+                                self.entries.append([x.replace('""', '"').replace('"', r'\"').strip() for x in e])
+                                #print([x.strip('\"').strip() for x in e])
+                            pass
                     else:
                         logger.error('Error code: {}, getting URL: {}'.format(r.status_code, self.url))
                 else:
@@ -1981,9 +1954,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=4)
+    #process_new_entries(pkid=6)
 
-    process_new_volunteers(pkid=5)
+    process_new_volunteers(pkid=7)
 
     #validate_ncbc(pkid=1)
 
