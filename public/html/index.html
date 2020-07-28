@@ -527,7 +527,17 @@ function get_comp_stats() {
                     $(cell).attr('title', titles.join('\n'));
                   }
                 },
-            		{data: 'other'},
+            		{data: 'other',
+                 createdCell: function (cell, cellData, rowData, row, col) {
+                    var people = rowData.session_other;
+                    var titles = [];
+                    for (i=0; i<people.length; i++) {
+                      person = people[i];
+                      titles.push(person.firstname + ' ' + person.lastname);
+                    }
+                    $(cell).attr('title', titles.join('\n'));
+                  }
+                },
             	]
             })
 			var total = 0;
