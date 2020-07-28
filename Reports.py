@@ -71,7 +71,7 @@ class Reports:
         pass
 
 
-    def print_round_bottle_labels(self):
+    def print_round_bottle_labels(self number=4):
 
         PADDING = 5
         l = PDFLabel('075-circle', font = 'Courier', font_size=13)
@@ -80,7 +80,7 @@ class Reports:
         labels = Entrys().get_inventory(all=True)
         for i in sorted(labels, key=lambda r: r['entry_id']):
 
-            for x in range(0, 4):
+            for x in range(0, number):
                 entry_id = int(i['entry_id'])
                 category = '{}{}'.format(i['category'], i['sub_category'])
                 l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
@@ -861,7 +861,7 @@ class FlightSheet(FPDF, HTMLMixin):
 
 if __name__ == '__main__':
 
-    #Reports().print_round_bottle_labels()
+    #Reports().print_round_bottle_labels(4)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
@@ -890,7 +890,7 @@ if __name__ == '__main__':
     #result = Reports().flight_pull_sheets(flights)
     #print(result)
 
-    Reports().bos_flight_pull_sheets()
+    #Reports().bos_flight_pull_sheets()
     """
     for r in result:
         #print(r)
