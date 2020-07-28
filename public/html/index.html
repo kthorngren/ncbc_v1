@@ -205,7 +205,7 @@
                                 <th>Session</th>
                                 <th>Judges</th>
                                 <th>Stewards</th>
-                                <th>Other</th>
+                                <th>Staff</th>
                               </tr>
                             </thead>
                           </table>
@@ -505,8 +505,28 @@ function get_comp_stats() {
             	scrollY: true,
             	columns: [
             		{data: 'name'},
-            		{data: 'judges'},
-            		{data: 'stewards'},
+                {data: 'judges',
+                 createdCell: function (cell, cellData, rowData, row, col) {
+                    var people = rowData.session_judges;
+                    var titles = [];
+                    for (i=0; i<people.length; i++) {
+                      person = people[i];
+                      titles.push(person.firstname + ' ' + person.lastname);
+                    }
+                    $(cell).attr('title', titles.join('\n'));
+                  }
+                },
+            		{data: 'stewards',
+                 createdCell: function (cell, cellData, rowData, row, col) {
+                    var people = rowData.session_stewards;
+                    var titles = [];
+                    for (i=0; i<people.length; i++) {
+                      person = people[i];
+                      titles.push(person.firstname + ' ' + person.lastname);
+                    }
+                    $(cell).attr('title', titles.join('\n'));
+                  }
+                },
             		{data: 'other'},
             	]
             })
@@ -548,7 +568,6 @@ $(document).ready(function() {
 	get_competitions();
 	
 	get_comp_stats();
-	
 	
 
 });

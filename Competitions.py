@@ -114,6 +114,36 @@ class Competitions:
 
         return result.get('name', '')
 
+    def get_session_volunteers(self, session_number, judges=False, stewards=False, other=False, all=False):
+        """Copied from Sessions.py as Session cant be imported"""
+        where = ''
+
+        if stewards and not judges:
+            where = 'and judge = "0"'
+        elif judges and not stewards:
+            where = 'and judge = "1"'
+        elif other and not judges and not stewards:
+            where = 'and judge > "1"'
+
+        if not all:
+            where += ' and active = "1" '
+
+        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
+              'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
+                'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid, p.likes, p.dislikes ' \
+                'from volunteers '\
+                'left join people as p on p.pkid = fk_people ' \
+                'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \
+                'and deleted = "0" and fk_competitions = "{pkid}" {where}'.format(session_number=session_number,
+                                                                pkid=Competitions().get_active_competition(),
+                                                                where=where
+                                                                )
+        print(sql)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
     def get_comp_status(self):
 
         status = {'entries': {}, 'sessions': []}
@@ -158,7 +188,7 @@ class Competitions:
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
-
+        print('reslt', result)
         sessions_list = {0: [], 1 : [], 2: []}
         for r in result:
             print(r)
@@ -181,13 +211,19 @@ class Competitions:
             print(sessions_list[1])
             num_judges += sessions_list[1].count(r['pkid'])
 
+            session_judges = self.get_session_volunteers(r['pkid'], judges=True)
+            session_stewards = self.get_session_volunteers(r['pkid'], stewards=True)
+            session_other = self.get_session_volunteers(r['pkid'], other=True)
 
             status['sessions'].append({
                 'name': r['name'],
                 'type': '/'.join(session_type),
-                'stewards': sessions_list[0].count(r['pkid']),
-                'judges': sessions_list[1].count(r['pkid']),
-                'other': sessions_list[2].count(r['pkid']),
+                'stewards': len(session_stewards), #sessions_list[0].count(r['pkid']),
+                'judges': len(session_judges), #sessions_list[1].count(r['pkid']),
+                'other': len(session_other), #sessions_list[2].count(r['pkid']),
+                'session_judges': session_judges,
+                'session_stewards': session_stewards,
+                'session_other': session_other
             })
 
         status['entries']['average'] = round(entries / (num_judges / 2))

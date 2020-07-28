@@ -119,6 +119,9 @@ class Import:
 
         updated = {}
 
+        row['notes'] = row['notes'].replace('"', r'\"')
+        row['certifications'] = row['certifications'].replace('"', r'\"')
+
         updated['notes'] = 'Notes: {d[notes]}, Certs: {d[certifications]} {d[steward_certs]}, ' \
                        'Judge: {d[consider_judge]}, Steward: {d[consider_steward]}, ' \
                        'Attendee ID: {d[attendee_id]}'.format(d=row)
@@ -218,7 +221,7 @@ class Import:
 
             else:
                 logger.info('Found {} potential options for {} {}'.format(len(result), firstname, lastname))
-
+            
             record = Import().update_volunteer_fields(row)
 
             record['fk_people'] = fk_people
@@ -237,7 +240,7 @@ class Import:
                     import_result['updated'] += 1
                 sql = 'update volunteers set new = "0", changed = "0" where pkid = "{}"'.format(row['pkid'])
                 db.db_command(sql=sql)
-
+            
         return import_result
 
     def get_brewer(self, pkid):

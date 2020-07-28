@@ -1240,11 +1240,17 @@ class Ncbc:
                     for field in fields:
 
                         value = self.get_field(row, rev_mapping.get(field, field)).strip()
-
+                        """
                         if field == 'consider_steward' and value:
                             judge = '1'
                         elif field == 'consider_judge' and value:
                             judge = '0'
+                        """
+                        if field == 'package':
+                            if 'JUDGING' in value:
+                                judge = '1'
+                            elif 'STEWARD' in value or 'Wednesday' in value:
+                                judge = '0'
 
                         update.append('{} = "{}"'.format(field, value))
 
@@ -1263,10 +1269,19 @@ class Ncbc:
 
                     value = self.get_field(row, rev_mapping.get(field, field)).strip()
 
+                    """
                     if field == 'consider_steward' and value:
                         judge = '1'
                     elif field == 'consider_judge' and value:
                         judge = '0'
+                    """
+                    if field == 'package':
+                        if 'JUDGING' in value:
+                            judge = '1'
+                        elif 'STEWARD' in value or 'Wednesday' in value:
+                            judge = '0'
+
+
 
                     values.append(value)
 
@@ -1954,9 +1969,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=6)
+    process_new_entries(pkid=6)
 
-    process_new_volunteers(pkid=7)
+    #process_new_volunteers(pkid=7)
 
     #validate_ncbc(pkid=1)
 
