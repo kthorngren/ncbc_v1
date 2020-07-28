@@ -714,7 +714,7 @@ class Ncbc:
     def get_person_fields(self):
 
         db = ['salutation', 'last_name', 'first_name', 'organization', 'title',
-              'address', 'address 2', 'city', 'state', 'zip', 'home phone', 'email', 'create_date']
+              'address', 'address_2', 'city', 'state', 'zip', 'home_phone', 'email', 'create_date']
         self.person_fields = {}
 
         for d in db:
@@ -748,7 +748,7 @@ class Ncbc:
         try:
             id_list = json.loads(result.get('attendee_id_list', '[]'))
         except:
-            logger.error('Unavble to get attendee_is_list for pkid {}'.format(pkid))
+            logger.error('Unable to get attendee_is_list for pkid {}'.format(pkid))
             id_list = []
 
         return id_list
@@ -779,6 +779,7 @@ class Ncbc:
 
 
     def insert_person(self, entry, attendee_id):
+
         db_fields = ['salutation', 'last_name', 'first_name', 'organization', 'title',
               'address', 'address_2', 'city', 'state', 'zip', 'phone', 'email', 'created',
                      'updated', 'attendee_id_list', 'send_labels', 'fk_competitions']
