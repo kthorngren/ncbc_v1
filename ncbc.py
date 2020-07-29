@@ -20,6 +20,7 @@ from Volunteers import Volunteers
 from Entrys import Entrys
 
 from Competitions import DATABASE
+from Competitions import Competitions
 
 """
 https://stackoverflow.com/questions/1210458/how-can-i-generate-a-unique-id-in-python
@@ -658,6 +659,21 @@ class Ncbc:
         except:
             return ''
 
+    def set_field(self, row, field, value):
+        """
+        Get the value contained in the entry (list) record at the index of the field
+        :param entry: entry list
+        :param field: field to get from entry list
+        :return: field value or "" if field not found
+        """
+        try:
+            index = self.header.index(field)
+            row[index] = value
+            return True
+        except:
+            return False
+
+
     def get_raw_data_pkid(self, field, data):
 
         sql = 'select pkid from raw_data where {field} = "{data}"'.format(field=field, data=data)
@@ -678,7 +694,7 @@ class Ncbc:
                                                attendee_id,
                                                fk_people,
                                                 fk_entries,
-                                                self.pkid,
+                                                Competitions().get_active_competition(),
                                                data)
         db.db_command(sql=sql)
 
@@ -874,7 +890,7 @@ class Ncbc:
 
         logger.info('Inserting entry id {}: {}{}'.format(entry_id, cat, sub_cat))
 
-        sql = 'insert into entries ({}) values ("{}", NOW(), "0", "0", "{}", "{}", "{}", "{}")'.format(','.join(db_fields), '","'.join(values), fk_people, self.pkid, entry_id, error)
+        sql = 'insert into entries ({}) values ("{}", NOW(), "0", "0", "{}", "{}", "{}", "{}")'.format(','.join(db_fields), '","'.join(values), fk_people, Competitions().get_active_competition(), entry_id, error)
         db.db_command(sql=sql)
 
 
@@ -929,6 +945,8 @@ class Ncbc:
 
         logger.info('Processing new entries')
         for row in self.entries:
+
+            #set_result = self.set_field(row, 'fk_competitions', Competitions().get_active_competition())
 
             attendee_id = self.get_field(row, 'attendee_id')
 

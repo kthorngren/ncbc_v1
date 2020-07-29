@@ -71,13 +71,14 @@ class Reports:
         pass
 
 
-    def print_round_bottle_labels(self number=4):
+    def print_round_bottle_labels(self, number=4):
 
         PADDING = 5
         l = PDFLabel('075-circle', font = 'Courier', font_size=13)
         l.add_page()
 
         labels = Entrys().get_inventory(all=True)
+        print(labels)
         for i in sorted(labels, key=lambda r: r['entry_id']):
 
             for x in range(0, number):
@@ -861,7 +862,7 @@ class FlightSheet(FPDF, HTMLMixin):
 
 if __name__ == '__main__':
 
-    #Reports().print_round_bottle_labels(4)
+    Reports().print_round_bottle_labels(4)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 

@@ -666,7 +666,10 @@ class Datatables:
             object_prefix = object_prefix + '.'
         field_errors = []
         result_name = ''
-        sql = 'select column_name, column_type, column_key, column_comment ' \
+        sql = 'select column_name as column_name, column_name as COLUMN_NAME, ' \
+              'column_type as column_type, column_type as COLUMN_TYPE, ' \
+                  'column_key as column_key, column_key as COLUMN_KEY, ' \
+                      'column_comment as column_comment, column_comment as COLUMN_COMMENT ' \
               'from information_schema.columns ' \
               'where table_name = "{}"'.format(table_name)
         logger.debug('Col Requirments query: {}'.format(sql))
@@ -679,17 +682,17 @@ class Datatables:
         add_fields = []
         for r in result:
             #print r
-            match = re.match(r'^([a-zA-Z]*)(?:(?:\()*(.*)(?:\)))*', r['column_type'])
+            match = re.match(r'^([a-zA-Z]*)(?:(?:\()*(.*)(?:\)))*', r['COLUMN_TYPE'])
             #print r['column_name'], match.groups()
             #print r['column_name'], repr(r['column_comment'])
-            temp = re.sub(r'[\x93|\x94]', '"', r['column_comment'])
+            temp = re.sub(r'[\x93|\x94]', '"', r['COLUMN_COMMENT'])
             #print temp
             try:
                 reqs = json.loads(temp)
             except Exception as e:
                 #print e
                 reqs = {}
-            column_requirements[r['column_name']] = {'column_type': match.group(1) if match else '',
+            column_requirements[r['COLUMN_NAME']] = {'COLUMN_TYPE': match.group(1) if match else '',
                                                      'column_length': int(match.group(2)) if match and match.group(
                                                          2) and match.group(2).isdigit() else 0,
                                                      'column_key': r['column_key'],
@@ -755,14 +758,14 @@ class Datatables:
                             #print 'found fk'
                             delete_fields.append(r)
                             continue
-                        elif column_requirements[r]['column_type'] == 'int':
+                        elif column_requirements[r]['COLUMN_TYPE'] == 'int':
                             #print 'found int'
                             record[r] = '0'
 
 
-                if column_requirements[r]['column_type'] == 'varchar':
+                if column_requirements[r]['COLUMN_TYPE'] == 'varchar':
                     logger.debug('Column: {}, DB Type: {}, Action: {}, Content: "{}", Type: {}'.format(r,
-                                                                                                       column_requirements[r]['column_type'],
+                                                                                                       column_requirements[r]['COLUMN_TYPE'],
                                                                                                        action ,
                                                                                                        record[r],
                                                                                                        type(record[r])))
@@ -792,7 +795,7 @@ class Datatables:
                                              'status': 'Data length ({}) greater than DB length of {}'.format(
                                                  len(record[r]), column_requirements[r]['column_length'])})
                         continue
-                elif column_requirements[r]['column_type'] == 'int':
+                elif column_requirements[r]['COLUMN_TYPE'] == 'int':
                     try:
                         #print('int: ', repr(record[r]))
                         temp = int(record[r])
@@ -836,7 +839,7 @@ class Datatables:
                                              'status': 'Data length ({}) greater than DB length of {}'.format(
                                                  len(record[r]), column_requirements[r]['column_length'])})
                         continue
-                elif column_requirements[r]['column_type'] == 'date':
+                elif column_requirements[r]['COLUMN_TYPE'] == 'date':
                     if len(record[r]) == 0:
                         delete_fields.append(r)
                         continue
@@ -1039,10 +1042,10 @@ class Datatables:
         result = self.db.db_command(sql=sql, uid=uid).all(uid)
         #print result
         for r in result:
-            if r['column_name'][-4:] == 'list':
-                sql = 'select count(pkid) from {table} where FIND_IN_SET({pkid}, {field})'.format(table=r['table_name'], field=r['column_name'], pkid=pkid)
+            if r['COLUMN_NAME'][-4:] == 'list':
+                sql = 'select count(pkid) from {table} where FIND_IN_SET({pkid}, {field})'.format(table=r['table_name'], field=r['COLUMN_NAME'], pkid=pkid)
             else:
-                sql = 'select count(pkid) from {} where {} = "{}"'.format(r['table_name'], r['column_name'], pkid)
+                sql = 'select count(pkid) from {} where {} = "{}"'.format(r['table_name'], r['COLUMN_NAME'], pkid)
             print(sql)
             uid = gen_uid()
             result_count = self.db.db_command(sql=sql, uid=uid).one(uid)
@@ -1761,7 +1764,10 @@ class DTSpelunker(Datatables):
             object_prefix = object_prefix + '.'
         field_errors = []
         result_name = ''
-        sql = 'select column_name, column_type, column_key, column_comment ' \
+        sql = 'select column_name as column_name, column_name as COLUMN_NAME, ' \
+              'column_type as column_type, column_type as COLUMN_TYPE, ' \
+                  'column_key as column_key, column_key as COLUMN_KEY, ' \
+                      'column_comment as column_comment, column_comment as COLUMN_COMMENT ' \
               'from information_schema.columns ' \
               'where table_name = "{}"'.format(table_name)
         #print (sql)
@@ -1774,17 +1780,17 @@ class DTSpelunker(Datatables):
         add_fields = []
         for r in result:
             #print r
-            match = re.match(r'^([a-zA-Z]*)(?:(?:\()*(.*)(?:\)))*', r['column_type'])
+            match = re.match(r'^([a-zA-Z]*)(?:(?:\()*(.*)(?:\)))*', r['COLUMN_TYPE'])
             #print r['column_name'], match.groups()
             #print r['column_name'], repr(r['column_comment'])
-            temp = re.sub(r'[\x93|\x94]', '"', r['column_comment'])
+            temp = re.sub(r'[\x93|\x94]', '"', r['COLUMN_COMMENT'])
             #print temp
             try:
                 reqs = json.loads(temp)
             except Exception as e:
                 #print e
                 reqs = {}
-            column_requirements[r['column_name']] = {'column_type': match.group(1) if match else '',
+            column_requirements[r['COLUMN_NAME']] = {'column_type': match.group(1) if match else '',
                                                      'column_length': int(match.group(2)) if match and match.group(
                                                          2) and match.group(2).isdigit() else 0,
                                                      'column_key': r['column_key'],
@@ -1883,12 +1889,12 @@ class DTSpelunker(Datatables):
                             #print 'found fk'
                             delete_fields.append(r)
                             continue
-                        elif column_requirements[r]['column_type'] == 'int':
+                        elif column_requirements[r]['COLUMN_TYPE'] == 'int':
                             #print 'found int'
                             record[r] = '0'
 
 
-                if column_requirements[r]['column_type'] == 'varchar':
+                if column_requirements[r]['COLUMN_TYPE'] == 'varchar':
                     #print('{}, {}, {}, "{}"'.format(r, column_requirements[r]['column_type'], action , record[r]))
                     #print(type(record[r]))
                     try:
@@ -1911,12 +1917,12 @@ class DTSpelunker(Datatables):
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Required type varchar(string) but submitted as ' + temp})
                         continue
-                    elif len(record[r]) > column_requirements[r]['column_length']:
+                    elif len(record[r]) > column_requirements[r]['COLUMN_LENGTH']:
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Data length ({}) greater than DB length of {}'.format(
-                                                 len(record[r]), column_requirements[r]['column_length'])})
+                                                 len(record[r]), column_requirements[r]['COLUMN_LENGTH'])})
                         continue
-                elif column_requirements[r]['column_type'] == 'int':
+                elif column_requirements[r]['COLUMN_TYPE'] == 'int':
                     try:
                         #print('int: ', repr(record[r]))
                         temp = int(record[r])
@@ -1955,12 +1961,12 @@ class DTSpelunker(Datatables):
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Required type int but submitted as ' + temp})
                         continue
-                    if len(str(record[r])) > column_requirements[r]['column_length']:
+                    if len(str(record[r])) > column_requirements[r]['COLUMN_LENGTH']:
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Data length ({}) greater than DB length of {}'.format(
-                                                 len(record[r]), column_requirements[r]['column_length'])})
+                                                 len(record[r]), column_requirements[r]['COLUMN_LENGTH'])})
                         continue
-                elif column_requirements[r]['column_type'] == 'date':
+                elif column_requirements[r]['COLUMN_TYPE'] == 'date':
                     if len(record[r]) == 0:
                         delete_fields.append(r)
                         continue
@@ -2154,10 +2160,10 @@ class DTSpelunker(Datatables):
         result = self.db.db_command(sql=sql, uid=uid).all(uid)
         #print result
         for r in result:
-            if r['column_name'][-4:] == 'list':
-                sql = 'select count(pkid) from {table} where FIND_IN_SET({pkid}, {field})'.format(table=r['table_name'], field=r['column_name'], pkid=pkid)
+            if r['COLUMN_NAME'][-4:] == 'list':
+                sql = 'select count(pkid) from {table} where FIND_IN_SET({pkid}, {field})'.format(table=r['table_name'], field=r['COLUMN_NAME'], pkid=pkid)
             else:
-                sql = 'select count(pkid) from {} where {} = "{}"'.format(r['table_name'], r['column_name'], pkid)
+                sql = 'select count(pkid) from {} where {} = "{}"'.format(r['table_name'], r['COLUMN_NAME'], pkid)
             #print sql
             uid = gen_uid()
             result_count = self.db.db_command(sql=sql, uid=uid).one(uid)
