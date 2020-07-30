@@ -7,3 +7,5 @@ files/
 .db_config
 public/flights
 public/reports
+.python-version
+.vscode/
