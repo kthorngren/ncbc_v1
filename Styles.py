@@ -105,6 +105,57 @@ class Style:
         return result.get('category', '')
 
 
+    def get_judging_category(self, style_num, version=None):
+        """
+        Return sub category style name
+        :param style_group: Category
+        :param style_num: Sub Category
+        :param version: BJCP or BA
+        :return: Style Name or '' if not found
+
+        This is specici to NCBC2020, change to make more generic
+        """
+
+        if version is None:
+            version = self.version
+
+
+
+        sql = 'select distinct style_group from baseline_styles where style_num="{}" and version="{}"'.format(style_num, version.upper())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+
+
+        return result.get('style_group', '')
+
+    def get_judging_category_name(self, style_num, version=None):
+        """
+        Return sub category style name
+        :param style_group: Category
+        :param style_num: Sub Category
+        :param version: BJCP or BA
+        :return: Style Name or '' if not found
+
+        This is specici to NCBC2020, change to make more generic
+        """
+
+        if version is None:
+            version = self.version
+
+
+
+        sql = 'select distinct category from baseline_styles where style_num="{}" and version="{}"'.format(style_num, version.upper())
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+
+
+        return result.get('category', '')
+
+
 
 
 
@@ -140,11 +191,13 @@ class Style:
             version = self.version
 
         try:
-            style_group = '{:02d}'.format(int(style_group))
+            #style_group = '{:02d}'.format(int(style_group))
+            style_group = str(int(style_group)) # remove leading 0
         except:
             pass
 
-        sql = 'select req_spec from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
+        #sql = 'select req_spec from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
+        sql = 'select req_spec from baseline_styles where style_num="{}{}"  and version="NCBC2020"'.format(style_group, style_num.upper())
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
@@ -233,20 +286,28 @@ class Style:
 
         return result
 
-    def get_styles(self, version=''):
+    def get_styles(self, version='', only_active=True):
 
         if version:
 
-            where = ' where version = "{}" '
+            where = f' where version = "{version}" '
         else:
             where = ''
 
-        sql = 'select style_num, style_name, category, style_group, version, pkid from baseline_styles {}'.format(where)
+        if only_active is True:
+            where += ' and active="Y"'
+        elif only_active is False:
+            where += ' and active="N"'
 
+
+
+        sql = 'select style_num, style_name, category, style_group, version, pkid from baseline_styles {}'.format(where)
+        print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
         return result
+
 
 
 
@@ -255,6 +316,10 @@ if __name__ == '__main__':
     print(Style().get_versions())
 
     print(Style('BJCP2015').get_style_name('35', 'A'))
+    print(Style('NCBC2020').get_judging_category('35A'))
+    print(Style('NCBC2020').get_judging_category_name('21A'))
+
+    #print(Style().get_styles('BJCP2015'))
 
     #result = Style('BJCP2015').get_styles_for_group(-1, style_type=['beer', 1], req_spec=True)
 

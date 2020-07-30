@@ -1,5 +1,6 @@
 from Competitions import DATABASE
 from Competitions import Competitions
+from Styles import Style
 
 import json
 """
@@ -275,6 +276,66 @@ class Entrys:
 
         pass
 
+    def get_judging_category(category, sub_category):
+
+        # Todo: make this more generic, its specific to NCBC2020
+
+        return Style('NCBC2020').get_judging_category(f'{category}{sub_category}')
+
+    def get_topN_categories(num=5):
+
+        result = []
+
+        sql =   f"""
+                select style_num, count(c.style_num) as total
+                from
+                    (select concat(category, sub_category) as style_num
+                    from entries
+                    where fk_competitions = "{Competitions().get_active_competition()}"
+                    order by category, sub_category) as c
+                group by c.style_num
+                order by total desc
+                """
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        all_results = {}
+
+        for r in result:
+
+            category_id = Style('NCBC2020').get_judging_category(r['style_num'])
+            category = Style('NCBC2020').get_judging_category_name(r['style_num'])
+
+            if category not in all_results:
+                all_results[category] = {
+                    'category': category,
+                    'category_id': category_id,
+                    'total': 0
+                }
+            all_results[category]['total'] += r['total']
+
+        top_results = []
+
+        desc_results = sorted(all_results.items(), key=lambda x: x[1]['total'], reverse=True)
+
+        top_results = []
+        count = 0
+        current_total = desc_results[0][1]['total']
+
+        for r in desc_results:
+
+            category = r[1]
+            if category['total'] != current_total:
+                count += 1
+
+            if count < 5:
+                top_results.append(category)
+                
+            current_total = category['total']
+
+        return top_results
+
+
 def test_add_inventory():
     print(Entrys().inventory_status())
     print(Entrys().add_inventory(2))
@@ -323,6 +384,15 @@ def test_get_inv():
     #print('\nAll')
     #test_inventory_report(all=True)
 
+def test_get_topN():
+
+    result = Entrys().get_topN_categories()
+
+    for r in result:
+        print(r)
+
+    #print()
+    #print((Entrys().get_topN_categories(num=10)))
 
 
 if __name__ == '__main__':
@@ -333,6 +403,7 @@ if __name__ == '__main__':
     #test_remove_inventory()
     #test_get_inv()
 
+    test_get_topN()
 
 
     pass

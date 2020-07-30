@@ -116,7 +116,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
         # set the font for the header, B=Bold
         self.set_font("Arial", style="B", size=15)
         # page title
-        self.cell(epw, 10, "NC Brewers Cup 2019 Entry Labels", border=1, ln=0, align="C")
+        self.cell(epw, 10, "NC Brewers Cup 2020 Entry Labels", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
         self.ln(5)
 
@@ -148,7 +148,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
 
                 ]
         if homebrew:
-            text2 = ['Last year we had over 600 entries, thats over 1200 entries to handle.  ',
+            text2 = ['This year we are requiring 3 containers per entry.  ',
                      'Placing the labels on the entries correctly will help us during ',
                    'inventory, staging and judging the entries.  The labels need to be ',
                    'oriented so they are readable.  Please use only rubberbands to attach ',
@@ -157,7 +157,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
                     ]
         else:
 
-            text2 = ['Last year we had over 600 entries, thats over 1200 containers to handle.  ',
+            text2 = ['This year we are requiring 3 containers per entry.  ',
                      'Placing the labels on the entries correctly will help us during ',
                    'inventory, staging and judging the entries.  The labels need to be ',
                    'oriented so they are readable.  Please use rubberbands or clear packing ',
@@ -207,95 +207,122 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
         first_label = True
         label_count = 0
 
-        image_y = 100
+        #image_y = 100
+        self.add_page()
+        image_y = 120
+        self.ln(2 * th)
 
         # Here we add more padding by passing 2*th as height
         for label in data:
+            label_count += 1
+            for z in [1,  2]:
 
-            # Document title centered, 'B'old, 14 pt
-            self.ln(2 * th)
-
-
-
-            if first_label:  #move down the page a bit more for first label
-                self.ln(4 * th)
-                image_y += 92
-
-
-            self.set_font('Times', 'B', 14.0)
-            self.cell(epw, 0.0, 'Entry Labels for {}'.format(label[0]), align='C')
-            self.ln(4 * th)
-
-            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2019', border='LT', align='C')
-            self.cell(5, 2 * th, ' ', border='LR')
-            self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2019', border='RT', align='C')
-            self.ln(2 * th)
-
-            self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='LB', align='C')
-            self.cell(5, 2 * th, ' ', border='LR')
-            self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='RB', align='C')
-            self.ln(2 * th)
-
-            self.set_font('Times', '', 12.0)
-            self.cell(col_width, 2 * th, 'Attach to entry w/ Rubberband only' if homebrew else '', border='LB', align='C')
-            self.cell(5, 2 * th, ' ', border='LR')
-            self.cell(col_width, 2 * th, 'Attach to entry w/ Rubberband only' if homebrew else '', border='RB', align='C')
-            self.ln(2 * th)
-
-            self.set_font('Times', 'B', 12.0)
-
-            first_row = True
-
-            line_ht = 3
-            align = 'C'
-
-            for row in label:
-                # Enter data in columns
-                self.cell(col_width, line_ht * th, '  {}'.format(str(row)), border='L', align=align)
-                self.cell(5, line_ht * th, ' ', border='LR')
-                self.cell(col_width, line_ht * th, '  {}'.format(str(row)), border='R', align=align)
-
-                self.ln(line_ht * th)
-
-                if first_row:
-                    self.set_font('Times', '', 12.0)
-                    first_row = False
-                    line_ht = 2
-                    align = 'L'
-                    entry_id = row.split(' ')[-1].lstrip('0')
-
-
-            self.cell(col_width, 8 * th, '', border='BL')
-            self.cell(5, 8 * th, ' ', border='LR')
-            self.cell(col_width, 8 * th, '', border='BR')
-
-
-            slide_side = 20
-            self.image("files/qr_{}.png".format(entry_id), x=((col_width - col_width / 2)) - slide_side, y=image_y, w=23)
-            self.image("files/qr_{}.png".format(entry_id), x=(col_width + (col_width - col_width / 2)) - slide_side + 5, y=image_y, w=23)
-
-            self.image("files/NCBClogo.jpg", x=((col_width - col_width / 2)) + slide_side, y=image_y - 2, w=20)
-            self.image("files/NCBClogo.jpg", x=(col_width + (col_width - col_width / 2)) + slide_side + 5, y=image_y - 2, w=20)
-
-
-            if first_label:
-                first_label = False
-                #self.add_page()
-            else:
-                label_count += 1
-
-
-            if label_count % 2 == 0 and (label_count + 1) < len(data):
-                #print(label_count, len(data))
-                self.add_page()
-                image_y = 120
-
+                # Document title centered, 'B'old, 14 pt
                 self.ln(2 * th)
-            else:
-                image_y = 244
 
-                self.ln(8 * th)
 
+                """
+                if first_label:  #move down the page a bit more for first label
+                    self.ln(4 * th)
+                    image_y += 92
+                """
+
+
+                self.set_font('Times', 'B', 14.0)
+                self.cell(epw, 0.0, 'Entry Labels for {}'.format(label[0]), align='C')
+                self.ln(4 * th)
+
+                self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2020', border='LT', align='C')
+                self.cell(5, 2 * th, ' ', border='LR' if z == 1 else 'L')
+
+                if z == 1:
+                    self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2020', border='RT', align='C')
+                self.ln(2 * th)
+
+                self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='LB', align='C')
+                self.cell(5, 2 * th, ' ', border='LR' if z == 1 else 'L')
+                if z == 1:
+                    self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='RB', align='C')
+                self.ln(2 * th)
+
+                self.set_font('Times', '', 8.0)
+                self.cell(col_width, 2 * th, 'Attach to entry w/ Rubberband only' if homebrew else 'NOT FOR RETAIL SALE. FOR COMPETITION PURPOSES ONLY.', border='LB', align='C')
+                self.cell(5, 2 * th, ' ', border='LR' if z == 1 else 'L')
+                if z == 1:
+                    self.cell(col_width, 2 * th, 'Attach to entry w/ Rubberband only' if homebrew else 'NOT FOR RETAIL SALE. FOR COMPETITION PURPOSES ONLY.', border='RB', align='C')
+                self.ln(2 * th)
+
+                self.set_font('Times', 'B', 12.0)
+
+                first_row = True
+
+                line_ht = 3
+                align = 'C'
+
+                for row in label:
+                    # Enter data in columns
+                    self.cell(col_width, line_ht * th, '  {}'.format(str(row)), border='L', align=align)
+                    self.cell(5, line_ht * th, ' ', border='LR' if z == 1 else 'L')
+                    if z == 1:
+                        self.cell(col_width, line_ht * th, '  {}'.format(str(row)), border='R', align=align)
+
+                    self.ln(line_ht * th)
+
+                    if first_row:
+                        self.set_font('Times', '', 12.0)
+                        first_row = False
+                        line_ht = 2
+                        align = 'L'
+                        entry_id = row.split(' ')[-1].lstrip('0')
+
+
+                self.cell(col_width, 8 * th, '', border='BL')
+                self.cell(5, 8 * th, ' ', border='LR' if z == 1 else 'L')
+                self.cell(col_width, 8 * th, '', border='BR' if z == 1 else '')
+
+
+                slide_side = 20
+                self.image("files/qr_{}.png".format(entry_id), x=((col_width - col_width / 2)) - slide_side, y=image_y, w=23)
+                if z == 1:
+                    self.image("files/qr_{}.png".format(entry_id), x=(col_width + (col_width - col_width / 2)) - slide_side + 5, y=image_y, w=23)
+
+                self.image("files/NCBClogo.jpg", x=((col_width - col_width / 2)) + slide_side, y=image_y - 2, w=20)
+                if z == 1:
+                    self.image("files/NCBClogo.jpg", x=(col_width + (col_width - col_width / 2)) + slide_side + 5, y=image_y - 2, w=20)
+
+                if z == 1:
+                    image_y = 244
+
+                    self.ln(8 * th)
+                elif label_count < len(data):
+                    self.add_page()
+                    image_y = 120
+
+                    self.ln(2 * th)
+
+            
+                """
+
+                if first_label:
+                    first_label = False
+                    #self.add_page()
+                else:
+                    label_count += 1
+
+                #logger.info('label_count {}'.format(label_count))
+                if label_count % 2 == 0 and (label_count + 1) < len(data):
+                    #print(label_count, len(data))
+                    logger.info(f'{label_count}, {len(data)}')
+                    self.add_page()
+                    image_y = 120
+
+                    self.ln(2 * th)
+                else:
+                    image_y = 244
+
+                    self.ln(8 * th)
+
+                """
 
 
 class InvoiceFPDF(FPDF, HTMLMixin):
@@ -318,7 +345,7 @@ class InvoiceFPDF(FPDF, HTMLMixin):
         # page title
         self.image("files/ncbg-logo.png", x=12, y=12, w=31)
         self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
-        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2019", border=1, ln=0, align="C")
+        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2020", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
 
         self.ln(5)
@@ -1044,7 +1071,7 @@ class Ncbc:
               'p.last_name, p.phone, p.organization, p.address, p.city, p.state, p.zip ' \
               'from entries ' \
               'inner join people as p on p.pkid = entries.fk_people ' \
-              'where entries.fk_competitions = "{}" and confirmation_sent = "0"'.format(self.pkid)
+              'where entries.fk_competitions = "{}" and confirmation_sent = "0"'.format(Competitions().get_active_competition())
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
@@ -1494,9 +1521,12 @@ def process_new_entries(pkid=1):
     brewers = n.group_entries_by_brewer(result)
 
     try:
-        choice = input('Do you wish to email the brewers (y/n)? ')
+        #choice = input('Do you wish to email the brewers (y/n)? ')
+        pass
     except Exception as e:
         choice = 'n'
+
+    choice = 'y'  # Don't send email
 
     if choice and choice[0].lower() == 'y':
         send_email = True
@@ -1506,7 +1536,7 @@ def process_new_entries(pkid=1):
     sent_email_count = 0
 
     for brewer in brewers:
-        print(brewer)
+        #print(brewer)
 
         entries = brewers[brewer]
 
@@ -1523,56 +1553,11 @@ def process_new_entries(pkid=1):
 
         if n.send_labels(brewer):
 
-            logger.info('sending to bottle labels to: {}'.format(brewer))
-
-            msg = 'Hi {},\n'.format(entries[0]['first_name'])
-            msg += '\n'
-            msg += 'The NC Craft Brewers Guild and I would like to thank you for your entries.  '
-            msg += 'Attached you will find your required entry labels and zero dollar invoice.  '
-            msg += 'The Entry ID is pre-filled on the label.  Please verify the information on the labels.  '
-            msg += 'Each entry will be judged against the Category and Subcategory on the label.  '
-            msg += 'You may leave any branded labels on the submitted containers, as the judged samples '
-            msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
-            msg += '\n'
-            msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
-            msg += 'when they are dropped of at Pro Refrigeration.  Please let Lisa (operations@ncbeer.org) and I know '
-            msg += 'if you have any questions or issues.\n'
-            msg += '\n'
-            msg += 'Drop off info:\n'
-            msg += 'August 15th and 16th, 2019 (Thursday + Friday)\n'
-            msg += '9am - 5pm\n'
-            msg += 'Pro Refrigeration, Inc.\n'
-            msg += '319 Farmington Road\n'
-            msg += 'Mocksville, NC 27028\n'
-            msg += '\n'
-            msg += 'Thanks,\nLisa and Kevin\n\n'
-            msg += 'Lisa Parker\n'
-            msg += 'NC Brewers Cup Superintendent\n'
-            msg += 'NCCBG Operations Manager\n'
-            msg += 'e. operations@ncbeer.org\n'
-            msg += 'c. 919.951.8588\n\n'
-
-            msg += 'Kevin Thorngren\n'
-            msg += 'NC Brewers Cup Manager\n'
-            msg += 'e. kevin.thorngren@gmail.com\n'
-            msg += 'c. 919.418.2350\n'
-
+            logger.info('Generating bottle labels for: {}'.format(brewer))
             data = n.get_bottle_info(entries, n)
             n.generate_bottle_label_pdf(data, brewer, entries[0]['first_name'])
             data = n.generate_invoice(entries, n, '{}_invoice.pdf'.format(brewer))
 
-            e = Email('files/kevin.json')
-
-            #if brewer != 'chris@glass-jug.com':
-            #    send_email = False
-            message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                                           to=brewer,
-                                                           subject='NC Brewers Cup Entry Labels',
-                                                           message_text=msg,
-                                                           file_dir='files/',
-                                                           filename=['{}_entry_labels.pdf'.format(brewer),
-                                                                        '{}_invoice.pdf'.format(brewer)]
-                                                           )
 
             if validation_errors:
                 result = False
@@ -1581,15 +1566,67 @@ def process_new_entries(pkid=1):
             #    result = False
             #else:
             elif send_email:
-                #result = e.send_message(message, rcpt=[brewer])
+                msg = 'Hi {},\n'.format(entries[0]['first_name'])
+                msg += '\n'
+                msg += 'The NC Craft Brewers Guild and I would like to thank you for your entries.  '
+                msg += 'Attached you will find your required entry labels and zero dollar invoice.  '
+                msg += 'The Entry ID is pre-filled on the label.  Please verify the information on the labels.  '
+                msg += 'Each entry will be judged against the Category and Subcategory on the label.  '
+                msg += 'You may leave any branded labels on the submitted containers, as the judged samples '
+                msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
+                msg += '\n'
+                msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
+                msg += 'when they are dropped of at Pro Refrigeration.  Please let Lisa (lisa@ncbeer.org) and I know '
+                msg += 'if you have any questions or issues.\n'
+                msg += '\n'
+                msg += 'Drop off info:\n'
+                msg += 'August 11 and 12, 2020 (Tuesday + Wednesday)\n'
+                msg += '9am - 5pm\n'
+                msg += 'The Cookery\n'
+                msg += '1101 W Chapel Hill St\n'
+                msg += 'Durham, NC 27701\n'
+                msg += '\n'
+                msg += 'Thanks,\nLisa and Kevin\n\n'
+                msg += 'Lisa Parker\n'
+                msg += 'NC Brewers Cup Superintendent\n'
+                msg += 'NCCBG Operations Manager\n'
+                msg += 'e. lisa@ncbeer.org\n'
+                msg += 'c. 919.951.8588\n\n'
+
+                msg += 'Kevin Thorngren\n'
+                msg += 'NC Brewers Cup Manager\n'
+                msg += 'e. kevin.thorngren@gmail.com\n'
+                msg += 'c. 919.418.2350\n'
+
+
+                e = Email('files/kevin.json')
+
+                #if brewer != 'chris@glass-jug.com':
+                #    send_email = False
+
+                if brewer == 'dg@lostworldsbeer.com':
+                    logger.info('sending test email to dg@lostworldsbeer.com')
+                    """
+                    message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                                #to=brewer,
+                                                                to='kevin.thorngren@gmail.com',
+                                                                subject='NC Brewers Cup Entry Labels',
+                                                                message_text=msg,
+                                                                file_dir='files/',
+                                                                filename=['{}_entry_labels.pdf'.format(brewer),
+                                                                                '{}_invoice.pdf'.format(brewer)]
+                                                                )
+                    #result = e.send_message(message, rcpt=[brewer])
+                    result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
+                    """
                 result = False
             else:
-                result = False
+                result = None
                 logger.info('Skipping emailing brewers - please run script again to email')
             if result:
                 n.reset_send_labels(brewer)
                 sent_email_count += 1
-            else:
+            elif result is False:
                 logger.error('Failed to send email to {}'.format(brewer))
 
     logger.info('Sent emails to {} brewers'.format(sent_email_count))
@@ -1988,9 +2025,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    process_new_entries(pkid=6)
+    #process_new_entries(pkid=6)
 
-    #process_new_volunteers(pkid=7)
+    process_new_volunteers(pkid=7)
 
     #validate_ncbc(pkid=1)
 

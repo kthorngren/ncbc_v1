@@ -299,7 +299,7 @@ class Import:
                 new_brewer['state'] = ncbc_brewer['state']
                 new_brewer['zip'] = ncbc_brewer['zip']
                 new_brewer['phone'] = ncbc_brewer['phone']
-                new_brewer['fk_competitions'] = ncbc_brewer['fk_competitions']
+                new_brewer['fk_competitions'] = Competitions().get_active_competition() #ncbc_brewer['fk_competitions']
 
                 result = Brewers().insert(new_brewer)
 

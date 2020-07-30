@@ -193,13 +193,23 @@ class Website:
         entries = result['entries']
 
         entries['no_desc'] = len(Brewers().get_specialty_wo_desc())
+        no_desc_brewers = Brewers().get_specialty_wo_desc_brewers()
+
+        brewers = Brewers().get_brewery_names()
 
 
         temp = []
         for k in order:
-            temp.append({'name': mapping.get(k, k), 'value': entries[k]})
+            if k == 'brewers':
+                temp.append({'name': mapping.get(k, k), 'value': entries[k], 'title': brewers})
+            elif k == 'no_desc':
+                temp.append({'name': mapping.get(k, k), 'value': entries[k], 'title': no_desc_brewers})
+            else:
+                temp.append({'name': mapping.get(k, k), 'value': entries[k]})
 
         result['entries'] = temp
+
+        result['top5'] = Entrys().get_topN_categories()
 
 
         return json.dumps(result)
@@ -552,10 +562,11 @@ class Website:
         #todo: eventually start using the base guidlelines
         #result = Style().get_styles(Competitions().get_style_guidelines())
 
-        sql = 'select * from category_strength_rating'
+        #sql = 'select * from category_strength_rating'
 
-        result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
-        return json.dumps(result, cls=DatetimeEncoder)
+        #result = self.dt.parse_request(sql=sql, table='category_strength_rating', debug=True, *args, **kwargs)
+        result = Style().get_styles('NCBC2020')
+        return json.dumps({'data': result}, cls=DatetimeEncoder)
 
 
     @cherrypy.expose
@@ -1508,13 +1519,16 @@ class Website:
     def init_flights(self, *args, **kwargs):
 
         result = []
-
+        """
         fk_categories = Competitions().get_categories().split(',')
 
         sql = 'select * from category_strength_rating where pkid in ("{}")'.format('","'.join(fk_categories))
 
         uid = gen_uid()
         categories = self.db.db_command(sql=sql, uid=uid).all(uid)
+        """
+
+        categories = Styles().get_styles('NCBC2020')
 
         flight_num = 0
 
@@ -1719,11 +1733,32 @@ class Website:
 
         num_brewers = result.get('count(*)', 'Not found')
 
+        table = '<h3>Top 5 Category Totals:</h3>'
 
+        table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                 '<thead>' \
+                 '<tr>' \
+                 '<th>Medal Category</th>' \
+                 '<th>Total</th>' \
+                 '</tr>' \
+                 '</thead>' \
+                 '<tbody>'
+
+        top5 = Entrys().get_topN_categories()
+
+        for t in top5:
+            table += '<tr>' \
+                     f'<td>{t["category_id"]} {t["category"]}</td>' \
+                     f'<td>{t["total"]}</td>' \
+                     '</tr>'
+
+        table += '</tbody>' \
+                    '</table>'
+            
         result = Competitions().get_comp_status()
 
         entries = result.get('entries', {})
-        table = '<h3>Inventory Volunteers:</h3>'
+        table += '<h3>Inventory Volunteers:</h3>'
 
         table += '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
                  '<thead>' \
@@ -1731,6 +1766,7 @@ class Website:
                  '<th>Session</th>' \
                  '<th>Judges</th>' \
                  '<th>Stewards</th>' \
+                 '<th>Staff</th>' \
                  '</tr>' \
                  '</thead>' \
                  '<tbody>'
@@ -1746,9 +1782,10 @@ class Website:
                      '<td>{}</td>' \
                      '<td>{}</td>' \
                      '<td>{}</td>' \
-                     '</tr>'.format(sessions['name'], sessions['judges'], sessions['stewards'])
+                     '<td>{}</td>' \
+                     '</tr>'.format(sessions['name'], sessions['judges'], sessions['stewards'], sessions['other'])
 
-            if count == 3:
+            if count == 1:
                 table += '</tbody>' \
                          '</table>'
 
@@ -1760,6 +1797,7 @@ class Website:
                          '<th>Session</th>' \
                          '<th>Judges</th>' \
                          '<th>Stewards</th>' \
+                         '<th>Staff</th>' \
                          '</tr>' \
                          '</thead>' \
                          '<tbody>'
@@ -1775,7 +1813,7 @@ class Website:
 
 
 
-        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2019, 8, 12) - datetime.date.today()).days, table, beers_per_judge)
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2020, 8, 7) - datetime.date.today()).days, table, beers_per_judge)
 
         #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
         #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)

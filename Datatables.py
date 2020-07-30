@@ -798,8 +798,10 @@ class Datatables:
                 elif column_requirements[r]['COLUMN_TYPE'] == 'int':
                     try:
                         #print('int: ', repr(record[r]))
+                        print(column_requirements[r])
                         temp = int(record[r])
                         record[r] = temp
+                        #print(type(record[r]))
                     except:
                         #print('** not isdigit?', not record[r].isdigit(), r, record[r])
                         temp = str(type(record[r])).replace('<', '').replace('>', '')
@@ -834,10 +836,10 @@ class Datatables:
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Required type int but submitted as ' + temp})
                         continue
-                    if len(str(record[r])) > column_requirements[r]['column_length']:
+                    if column_requirements[r]['column_length'] > 0 and len(str(record[r])) > column_requirements[r]['column_length']:
                         field_errors.append({'name': object_prefix + r,
                                              'status': 'Data length ({}) greater than DB length of {}'.format(
-                                                 len(record[r]), column_requirements[r]['column_length'])})
+                                                 len(str(record[r])), column_requirements[r]['column_length'])})
                         continue
                 elif column_requirements[r]['COLUMN_TYPE'] == 'date':
                     if len(record[r]) == 0:

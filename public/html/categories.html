@@ -101,6 +101,8 @@
                                 <th>Guidelines</th>
                                 <th>Category ID</th>
                                 <th>Category</th>
+                                <th>Style Group</th>
+                                <th>Style Num</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -173,7 +175,7 @@ function drawMainTable() {
     	    style: "multi+shift",
         	selector: "td:first-child"
    		},
-   		order: [[2, 'asc'], [3, 'asc']],
+   		order: [[5, 'asc'], [6, 'asc']],
 		columns: [
 	        {
 	        	data: 'pkid',
@@ -186,19 +188,35 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'style_guidelines',
+	        	data: 'version',
 	        },
 	        {
-	        	data: 'category_id',
+            data: 'style_num',
+            render: function (data, type, row) {
+              return data + ' ' + row.style_name;
+            }
 	        },
 	        {
 	        	data: 'category',
+          },
+	        {
+            data: 'style_group',
+            visible: false
 	        },
+	        {
+            data: 'style_num',
+            render: function (data, type, row) {
+              return data;
+            },
+            visible: false
+          },
 	    ],
 	    rowGroup: {
-	    	dataSrc: 'style_guidelines',
+	    	dataSrc: function(row) {
+          return row.style_group + ' ' + row.category;
+        },
             startRender: function ( rows, group ) {
-                return group +' ('+rows.count()+' Categories)';
+                return group +' ('+rows.count()+' Styles)';
             },
 	    },
 	    buttons: [

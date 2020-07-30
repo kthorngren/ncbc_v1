@@ -155,7 +155,6 @@ class Competitions:
 
         status['entries']['brewers'] = result.get('brewers', 0)
 
-
         sql = 'select sum(fk_competitions = "{pkid}") as entries, sum(inventory = "1") as checked_in, ' \
               'sum(judged = "1") as judged ' \
               'from entries where fk_competitions = "{pkid}"'.format(pkid=self.get_active_competition())

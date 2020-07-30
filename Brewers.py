@@ -91,6 +91,19 @@ class Brewers:
 
         return result
 
+    def get_brewery_names(self):
+
+        order_by = 'order by organization'
+
+        sql = 'select organization from brewers where fk_competitions = "{}" {}'.format(Competitions().get_active_competition(), order_by)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid)
+        print(result)
+        result = result.get_list(uid, 'organization')
+        print(result)
+
+        return result
 
     def insert(self, record):
 
@@ -113,6 +126,23 @@ class Brewers:
             success = False
 
         return success
+
+    def get_specialty_wo_desc_brewers(self):
+
+        no_desc = []
+
+        result = Brewers().get_brewers(order_by='organization')
+
+        for r in result:
+            entries = Entrys().get_entries_by_brewer(r['pkid'], order_by='category')
+
+            for entry in entries:
+
+                if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'],
+                                       entry['sub_category']) and not re.sub(r'\s', '', entry['description']):
+                    if r['organization'] not in no_desc:
+                        no_desc.append(r['organization'])
+        return no_desc
 
     def get_specialty_wo_desc(self):
 
@@ -237,9 +267,9 @@ if __name__ == '__main__':
 
     #print_entries(order_by='organization')
 
-    #list_specialty_wo_desc()
+    list_specialty_wo_desc()
 
     #list_specialty()
-    list_specialty_ipa()
+    #list_specialty_ipa()
 
     pass

@@ -222,6 +222,56 @@
                     <!-- /col-md-6 -->
 
 
+				  <!-- col-md-6 -->
+          <div class="col-md-6 col-sm-6 col-xs-12">
+                  
+            <!-- x_panel -->
+            <div class="x_panel tile fixed_height_420">
+              <!-- panel -->
+              <div id="properties-panel" class="panel panel-default">
+              
+              <!-- x_title -->
+              <div class="x_title panel-heading">
+                <h2 id="properties-desc">Top 5 Categories<small id="properties-desc-small">Top 5 by Entry Count</small></h2>
+
+                <ul class="nav navbar-right panel_toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                  </li>
+                  <li><a class="close-link"><i class="fa fa-close"></i></a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              
+              </div>
+              <!-- /x_title -->
+              
+              </div>
+              <!-- /panel -->
+
+
+    <!-- x_content -->
+              <div class="x_content panel-body">
+
+                <div class="col-md-12 hidden-small">
+                  <table id="top5" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+                    <thead>
+                      <tr>
+                        <th>Medal Category</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+                
+              </div>
+              <!-- /x_content -->  
+
+              
+            </div>
+            <!-- /x_panel -->
+
+            </div>
+            <!-- /col-md-6 -->
 
 
                       </div>
@@ -488,13 +538,35 @@ function get_comp_stats() {
       	success: function(json) {
             var data = JSON.parse(json);
             
+            $('#top5').DataTable({
+            	data: data.top5,
+            	dom: 't',
+            	ordering: false,
+            	columns: [
+            		{data: 'category'},
+                {data: 'total'}
+            	]
+            });
+
             $('#inventory').DataTable({
             	data: data.entries,
             	dom: 't',
             	ordering: false,
             	columns: [
             		{data: 'name'},
-            		{data: 'value'}
+                {data: 'value',
+                createdCell: function (cell, cellData, rowData, row, col) {
+                  if (rowData.hasOwnProperty('title')) {
+                    var breweries = rowData.title;
+                    var titles = [];
+                    for (i=0; i<breweries.length; i++) {
+                      titles.push(breweries[i]);
+                    }
+                    $(cell).attr('title', titles.join('\n'));
+                  }
+                }
+              
+              }
             	]
             });
             
@@ -570,14 +642,14 @@ function get_comp_stats() {
 }
 
 
-
 $(document).ready(function() {
 
 	drawCompsTable();
 
 	get_competitions();
 	
-	get_comp_stats();
+  get_comp_stats();
+  
 	
 
 });
