@@ -1586,6 +1586,16 @@ def process_new_entries(pkid=1):
                                                                               for x in errors])))
             continue
 
+        # NCBC 2020 entry limitation
+        # todo: make thiis generic with a DB option to check for entry limits
+        if len(entries) > 10:
+            logger.error('Entry limit count exceeded for brewer {}: {} {}'.format(brewer,
+                                                                         entries[0]['first_name'],
+                                                                         entries[0]['last_name']))
+            if send_email and n.send_labels(brewer):
+                logger.error(f'  Skipping send email to {brewer}')
+            continue
+
         if n.send_labels(brewer):
 
             logger.info('Generating bottle labels for: {}'.format(brewer))

@@ -640,6 +640,11 @@ class Website:
                 )
 
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+
+        for r in result['data']:
+            print(r)
+            r['specialty'] = 'Yes' if Style().is_specialty(r['category'], r['sub_category']) else 'No'
+
         return json.dumps(result, cls=DatetimeEncoder)
 
 
