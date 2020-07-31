@@ -1091,6 +1091,14 @@ class Ncbc:
 
         return brewers
 
+    def get_brewers_with_labels_to_send(self):
+
+        sql = 'select * from people where send_labels = "1"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result        
 
     def sort_entries_by_category(self, entries):
 
@@ -1241,6 +1249,10 @@ class Ncbc:
             'If yes, do you have any judging certifications?': 'steward_certs'
         }
 
+        fixes = {
+            '645778': {'first_name': 'Andy'}
+        }
+
         rev_mapping = {}
         for m in mapping:
 
@@ -1250,6 +1262,16 @@ class Ncbc:
 
         for row in self.entries:
             attendee_id = self.get_field(row, 'attendee_id')
+
+            if attendee_id in fixes:
+
+                for k, v in fixes[attendee_id].items():
+                    set_result = self.set_field(row, k, v)
+                    #print(k, v, set_result)
+
+            # NCBC 2020 skip this duplicate session for Cat Pearce
+            #if attendee_id == '640238':
+            #    continue
 
             attendee_list.append(attendee_id)
 
@@ -1271,8 +1293,13 @@ class Ncbc:
                     saved_value = result[field]
 
                     if downloaded_value != saved_value:
-                        changed = True
-                        break
+                        # If statement for NCBC 2020 and Cat Pearce certifications differences
+                        # Todo: need to escape quotes, etc consistant with how they are saved.
+                        if field == 'certifications' and attendee_id in ('640236', '640239', '640238'):
+                            pass
+                        else:
+                            changed = True
+                            break
 
 
 
@@ -1512,6 +1539,7 @@ def email_status(pkid=1, test=False):
 
 def process_new_entries(pkid=1):
 
+    logger.info('Starting to process new entries')
     n = Ncbc(pkid=pkid)
     n.get_csv_2()
     n.process_new_entries()
@@ -1520,13 +1548,20 @@ def process_new_entries(pkid=1):
 
     brewers = n.group_entries_by_brewer(result)
 
-    try:
-        #choice = input('Do you wish to email the brewers (y/n)? ')
-        pass
-    except Exception as e:
+    brewers_with_labels = n.get_brewers_with_labels_to_send()
+
+    if len(brewers_with_labels) > 0:
+        logger.info(f'There are {len(brewers_with_labels)} brewers with labels to send')
+        try:
+            choice = input('Do you wish to email the brewers (y/n)? ')
+            #pass
+        except Exception as e:
+            choice = 'n'
+    else:
+        logger.info('There are no brewers labels to send')
         choice = 'n'
 
-    choice = 'y'  # Don't send email
+    #choice = 'y'  # Don't send email
 
     if choice and choice[0].lower() == 'y':
         send_email = True
@@ -1576,7 +1611,7 @@ def process_new_entries(pkid=1):
                 msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
                 msg += '\n'
                 msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
-                msg += 'when they are dropped of at Pro Refrigeration.  Please let Lisa (lisa@ncbeer.org) and I know '
+                msg += 'when they are dropped off at the Durham competition site (The Cookery, 1101 W Chapel Hill St, Durham, NC 27701).  Please let Lisa (lisa@ncbeer.org) and I know '
                 msg += 'if you have any questions or issues.\n'
                 msg += '\n'
                 msg += 'Drop off info:\n'
@@ -1588,8 +1623,8 @@ def process_new_entries(pkid=1):
                 msg += '\n'
                 msg += 'Thanks,\nLisa and Kevin\n\n'
                 msg += 'Lisa Parker\n'
-                msg += 'NC Brewers Cup Superintendent\n'
-                msg += 'NCCBG Operations Manager\n'
+                msg += 'Associate Director\n'
+                msg += 'NC Craft Brewers Guild\n'
                 msg += 'e. lisa@ncbeer.org\n'
                 msg += 'c. 919.951.8588\n\n'
 
@@ -1604,22 +1639,18 @@ def process_new_entries(pkid=1):
                 #if brewer != 'chris@glass-jug.com':
                 #    send_email = False
 
-                if brewer == 'dg@lostworldsbeer.com':
-                    logger.info('sending test email to dg@lostworldsbeer.com')
-                    """
-                    message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
-                                                                #to=brewer,
-                                                                to='kevin.thorngren@gmail.com',
-                                                                subject='NC Brewers Cup Entry Labels',
-                                                                message_text=msg,
-                                                                file_dir='files/',
-                                                                filename=['{}_entry_labels.pdf'.format(brewer),
-                                                                                '{}_invoice.pdf'.format(brewer)]
-                                                                )
-                    #result = e.send_message(message, rcpt=[brewer])
-                    result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
-                    """
-                result = False
+                message = e.create_message_with_attachment(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                            to=brewer,
+                                                            #to='kevin.thorngren@gmail.com',
+                                                            subject='NC Brewers Cup Entry Labels',
+                                                            message_text=msg,
+                                                            file_dir='files/',
+                                                            filename=['{}_entry_labels.pdf'.format(brewer),
+                                                                            '{}_invoice.pdf'.format(brewer)]
+                                                            )
+                result = e.send_message(message, rcpt=[brewer])
+                #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
+                #result = False
             else:
                 result = None
                 logger.info('Skipping emailing brewers - please run script again to email')
@@ -1630,14 +1661,17 @@ def process_new_entries(pkid=1):
                 logger.error('Failed to send email to {}'.format(brewer))
 
     logger.info('Sent emails to {} brewers'.format(sent_email_count))
+    logger.info('Processing new entries is complete\n====================\n\n')
 
 
 
 def process_new_volunteers(pkid=1):
 
+    logger.info('Starting to processes new volunteers')
     n = Ncbc(pkid=pkid)
     n.get_csv_2()
     n.process_volunteer()
+    logger.info('Processing new volunteers is complete\n====================\n\n')
 
 
 
@@ -2025,7 +2059,7 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=6)
+    process_new_entries(pkid=6)
 
     process_new_volunteers(pkid=7)
 

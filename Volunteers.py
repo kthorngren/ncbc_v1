@@ -78,22 +78,25 @@ class Volunteers:
 
         return email_list
 
-    def get_volunteers(self, new=False, changed=False):
+    def get_volunteers(self, new=False, changed=False, active=True):
 
         where = []
         if new:
             where.append('new = "1"')
 
-        if changed:
+        elif changed:
             where.append('changed = "1"')
 
-        where = ' or '.join(where)
+        if active:
+            where.append('active = "1"')
+
+        where = ' and '.join(where)
 
         if where:
             where = '{} and '.format(where)
 
         sql = 'select * from volunteers where {} fk_competitions = "{}"'.format(where, Competitions().get_active_competition())
-
+        print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -133,6 +136,8 @@ class Volunteers:
 
         if pkid:
 
+            record['new'] = 0
+            record['changed'] = 1
             update = ['{} = "{}"'.format(k, v) for k, v in record.items()]
 
             sql = 'update volunteers set {}, updated = NOW() where pkid = "{}"'.format(','.join(update), pkid)
@@ -208,8 +213,36 @@ class Volunteers:
 
             Sessions().get_fk_sessions(result['fk_sessions_list'].split(','))
 
+    def get_judging_location(self, pkid):
+
+        sql = 'select fk_sessions_list from volunteers where pkid = "{}"'.format(pkid)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        print(result)
+        
+        fk_sessions = result['fk_sessions_list'].split(',')
+
+        sql = 'select fk_judge_locations from sessions where pkid in ("{}")'.format('","'.join(fk_sessions))
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        fk_locations = [str(x['fk_judge_locations']) for x in result]
+        fk_locations = set(fk_locations)
+
+        sql = 'select * from judge_locations where pkid in ("{}")'.format('","'.join(fk_locations))
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+        
+        return result
+       
 
     def email_new(self):
+
+        logger.info('Starting process to email new volunteers')
         result = Volunteers().get_volunteers(new=True)
 
         errors = []
@@ -222,10 +255,13 @@ class Volunteers:
 
         e = Email('files/kevin.json')
 
-        for r in result:
+        for r in result:    
+
+            #if r["email"] != 'kevin.thorngren@gmail.com':
+            #    continue
 
             firstname = r['firstname'].title()
-
+            logger.info(f'Processing {r["firstname"]} {r["lastname"]} - {r["email"]}')
             if r['welcome_email'] == 1:
                 logger.error('Volunteer {d[firstname]} {d[lastname]} PKID: {d[pkid]} marked as new but the '
                              'welcome email has been sent - not sending email'.format(d=r))
@@ -270,41 +306,57 @@ class Volunteers:
                     '<td>{comments}</td>' \
                     '</tr>'.format(d=session, comments=comments)
 
-            vol_types.append('Judge' if r['judge'] == 1 else 'Steward')
+            vol_types.append('Judge' if r['judge'] == 1 else 'Steward' if r['judge'] == 0 else 'Staff')
 
             table += '</tbody>' \
                      '</table>'
 
             table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
 
+            locations = Volunteers().get_judging_location(pkid=r['pkid'])
+
+            html = f'<h3>Your Compeition Location{"s" if len(locations) > 1 else ""}</h3>'
+            br = ''
+            for l in locations:
+                html += (f'{br}{l["name"]}<br>'
+                        f'{l["address"]}<br>'
+                        f'{l["city"]} {l["state"]} {l["zip"]}<br>'
+                )
+                br = '<br>'
+
             msg = 'Hi {firstname},<br/>' \
                   '<br/>' \
-                  'Welcome to the NC Brewers Cup Commercial Competition for 2018.  The NC Brewers Guild and I would like to ' \
+                  'Welcome to the NC Brewers Cup Commercial Competition for 2020.  The NC Brewers Guild and I would like to ' \
                   'thank you for volunteering your time.  Below you will find your current schedule.  Please review ' \
-                  'it closely to make sure the schedule is correct and your volunteer type (judge/steward) is correct.  ' \
-                  'We used a new volunteer registration system and it is not the most intuitive system to use.  ' \
-                  'If it is inaccurate or you need to make other changes please let me know.<br/>' \
+                  'it closely to make sure the schedule is correct and your volunteer type (judge/steward) is correct.<br/>' \
                   '<br/>' \
                   'Once we get closer to the competition I will send a last confirmation email with more logistic ' \
                   'information.  <br/>' \
                   '<br/>' \
-                  '{table}<br/>' \
+                  '{table}' \
+                  '<br/>' \
+                  '{html}' \
                   '<br/>' \
                   'Please let me know if you have any questions.<br/>' \
                   '<br/>' \
                   'Thanks,<br/>' \
-                  'Kevin<br/>'.format(firstname=firstname, table=table)
+                  'Kevin<br/>'.format(firstname=firstname, table=table, html=html)
 
             message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                 to=r['email'],
+                                                #to='kevin.thorngren@gmail.com',
                                                 subject='NC Brewers Cup Welcome',
                                                 message_text=msg,
                                                 )
+            """
             if DATABASE != 'competitions':
                 logger.info('Skipping email due to using test DB')
                 result = False
             else:
-                result = e.send_message(message, rcpt=[r['email']])
+            """
+            result = e.send_message(message, rcpt=[r['email']])
+            #result = False  # remove this for prod
+            #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
 
 
             if result:
@@ -323,7 +375,7 @@ class Volunteers:
         errors = []
         email_counter = 0
 
-        result = Volunteers().get_volunteers(new=True, changed=True)
+        result = Volunteers().get_volunteers(changed=True)
 
         if len(result) == 0:
             logger.info('No changed volunteers to email')
@@ -332,6 +384,7 @@ class Volunteers:
 
         e = Email('files/kevin.json')
 
+        #result = [] # remove for prod
         for r in result:
             if r['new'] == 1 and r['welcome_email'] == 0:
                 logger.error('Skipping New entry for {d[firstname]} {d[lastname]}, PKID: {d[pkid]} because the Welcome Email '
@@ -380,35 +433,52 @@ class Volunteers:
                     '<td>{comments}</td>' \
                     '</tr>'.format(d=session, comments=comments)
 
-            vol_types.append('Judge' if r['judge'] == 1 else 'Steward')
+            vol_types.append('Judge' if r['judge'] == 1 else 'Steward' if r['judge'] == 0 else 'Staff')
 
             table += '</tbody>' \
                      '</table>'
 
             table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
 
+            locations = Volunteers().get_judging_location(pkid=r['pkid'])
+
+            html = f'<h3>Your Compeition Location{"s" if len(locations) > 1 else ""}</h3>'
+            br = ''
+            for l in locations:
+                html += (f'{br}{l["name"]}<br>'
+                        f'{l["address"]}<br>'
+                        f'{l["city"]} {l["state"]} {l["zip"]}<br>'
+                )
+                br = '<br>'
+                
             msg = 'Hi {firstname},<br/>' \
                   '<br/>' \
                   'Here is your updated registration information.  Please let me know if ' \
                   'there are any changes to make.<br/>' \
                   '<br/>' \
                   '{table}<br/>' \
+                  '{html}' \
                   '<br/>' \
                   'Please let me know if you have any questions.<br/>' \
                   '<br/>' \
                   'Thanks,<br/>' \
-                  'Kevin<br/>'.format(firstname=firstname, table=table)
+                  'Kevin<br/>'.format(firstname=firstname, table=table, html=html)
 
             message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
                                                 to=r['email'],
+                                                #to='kevin.thorngren@gmail.com',
                                                 subject='NC Brewers Cup Schedule Change Confirmation',
                                                 message_text=msg,
                                                 )
+            """
             if DATABASE != 'competitions':
                 logger.info('Skipping email due to using test DB')
                 result = False
             else:
-                result = e.send_message(message, rcpt=[r['email']])
+            """
+            result = e.send_message(message, rcpt=[r['email']])
+            #result = False  # remove this for prod
+            #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
 
 
 
@@ -462,6 +532,12 @@ def test_remove_dup_sessions():
     Volunteers().remove_duplicate_sessions()
 
 
+def test_get_locations(pkid):
+
+    result = Volunteers().get_judging_location(pkid=pkid)
+
+    print(result)
+
 if __name__ == '__main__':
 
 
@@ -473,4 +549,6 @@ if __name__ == '__main__':
     #email_new()
 
     #email_changed()
+
+    test_get_locations(pkid=10)
     pass

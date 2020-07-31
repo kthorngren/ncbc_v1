@@ -634,7 +634,10 @@ class Website:
     @cherrypy.expose
     def dt_descriptions(self, *args, **kwargs):
 
-        sql = 'select pkid, entry_id, description from entries'
+        sql = ('select entries.pkid, entry_id, description, category, sub_category, b.organization '
+                'from entries '
+                'inner join brewers as b on b.pkid = fk_brewers '
+                )
 
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
         return json.dumps(result, cls=DatetimeEncoder)
