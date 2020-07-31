@@ -1593,7 +1593,7 @@ def process_new_entries(pkid=1):
                                                                          entries[0]['first_name'],
                                                                          entries[0]['last_name']))
             if send_email and n.send_labels(brewer):
-                logger.error(f'  Skipping send email to {brewer}')
+                logger.error(f'  **Skipping send email to {brewer}')
             continue
 
         if n.send_labels(brewer):
