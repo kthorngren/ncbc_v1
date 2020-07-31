@@ -644,6 +644,7 @@ class Website:
         for r in result['data']:
             print(r)
             r['specialty'] = 'Yes' if Style().is_specialty(r['category'], r['sub_category']) else 'No'
+            r['name'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
 
         return json.dumps(result, cls=DatetimeEncoder)
 

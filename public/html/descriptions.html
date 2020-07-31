@@ -95,6 +95,11 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
+                    <p>Filter Descriptions:</br>
+                      <label><input type="checkbox" class="filter" value="all" /> Show only Entries with Descriptions</label>
+                      <label><input type="checkbox" class="filter" value="specialty" /> Show only Specialty Entries</label>
+                    </p>
+                
                     <p id="no-desc"><p>
     			  </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
@@ -165,7 +170,40 @@
 
 var editor;
 
+$.fn.dataTable.ext.search.push(
+    function( settings, searchData, index, rowData, counter ) {
+   
+      var descriptionIndex = 4;
+      var specialtyIndex = 3;
+      var filters = $('input:checkbox:checked').map(function() {
+        return this.value;
+      }).get();
+   
 
+      if (filters.length === 0) {
+        return true;
+      }
+
+      showRow = true;
+
+      // Hide row if display only descriptions is checked and description is empty
+      if ( filters.includes('all') && searchData[descriptionIndex].length === 0) {
+        showRow = false;
+      }
+
+      // Next prcess specialty checkbox and display specialty entries regardless of description checkbox
+      // If specialty is selected then default to hiding all rows
+      if ( filters.includes('specialty') ) {
+        showRow = false;
+      }
+
+      // Unless it is a specialty category - value "Yes"
+      if ( filters.includes('specialty') && searchData[specialtyIndex] === 'Yes' ) {
+        showRow = true;
+      }
+      return showRow;
+    }
+  );
 
 function initMainEditor() {
 
@@ -213,6 +251,16 @@ editor = new $.fn.dataTable.Editor(
         } );
 
 }
+
+function format( data ) {
+  return $('<tr style="font-weight: lighter;">'+
+            '<td></td>'+
+            '<td>'+data.category + data.sub_category+'</td>'+
+            '<td>'+data.name+'</td>'+
+            '<td>'+data.organization+'</td>'+
+        '</tr>').toArray();
+}
+
 
 
 function drawMainTable() {
@@ -277,6 +325,16 @@ function drawMainTable() {
     ],
     drawCallback: function () {
     	get_specialty_wo_desc();
+    },
+    initComplete: function () {
+      var api = this.api();
+
+      api.rows().every( function (rowIdx, tableLoop, rowLoop) {
+        var data = this.data();
+        if (data.description.length || data.specialty === 'Yes') {
+          api.row(rowIdx).child( format(data) ).show()
+        }
+      });
     }
 
 	});
@@ -323,7 +381,9 @@ $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
 	
-	
+$('input:checkbox').on('change', function () {
+  $('#main-table').DataTable().draw();
+ });
 
 });
 </script>

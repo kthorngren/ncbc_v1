@@ -1167,9 +1167,9 @@ class Ncbc:
             label = [
                     'Entry Number: {:05d}'.format(int(entry['entry_id'])),
                     'Category: {d[category]}{d[sub_category]} - {name}'.format(d=entry, name=Style().get_style_name(entry['category'], entry['sub_category'], 'BJCP2015')),
-                    'Brewer Name: {d[first_name]} {d[last_name]}'.format(d=entry),
-                    'Brewer Email: {d[email]}'.format(d=entry),
-                    'Brewer Phone: {d[phone]}'.format(d=entry),
+                    'Contact: {d[first_name]} {d[last_name]}'.format(d=entry),
+                    'Email: {d[email]}'.format(d=entry),
+                    'Phone: {d[phone]}'.format(d=entry),
                     'Beer Name: {d[name]}'.format(d=entry),
                     '{org}: {d[organization]}'.format(org='Homebrew Club' if homebrew else 'Brewery', d=entry),
             ]
