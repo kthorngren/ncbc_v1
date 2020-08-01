@@ -1542,7 +1542,8 @@ class Website:
         categories = self.db.db_command(sql=sql, uid=uid).all(uid)
         """
 
-        categories = Styles().get_styles('NCBC2020')
+        categories = Style().get_styles('NCBC2020')
+        print(len(categories))
 
         flight_num = 0
 
@@ -1550,41 +1551,42 @@ class Website:
         self.db.db_command(sql=sql)
 
         for cat in categories:
-            flight_num += 1
-            styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
+            print(cat)
+            #flight_num += 1
+            #styles = Style('BJCP2015').get_styles_for_group(int(cat['category_id']), style_type=['beer', 1])
 
-            for style in styles:
+            #for style in styles:
 
-                category_desc = '{} {}'.format(cat['category_id'], cat['category'])
-                style_desc = '{}{} {}'.format(str(int(cat['category_id'])), style['style_num'], style['style_name'])
+            #    category_desc = '{} {}'.format(cat['category_id'], cat['category'])
+            #    style_desc = '{}{} {}'.format(str(int(cat['category_id'])), style['style_num'], style['style_name'])
 
-                row = {'category': category_desc,
-                               'style': style_desc,
-                               'category_id': int(cat['category_id']),
-                               'sub_category_id': style['style_num'],
-                               'tables': [],
-                               'number': flight_num
-                               }
+            row = {'category': f"{cat['style_group']} {cat['category']}",
+                            'style': f"{cat['style_num']} {cat['style_name']}",
+                            'category_id': int(cat['style_group']),
+                            'sub_category_id': cat['style_num'],
+                            'tables': [],
+                            'number': cat['style_group']
+                            }
 
-                sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
-                      'tables, fk_competitions) ' \
-                      'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
-                      '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=row,
-                                                                                           fk_competitions=Competitions().get_active_competition(),
-                                                                                           )
-                self.db.db_command(sql=sql)
+            sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
+                    'tables, fk_competitions) ' \
+                    'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
+                    '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=row,
+                                                                                        fk_competitions=Competitions().get_active_competition(),
+                                                                                        )
+            self.db.db_command(sql=sql)
 
-                """
-                code when used with flights
-                result.append({'category': category_desc,
-                               'style': style_desc,
-                               'category_id': int(cat['category_id']),
-                               'sub_category_id': style['style_num'],
-                               'count': 0,
-                               'tables': [],
-                               'number': flight_num
-                               })
-                """
+            """
+            code when used with flights
+            result.append({'category': category_desc,
+                            'style': style_desc,
+                            'category_id': int(cat['category_id']),
+                            'sub_category_id': style['style_num'],
+                            'count': 0,
+                            'tables': [],
+                            'number': flight_num
+                            })
+            """
 
         return json.dumps({}, cls=DatetimeEncoder)
 

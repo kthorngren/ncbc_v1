@@ -185,16 +185,21 @@ function get_styles_count(full_inventory=true) {
             table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
          			 	var data = this.data();
                 var count = 0;
+                var catSubcat = data.sub_category_id.match(/[a-z]+|[^a-z]+/gi);
 
-                if (styles_count.hasOwnProperty(data.category_id)) {
-                  if (styles_count[data.category_id].hasOwnProperty(data.sub_category_id)) {
-                    count = styles_count[data.category_id][data.sub_category_id]
+                if (catSubcat.length === 2) {
+                  var category_id = catSubcat[0];
+                  var sub_category_id = catSubcat[1];
+                  if (styles_count.hasOwnProperty(category_id)) {
+                    if (styles_count[category_id].hasOwnProperty(sub_category_id)) {
+                      count = styles_count[category_id][sub_category_id]
+                    }
                   }
+                  data.count = count;
                 }
-                data.count = count;
 
             });
-            table.rows().invalidate();
+            table.rows().invalidate().draw();
 
         },
 
@@ -267,14 +272,27 @@ function drawMainTable() {
     	//    style: "multi+shift",
       //  	selector: "td:first-child"
    		//},
-   		order: [[3, 'asc']],
-		columns: [
+   		order: [[1, 'asc'],[3, 'asc']],
+       rowGroup: {
+	    	dataSrc: 'category',
+            startRender: function ( rows, group ) {
+              var total = rows
+                    .data()
+                    .pluck('count')
+                    .reduce( function (a, b) {
+                        return a + b*1;
+                    }, 0);
+                return group +' - Entries: ' + total;
+            },
+      },
+  		columns: [
 	        {
 	        	data: 'pkid',
 	        	visible: false
 	        },
 	        {
-	        	data: 'number',
+            data: 'number',
+            visible: false
 	        },
           {
             data: 'count'
