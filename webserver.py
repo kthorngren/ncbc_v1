@@ -1232,7 +1232,10 @@ class Website:
             sql = 'update flights set tables = "[]" where fk_competitions = "{}"'.format(Competitions().get_active_competition())
             self.db.db_command(sql=sql)
 
+        styles = Style().get_styles('NCBC2020')
 
+        options = [f'{x["style_group"]} {x["category"]}' for x in styles]
+        result['options'] = sorted(set(options))
         return json.dumps(result, cls=DatetimeEncoder)
 
 

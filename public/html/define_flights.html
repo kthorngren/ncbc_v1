@@ -169,6 +169,7 @@
 var editor;
 var table;
 var styles_count = {};
+var dispalyRegistered = false;
 
 
 function get_styles_count(full_inventory=true) {
@@ -228,12 +229,17 @@ editor = new $.fn.dataTable.Editor(
             name: "number",
             label: "Number:"
         },
+        {
+            name: "category",
+            label: "Category:",
+            type:  "select",
+        },
 
     ]
 });
 
 // Activate an inline edit on click of a table cell
-$('#main-table').on( 'click', 'tbody td:first-child', function (e) {
+$('#main-table').on( 'click', 'tbody td.editor', function (e) {
     editor.inline( this, {
         onBlur: 'submit'
     } );
@@ -254,7 +260,17 @@ editor
     .on( 'initEdit', function () {
         // Disable for edit (re-ordering is performed by click and drag)
         editor.field( 'pkid' ).disable();
-    } );
+    } )
+    .on( 'preSubmit', function (e, data, action) {
+      $.each( data.data, function ( key, values ) {
+        if (data.data[ key ][ 'category' ]) {
+          data.data[ key ][ 'number' ] = Number( data.data[ key ][ 'category' ].split(' ')[0] );
+        }
+      } );
+    })
+    .on( 'submitComplete', function (e, data, action) {
+      get_styles_count(dispalyRegistered);
+    });
 }
 
 
@@ -301,7 +317,8 @@ function drawMainTable() {
 	        	data: 'style', type: 'natural'
 	        },
 	        {
-	        	data: 'category',
+            data: 'category',
+            className: 'editor'
 	        },
 	    ],
 
@@ -319,8 +336,8 @@ function drawMainTable() {
             {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
-
-    				          get_styles_count(true);
+                  dispalyRegistered = true;
+    				          get_styles_count(dispalyRegistered);
 
 
                 }
@@ -328,13 +345,26 @@ function drawMainTable() {
             {
                 text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
-
-					             get_styles_count(false);
+                  dispalyRegistered = false;
+					             get_styles_count(dispalyRegistered);
 
                 }
             },
             {extend: 'excel'}
-        ]
+        ],
+        initComplete: function (settings, json) {
+          var api = this.api();
+          var jsonOptions = json.options;
+          var options = [];
+
+          for (i=0; i<jsonOptions.length; i++) {
+                  var option = jsonOptions[i];
+                    //var value = Number(option.split(' ')[0]);
+                    options.push( {label: option, value: option})
+                }   
+
+                editor.field('category').update(options);
+        }
 
 	});
 
