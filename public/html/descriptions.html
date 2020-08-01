@@ -377,9 +377,10 @@ function get_specialty_wo_desc() {
 }
 
 
+
 $(document).ready(function() {
 	initMainEditor();
-	drawMainTable();
+  drawMainTable();
 	
 $('input:checkbox').on('change', function () {
   $('#main-table').DataTable().draw();

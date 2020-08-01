@@ -706,6 +706,11 @@ class Website:
 
         return json.dumps(result, cls=DatetimeEncoder)
 
+    @cherrypy.expose
+    def get_brewers(self):
+
+        result = Brewers().get_brewery_names()
+        return json.dumps(result, cls=DatetimeEncoder)
 
 
     ######################

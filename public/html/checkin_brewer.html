@@ -92,6 +92,10 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
+                      <div class="text-center">
+                      <label for="brewery-choice">Choose Brewery:</label>
+                      <input list="breweries" id="brewery-choice" name="brewery-choice"   autocomplete="off"/>
+                    </div>
     			  </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
@@ -267,7 +271,7 @@ function drawMainTable() {
 		dom: 'lftirp',
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 		rowId: 'pkid',
-		scrollY: true,
+		scrollX: true,
 	    select: {
     	    style: "multi+shift",
         	selector: "td:first-child"
@@ -350,13 +354,56 @@ function drawMainTable() {
 
 
 
+function buildBrewersSelect() {
+
+  $.ajax({
+    url: "/get_brewers",
+    type: 'post',
+    success: function(json) {
+      var data = JSON.parse(json);
+            
+
+      var datalist = $('<datalist id="breweries"><option value=""></datalist>')
+                        .appendTo('#brewery-choice')
+
+      for (i=0; i<data.length; i++) {
+        datalist.append('<option value="' + data[i] + '">')
+      }
+
+
+
+              
+    },
+    error: function (jqXHR, exception) {
+              
+      //set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+    },
+                  
+  });
+
+}
+
 
 
 $(document).ready(function() {
 	initMainEditor();
 	drawMainTable();
-	
-	
+	buildBrewersSelect();
+  
+  // Search on input change
+  $('input[name="brewery-choice"').on('change', function () {
+    var val = $(this).val();
+    $('#main-table').DataTable().column(10).search(val).draw();
+    $(this).blur();  // Remove focus to allow for clearing input next time clicked
+  });
+
+  // When focusin (input clicked) or arrow clicked clear the value and reset search
+  $('input[name="brewery-choice"').on('click focusin', function () {
+    if ($(this).val()) {
+      $(this).val('');
+      $('#main-table').DataTable().column(10).search("").draw();
+    }
+  });
 
 });
 </script>
