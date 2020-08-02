@@ -1219,7 +1219,7 @@ class Website:
     def dt_define_flights(self, *args, **kwargs):
 
 
-        sql = 'select pkid, number, category, style, category_id, sub_category_id, count from flights '
+        sql = 'select pkid, number, category, style, category_id, sub_category_id, count, fk_judge_locations from flights '
 
         if 'action' not in kwargs:
             sql += 'where fk_competitions = "{}"'.format(Competitions().get_active_competition())
@@ -1236,9 +1236,35 @@ class Website:
 
         options = [f'{x["style_group"]} {x["category"]}' for x in styles]
         result['options'] = sorted(set(options))
+
+        sql = (
+            'select name, pkid from judge_locations '
+            'where pkid in '
+            f'  (select distinct(fk_judge_locations) from sessions where fk_competitions = "{Competitions().get_active_competition()}")'
+        )
+
+        uid = gen_uid()
+        result['locations'] = self.db.db_command(sql=sql, uid=uid).all(uid)
+
         return json.dumps(result, cls=DatetimeEncoder)
 
+    @cherrypy.expose
+    def save_judge_location(self, **kwargs):
 
+        category = kwargs.get('category')
+        fk_judge_locations = kwargs.get('fk_judge_locations')
+
+        if category and fk_judge_locations:
+            sql = f'update flights set fk_judge_locations = "{fk_judge_locations}" where category = "{category}"'
+            self.db.db_command(sql=sql)
+
+            result = {'success': '', 'error': ''}
+            if self.db.sql_error:
+                result['error'] = self.db.sql_error
+            else:
+                result['success'] = 'success'
+
+        return json.dumps(result, cls=DatetimeEncoder)
 
     ######################
     #

@@ -273,9 +273,27 @@ editor
     });
 }
 
+function save_judinge_location(category, fk_judge_locations) {
+
+  $.ajax({
+      url: "/save_judge_location",
+      type: 'post',
+      data: {category: category, fk_judge_locations: fk_judge_locations},
+      success: function(json) {
+        console.log(json)
+        $('#main-table').DataTable().ajax.reload(null, false);
+      },
+
+      error: function (jqXHR, exception) {
+        //set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      },
+  });
+}
+
+
 
 function drawMainTable() {
-	table = $('#main-table').DataTable({
+  table = $('#main-table').DataTable({
 		ajax: 'dt_define_flights',
 		dom: 'Blftirp',
 		rowId: 'pkid',
@@ -292,13 +310,33 @@ function drawMainTable() {
        rowGroup: {
 	    	dataSrc: 'category',
             startRender: function ( rows, group ) {
+
               var total = rows
                     .data()
                     .pluck('count')
                     .reduce( function (a, b) {
                         return a + b*1;
                     }, 0);
-                return group +' - Entries: ' + total;
+
+              
+              var fk_judge_locations = rows.data().pluck('fk_judge_locations')[0];
+              var select = $('<select data-category="' + group + '""><option value="0"></option></select>')
+
+              // Todo:  Get this from the JSON response
+              var locations = [{"name": "Triangle", "pkid": 1}, 
+                                {"name": "Charlotte", "pkid": 2}, 
+                                {"name": "Asheville", "pkid": 3}
+                              ];
+
+              for (i=0; i<locations.length; i++) {
+                var location = locations[i];
+                var selected = fk_judge_locations == location.pkid ? ' selected ' : '';
+                select.append( '<option value="' + location.pkid + '" ' + selected + '>'+ location.name + '</option>' );
+              }
+
+              return $('<tr/>')
+                .append( '<td colspan="2">' + group + ' - Entries: ' + total + '</td>' )
+                .append( '<td class="group-location">Location: ' + $(select).prop('outerHTML') +  '</td>' );
             },
       },
   		columns: [
@@ -363,11 +401,23 @@ function drawMainTable() {
                     options.push( {label: option, value: option})
                 }   
 
-                editor.field('category').update(options);
+          editor.field('category').update(options);
+
+
         }
+
 
 	});
 
+  table.on('draw', function () {
+    $('.group-location').off().on('change', 'select', function () {
+            var category = $(this).data('category');
+            console.log(category)
+            var val = $(this).val();
+
+            save_judinge_location(category, val)
+          });
+  });
 
 }
 
