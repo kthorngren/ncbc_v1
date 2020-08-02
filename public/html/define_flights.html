@@ -296,7 +296,8 @@ function drawMainTable() {
   table = $('#main-table').DataTable({
 		ajax: 'dt_define_flights',
 		dom: 'Blftirp',
-		rowId: 'pkid',
+    rowId: 'pkid',
+    scrollY: 500,
     autoFill: {
       columns: 1,
       editor: editor
