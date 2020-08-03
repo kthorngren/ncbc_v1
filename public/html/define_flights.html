@@ -201,6 +201,7 @@ function get_styles_count(full_inventory=true) {
                   }
                   data.count = count;
 
+                  // Track total entries for the category
                   if ( !totalCategory.hasOwnProperty(category) ) {
                     totalCategory[category] = 0;
                   }
