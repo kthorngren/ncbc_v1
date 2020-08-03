@@ -1250,7 +1250,9 @@ class Ncbc:
         }
 
         fixes = {
-            '645778': {'first_name': 'Andy'}
+            '645778': {'first_name': 'Andy'},
+            '646367': {'first_name': 'William'},  #Todo: sanitize data to escape quotes
+            '646374': {'first_name': 'William'},  #Todo: sanitize data to escape quotes
         }
 
         rev_mapping = {}

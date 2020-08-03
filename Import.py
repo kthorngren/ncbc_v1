@@ -153,6 +153,7 @@ class Import:
         print('mapping', mapping)
 
         for row in rows:
+
             result = Tools().find('people', ['firstname', 'nickname', 'lastname', 'alias', 'email'],
                                   name=row['last_name'], email=row['email'])
 

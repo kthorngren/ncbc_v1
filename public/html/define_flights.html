@@ -103,6 +103,7 @@
                                 <th>Qty</th>
                                 <th>Sub Category</th>
                                 <th>Category</th>
+                                <th>Total Category</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -170,7 +171,7 @@ var editor;
 var table;
 var styles_count = {};
 var dispalyRegistered = false;
-
+var totalCategory = {};
 
 function get_styles_count(full_inventory=true) {
 
@@ -182,11 +183,13 @@ function get_styles_count(full_inventory=true) {
             var styles_count = JSON.parse(json);
 
             styles_count = styles_count.data;
+            totalCategory = {};
 
             table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
          			 	var data = this.data();
                 var count = 0;
                 var catSubcat = data.sub_category_id.match(/[a-z]+|[^a-z]+/gi);
+                var category = data.category;
 
                 if (catSubcat.length === 2) {
                   var category_id = catSubcat[0];
@@ -197,6 +200,12 @@ function get_styles_count(full_inventory=true) {
                     }
                   }
                   data.count = count;
+
+                  if ( !totalCategory.hasOwnProperty(category) ) {
+                    totalCategory[category] = 0;
+                  }
+                  totalCategory[category] += count;
+                  console.log(category, count, totalCategory[category])
                 }
 
             });
@@ -318,8 +327,9 @@ function drawMainTable() {
                     .reduce( function (a, b) {
                         return a + b*1;
                     }, 0);
-
               
+              //totalCategory[group] = total;
+
               var fk_judge_locations = rows.data().pluck('fk_judge_locations')[0];
               var select = $('<select data-category="' + group + '""><option value="0"></option></select>')
 
@@ -343,22 +353,35 @@ function drawMainTable() {
   		columns: [
 	        {
 	        	data: 'pkid',
-	        	visible: false
+            visible: false,
+            orderable: false,
 	        },
 	        {
             data: 'number',
-            visible: false
+            visible: false,
+            orderable: false,
 	        },
           {
-            data: 'count'
+            data: 'count',
+            orderable: false,
           },
           {
-	        	data: 'style', type: 'natural'
+	        	data: 'style', type: 'natural',
+            orderable: false,
 	        },
 	        {
             data: 'category',
-            className: 'editor'
-	        },
+            className: 'editor',
+            orderable: false,
+          },
+          {
+            data: null,
+            visible:false,
+            orderable: false,
+            render: function(data, type, row) {
+              return totalCategory[row.category] === undefined ? 0 : totalCategory[row.category];
+            }
+          }
 	    ],
 
       buttons: [
@@ -386,6 +409,20 @@ function drawMainTable() {
                 action: function ( e, dt, node, config ) {
                   dispalyRegistered = false;
 					             get_styles_count(dispalyRegistered);
+
+                }
+            },
+            {
+                text: 'Order by Categoty Total',
+                action: function ( e, dt, node, config ) {
+                  dt.order([[5, 'desc'], [1, 'asc'], [3, 'asc']]).draw();
+
+                }
+            },
+            {
+                text: 'Order by Categoty Number',
+                action: function ( e, dt, node, config ) {
+                  dt.order([[1, 'asc'], [3, 'asc']]).draw();
 
                 }
             },

@@ -92,7 +92,6 @@ class Tools:
             kwargs['firstname'] = name
             kwargs['nickname'] = name
 
-
         where = ['{} like "%{}%"'.format(k, v) for k, v in kwargs.items()]
 
         sql = 'select {} from {} {}{}'.format(','.join(fields), table, 'where ' if where else '', ' {} '.format(search_type).join(where))
