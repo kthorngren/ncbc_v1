@@ -499,11 +499,14 @@ class Volunteers:
               'v.firstname as vol_firstname, v.lastname as vol_lastname, v.email as vol_email, ' \
               'v.organization as vol_organization, v.fk_brewers as fk_brewers ' \
               'from brewers as b join volunteers as v on v.lastname like CONCAT( "%", b.lastname, "%") ' \
-              'or SUBSTRING_INDEX(v.email,"@",-1) like CONCAT( "%",SUBSTRING_INDEX(b.email,"@",-1), "%") ' \
-              'or v.organization like CONCAT( "%",b.organization,"%") '
+              'or (SUBSTRING_INDEX(v.email,"@",-1) like CONCAT( "%",SUBSTRING_INDEX(b.email,"@",-1), "%") ' \
+              '  and SUBSTRING_INDEX(v.email,"@",-1) <> "gmail.com")' \
+              'or v.organization like CONCAT( "%",b.organization,"%") ' \
+              'or (v.organization != "" and b.organization like CONCAT( "%",v.organization,"%") )'
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
+        print(sql)
 
         return result
 
