@@ -110,6 +110,15 @@ class Sessions:
 
         return result
 
+    def get_judge_location(self, fk_judge_locations):
+
+        sql = f'select * from judge_locations where pkid = "{fk_judge_locations}"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        return result
+
     def get_session_volunteers(self, session_number, judges=False, stewards=False, all=False):
 
         where = ''
@@ -126,13 +135,13 @@ class Sessions:
               'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
                 'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid, p.likes, p.dislikes ' \
                 'from volunteers '\
-                'inner join people as p on p.pkid = fk_people ' \
+                'left join people as p on p.pkid = fk_people ' \
                 'where find_in_set("{session_number}", cast(fk_sessions_list as char)) > 0 ' \
                 'and deleted = "0" and fk_competitions = "{pkid}" {where}'.format(session_number=session_number,
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )
-        print(sql)
+        #print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 

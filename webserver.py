@@ -1249,6 +1249,39 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
     @cherrypy.expose
+    def get_locations_table(self, *args, **kwargs):
+
+        session_data = {}
+        sessions = Sessions().get_sessions(judging=True)
+
+        for session in sessions:
+
+            location = Sessions().get_judge_location(session['fk_judge_locations'])
+            location_name = location['city']
+            location_pkid = location['pkid']
+            judges = Sessions().get_session_volunteers(session['pkid'], judges=True)
+            judge_pairs = int(len(judges) / 2)
+
+            if location_name not in session_data:
+                session_data[location_name] = {
+                    'location_name': location_name,
+                    'judge_pairs': 0,
+                    'location_pkid': location_pkid
+                }
+            session_data[location_name]['judge_pairs'] += judge_pairs
+
+        result = []
+        for location in session_data:
+
+            result.append(session_data[location])
+
+        return json.dumps({ 'data': result}, cls=DatetimeEncoder)
+
+            
+
+
+
+    @cherrypy.expose
     def save_judge_location(self, **kwargs):
 
         category = kwargs.get('category')

@@ -94,7 +94,19 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
-    			  </div>
+            </div>
+            <div class="row">
+              <table id="locations-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
+
+              </table>
+
+            <hr>
+
+            <div>Unassigned Flights: 
+              <span id="unassigned"></span>
+            </div>
+
+            </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
@@ -209,7 +221,7 @@ function get_styles_count(full_inventory=true) {
                 }
 
             });
-            table.rows().invalidate().draw();
+            table.rows().invalidate().draw(false);
 
         },
 
@@ -282,15 +294,18 @@ editor
     });
 }
 
-function save_judinge_location(category, fk_judge_locations) {
+function save_judging_location(category, fk_judge_locations) {
 
   $.ajax({
       url: "/save_judge_location",
       type: 'post',
       data: {category: category, fk_judge_locations: fk_judge_locations},
       success: function(json) {
-        console.log(json)
-        $('#main-table').DataTable().ajax.reload(null, false);
+        //console.log(json)
+        $('#main-table').DataTable().ajax.reload(function ( json ) {
+          get_styles_count(dispalyRegistered);
+        }, false);
+        
       },
 
       error: function (jqXHR, exception) {
@@ -299,6 +314,65 @@ function save_judinge_location(category, fk_judge_locations) {
   });
 }
 
+
+function drawLocationsTable() {
+  $('#locations-table').DataTable({
+		ajax: 'get_locations_table',
+		paging: false,
+
+  		columns: [
+          {
+            data: 'location_name',
+            title: 'Location'
+          },
+          {
+            data: 'judge_pairs',
+            title: '# Judge Pairs'
+          },
+          {
+            data: 'beers',
+            defaultContent: '',
+            title: 'Beers/Judge Pair'
+          },
+          {
+            data: 'entries',
+            defaultContent: '',
+            title: 'Total Entries'
+          },
+          {
+            data: 'flights',
+            defaultContent: '',
+            title: 'Number of Flights'
+          },
+      ],
+      
+      rowCallback: function (row, data) {
+        var api = this.api();
+        var location = data.location_pkid
+        var flights = table.rows( function ( idx, data, node ) {
+                          return data.fk_judge_locations === location ?
+                              true : false;
+                      } )
+                      .data()
+                      .toArray();
+        //console.log(flights)
+        
+        data.entries = 0;
+
+        for (i=0; i<flights.length; i++) {
+          data.entries += flights[i].count;
+        }
+
+        data.beers = data.entries / data.judge_pairs;
+        data.flights = flights.length;
+        api.row(row).data( data )
+      }
+
+
+	});
+
+
+}
 
 
 function drawMainTable() {
@@ -450,11 +524,25 @@ function drawMainTable() {
   table.on('draw', function () {
     $('.group-location').off().on('change', 'select', function () {
             var category = $(this).data('category');
-            console.log(category)
+            //console.log(category)
             var val = $(this).val();
 
-            save_judinge_location(category, val)
+            save_judging_location(category, val);
+
+
           });
+
+          // todo: use this to group and find unassigned flights that have entries:
+          // totalCategory[row.category] === undefined ? 0 : totalCategory[row.category];
+          var count = table.rows( function ( idx, data, node ) {
+            console.log(data.fk_judge_locations, data.count)
+                          return data.fk_judge_locations === 0 && data.count > 0 ?
+                              true : false;
+                      } )
+                      .count();
+
+            $('#unassigned').html(count);
+            $('#locations-table').DataTable().draw();
   });
 
 }
@@ -479,7 +567,8 @@ function init_flights() {
 
 $(document).ready(function() {
   initMainEditor();
-	drawMainTable();
+  drawMainTable();
+  drawLocationsTable();
 
 
 });
