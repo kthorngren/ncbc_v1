@@ -256,8 +256,8 @@ function format( data ) {
   return $('<tr style="font-weight: lighter;">'+
             '<td></td>'+
             '<td>'+data.category + data.sub_category+'</td>'+
-            '<td>'+data.name+'</td>'+
-            '<td>'+data.organization+'</td>'+
+            '<td>'+data.category_name+'</td>'+
+            '<td>Brewery: '+data.organization+ 'Beer Name: ' + data.name +'</td>'+
         '</tr>').toArray();
 }
 

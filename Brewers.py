@@ -213,15 +213,22 @@ def list_specialty_wo_desc():
 
     for r in result:
         entries = Entrys().get_entries_by_brewer(r['pkid'], order_by='category')
-
+        new_brewer = True
         for entry in entries:
 
             if Style(Competitions().get_style_guidelines()).is_specialty(entry['category'], entry['sub_category']) and not re.sub(r'\s', '', entry['description']):
-                print('{d[organization]} {d[firstname]} {d[lastname]} - {d[email]}: No description for specialty Entry ID: '
-                      '{e[entry_id]:05}: {e[category]}{e[sub_category]} {cat_name}\n{instructions}'.format(d=r, e=entry,
+
+                if new_brewer:
+                    print('\n{d[organization]} \n{d[firstname]} {d[lastname]} \n{d[email]}\n'.format(d=r))
+                    print('NC Brewers Cup - Specialty Beer Entry Description Needed')
+                    print('The below entries need to have descriptions provided that can be given to the judges to help them judge you beer. Please email me the descriptions and I\'ll update the entry information.')
+                    print('Please see the BJCP Style Guideline ( https://bjcp.org/docs/2015_Guidelines_Beer.pdf ) for more details.\n')
+                    new_brewer = False
+                print('{e[entry_id]:05}: {e[category]}{e[sub_category]} {cat_name} - {e[name]}\nInstructions: {instructions}'.format(e=entry,
                                             cat_name=Style(Competitions().get_style_guidelines()).get_style_name(entry['category'], entry['sub_category']),
                                             instructions=Style(Competitions().get_style_guidelines()).get_entry_instructions(entry['category'], entry['sub_category'])
-                                                                                           ))
+                                                                                        ))
+
 
 def list_specialty():
 

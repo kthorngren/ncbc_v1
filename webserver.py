@@ -634,7 +634,7 @@ class Website:
     @cherrypy.expose
     def dt_descriptions(self, *args, **kwargs):
 
-        sql = ('select entries.pkid, entry_id, description, category, sub_category, b.organization '
+        sql = ('select entries.pkid, entry_id, name, description, category, sub_category, b.organization '
                 'from entries '
                 'inner join brewers as b on b.pkid = fk_brewers '
                 )
@@ -644,7 +644,7 @@ class Website:
         for r in result['data']:
             print(r)
             r['specialty'] = 'Yes' if Style().is_specialty(r['category'], r['sub_category']) else 'No'
-            r['name'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
+            r['category_name'] = Style('BJCP2015').get_style_name(r['category'], r['sub_category'])
 
         return json.dumps(result, cls=DatetimeEncoder)
 

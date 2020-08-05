@@ -502,7 +502,8 @@ class Volunteers:
               'or (SUBSTRING_INDEX(v.email,"@",-1) like CONCAT( "%",SUBSTRING_INDEX(b.email,"@",-1), "%") ' \
               '  and SUBSTRING_INDEX(v.email,"@",-1) <> "gmail.com")' \
               'or v.organization like CONCAT( "%",b.organization,"%") ' \
-              'or (v.organization != "" and b.organization like CONCAT( "%",v.organization,"%") )'
+              'or (v.organization != "" and b.organization like CONCAT( "%",v.organization,"%") )' \
+              'or v.fk_brewers = b.pkid'
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)

@@ -175,7 +175,8 @@ function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_judge_entries',
 		dom: 'Blftirp',
-		rowId: 'pkid',
+    rowId: 'pkid',
+    scrollX: true,
 		paging: false,
 	    select: {
     	    style: "multi+shift",
