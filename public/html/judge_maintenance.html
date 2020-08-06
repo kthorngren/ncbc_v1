@@ -103,12 +103,12 @@
                                 <th>Email</th>
                                 <th>BJCP ID</th>
                                 <th>BJCP Rank</th>
+                                <th>BJCP Fetch Results</th>
                                 <th>Cicerone</th>
                                 <th>NCBC Points</th>
                                 <th>Don't Pair With</th>
                                 <th>Judge Speed (1-5)</th>
                                 <th>Other Certifications</th>
-                                <th>BJCP Fetch Results</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -218,7 +218,7 @@ editor = new $.fn.dataTable.Editor(
 });
 
     // Activate an inline edit on click of a table cell
-    $('#main-table').on( 'click', 'tbody td:not(:first-child, :last-child)', function (e) {
+    $('#main-table').on( 'click', 'tbody td:not(:first-child, .no-edit)', function (e) {
         editor.inline( this, {
             onBlur: 'submit'
         } );
@@ -247,7 +247,8 @@ editor = new $.fn.dataTable.Editor(
 function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_judge_maintenance',
-		dom: 'Blftirp',
+    dom: 'Blftirp',
+    scrollX: true,
 		rowId: 'pkid',
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 	    select: {
@@ -282,6 +283,23 @@ function drawMainTable() {
 	        	data: 'bjcp_rank',
 	        },
 	        {
+            data: 'result',
+            className: 'no-edit',
+	        	render: function (data, type, row) {
+	        		if (type === 'display' && data.length > 0) {
+	        			var temp = '';
+	        			if (Array.isArray(data)) {
+	        				data.forEach(function(element) {
+	        					cr = temp ? '<br>' : '';
+  								temp = temp + cr + JSON.stringify(element, null, '<br>');
+							})
+	        			}
+	        			return temp;
+	        		}
+	        		return data;
+	        	}
+          },
+	        {
 	        	data: 'cicerone',
 	        },
 	        {
@@ -296,22 +314,7 @@ function drawMainTable() {
 	        {
 	        	data: 'other_cert',
 	        },
-	        {
-	        	data: 'result',
-	        	render: function (data, type, row) {
-	        		if (type === 'display' && data.length > 0) {
-	        			var temp = '';
-	        			if (Array.isArray(data)) {
-	        				data.forEach(function(element) {
-	        					cr = temp ? '<br>' : '';
-  								temp = temp + cr + JSON.stringify(element, null, '<br>');
-							})
-	        			}
-	        			return temp;
-	        		}
-	        		return data;
-	        	}
-	        },
+
 	    ],
 	    buttons: [
         { extend: "create", editor: editor },

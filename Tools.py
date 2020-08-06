@@ -1,3 +1,5 @@
+from csv import reader, QUOTE_NONE, QUOTE_ALL
+
 from Competitions import DATABASE
 
 
@@ -139,3 +141,29 @@ class Tools:
             ranks[key][r['name']] = r['rank']
 
         return ranks
+
+    def import_bjcp(self):
+
+        #todo:  use strip() to strip any white space from email
+
+        headings = ['firstname', 'lastname', 'address', 'city', 'state', 'zip', 'country', 'phone',
+                    'nickname', 'email', 'bjcp_id', 'level', 'region', 'mead', 'cider']
+
+        print(len(headings))
+        with open('files/Active Judges.csv') as csv_file:
+            csv_reader = reader(csv_file, delimiter=',')
+            lines = 0
+            for row in csv_reader:
+                if lines == 0:
+                    print(row)
+                sql = 'insert ignore into bjcp_judges ({}) values ("{}")'.format(','.join(headings), '","'.join([x.strip() for x in row]))
+                #print(sql)
+                db.db_command(sql=sql)
+                #print(", ".join(row))
+                lines += 1
+            print('Number of lines: {}'.format(lines))
+
+if __name__ == '__main__':
+
+    Tools().import_bjcp()
+    

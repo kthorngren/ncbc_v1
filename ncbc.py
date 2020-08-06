@@ -1702,16 +1702,19 @@ def import_bjcp():
     #todo:  use strip() to strip any white space from email
 
     headings = ['firstname', 'lastname', 'address', 'city', 'state', 'zip', 'country', 'phone',
-                'nickname', 'email', 'bjcp_id', 'level', 'region', 'mead']
+                'nickname', 'email', 'bjcp_id', 'level', 'region', 'mead', 'cider']
+
+    print(len(headings))
     with open('files/Active Judges.csv') as csv_file:
         csv_reader = reader(csv_file, delimiter=',')
         lines = 0
         for row in csv_reader:
-            print(row)
+            if lines == 0:
+                print(row)
             sql = 'insert ignore into bjcp_judges ({}) values ("{}")'.format(','.join(headings), '","'.join([x.strip() for x in row]))
-            print(sql)
-            #db.db_command(sql=sql)
-            print(", ".join(row))
+            #print(sql)
+            db.db_command(sql=sql)
+            #print(", ".join(row))
             lines += 1
         print('Number of lines: {}'.format(lines))
 
