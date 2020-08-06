@@ -1,3 +1,5 @@
+from collections import defaultdict 
+
 from Competitions import DATABASE
 from Competitions import Competitions
 from Styles import Style
@@ -335,6 +337,51 @@ class Entrys:
 
         return top_results
 
+    def get_brewer(self, pkid):
+        # Copied from Brewers.py
+        sql = 'select * from brewers where pkid = "{}"'.format(pkid)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        return result
+
+    def category_with_judges(self):
+
+        sql = 'select * from volunteers where fk_brewers != "0"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        brewers = defaultdict(list)
+        categories = defaultdict(list)
+
+        for r in result:
+            fk_brewers = r['fk_brewers']
+            brewer = self.get_brewer(fk_brewers)
+
+            category_list = self.get_brewer_categories(fk_brewers)
+
+            for cat in category_list:
+                categories[cat].append(dict(
+                    firstname=r['firstname'],
+                    lastname=r['lastname'],
+                    judge=r['judge'],
+                    fk_sessions_list=r['fk_sessions_list'],
+                    organization=brewer['organization']
+                ))
+
+
+            
+
+
+        
+        return categories
+
+
+
+
+       
 
 def test_add_inventory():
     print(Entrys().inventory_status())
@@ -403,7 +450,14 @@ if __name__ == '__main__':
     #test_remove_inventory()
     #test_get_inv()
 
-    test_get_topN()
+    #test_get_topN()
+
+    result = Entrys().category_with_judges()
+    for r in result:
+        print(r)
+
+        for b in result[r]:
+            print('  ', b)
 
 
     pass

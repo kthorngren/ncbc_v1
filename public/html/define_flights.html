@@ -26,7 +26,14 @@
 
   <style>
 
+.left-half {
+  float: left;
+  width: 50%;}
 
+.right-half {
+  float: right;
+  width: 50%;
+}
   </style>
   <body class="nav-md">
     <div class="container body">
@@ -184,6 +191,7 @@ var table;
 var styles_count = {};
 var dispalyRegistered = false;
 var totalCategory = {};
+var judgeCategories = {};
 
 function get_styles_count(full_inventory=true) {
 
@@ -229,6 +237,23 @@ function get_styles_count(full_inventory=true) {
       		//set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
       	},
     });
+}
+
+
+function get_judge_categories() {
+  judgeCategories = {};
+  $.ajax({
+      url: "/get_judge_categories",
+      success: function(json) {
+          judgeCategories = JSON.parse(json);
+
+
+      },
+
+      error: function (jqXHR, exception) {
+        //set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      },
+  });
 }
 
 
@@ -374,6 +399,10 @@ function drawLocationsTable() {
 
 }
 
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+}
+
 
 function drawMainTable() {
   table = $('#main-table').DataTable({
@@ -404,6 +433,39 @@ function drawMainTable() {
               
               //totalCategory[group] = total;
 
+              var category_id = rows.data().pluck('category_id')[0];
+
+              var judges = judgeCategories[category_id];
+              var judge = 0;
+              var judgeTitle = [];
+              var steward = 0;
+              var stewardTitle = [];
+
+              // Todo: make this programatic
+              var locAbbr = {
+                105: 'rtp',
+                106: 'rtp',
+                107: 'clt',
+                108: 'clt',
+                109: 'avl',
+                110: 'avl'
+              }
+
+              if (judges) {
+                for (i=0; i<judges.length; i++) {
+                  var volunteer = judges[i]
+                  var volLocation = volunteer['fk_sessions_list'].split(',')[0]; // Todo: choose a better way to get location
+
+                  if (volunteer.judge == 1) {
+                    judge++;
+                    judgeTitle.push(volunteer.firstname + ' ' + volunteer.lastname + ' (' + locAbbr[volLocation] + ')')
+                  } else {
+                    steward++;
+                    stewardTitle.push(volunteer.firstname + ' ' + volunteer.lastname + ' (' + locAbbr[volLocation] + ')')
+                  }
+                }
+              }
+
               var fk_judge_locations = rows.data().pluck('fk_judge_locations')[0];
               var select = $('<select data-category="' + group + '""><option value="0"></option></select>')
 
@@ -421,7 +483,7 @@ function drawMainTable() {
 
               return $('<tr/>')
                 .append( '<td colspan="2">' + group + ' - Entries: ' + total + '</td>' )
-                .append( '<td class="group-location">Location: ' + $(select).prop('outerHTML') +  '</td>' );
+                .append( '<td class="group-location"><div class="left-half"><span>Location: ' + $(select).prop('outerHTML') + '</span></div><div class="right-half"><span title="' + judgeTitle.join('\n') + '">' + ' Judges: ' + judge + '</span><span title="' + stewardTitle.join('\n') + '"> Stewards: ' + steward + '</span></div></td>' );
             },
       },
   		columns: [
@@ -487,14 +549,14 @@ function drawMainTable() {
                 }
             },
             {
-                text: 'Order by Categoty Total',
+                text: 'Order by Category Total',
                 action: function ( e, dt, node, config ) {
                   dt.order([[5, 'desc'], [1, 'asc'], [3, 'asc']]).draw();
 
                 }
             },
             {
-                text: 'Order by Categoty Number',
+                text: 'Order by Category Number',
                 action: function ( e, dt, node, config ) {
                   dt.order([[1, 'asc'], [3, 'asc']]).draw();
 
@@ -534,14 +596,14 @@ function drawMainTable() {
 
           // todo: use this to group and find unassigned flights that have entries:
           // totalCategory[row.category] === undefined ? 0 : totalCategory[row.category];
-          var count = table.rows( function ( idx, data, node ) {
-            console.log(data.fk_judge_locations, data.count)
+          var cat = table.rows( function ( idx, data, node ) {
                           return data.fk_judge_locations === 0 && data.count > 0 ?
                               true : false;
                       } )
-                      .count();
+                      .data()
+                      .pluck('category');
 
-            $('#unassigned').html(count);
+            $('#unassigned').html(cat.filter(onlyUnique).length);
             $('#locations-table').DataTable().draw();
   });
 
@@ -567,6 +629,7 @@ function init_flights() {
 
 $(document).ready(function() {
   initMainEditor();
+  get_judge_categories()
   drawMainTable();
   drawLocationsTable();
 

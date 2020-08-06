@@ -1249,6 +1249,12 @@ class Website:
         return json.dumps(result, cls=DatetimeEncoder)
 
     @cherrypy.expose
+    def get_judge_categories(self, *args, **kwargs):
+
+        return json.dumps(Entrys().category_with_judges(), cls=DatetimeEncoder)
+
+
+    @cherrypy.expose
     def get_locations_table(self, *args, **kwargs):
 
         session_data = {}
@@ -1891,7 +1897,7 @@ class Website:
 
 
 
-        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2020, 8, 7) - datetime.date.today()).days, table, beers_per_judge)
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2020, 8, 7) - datetime.date.today()).days + 1, table, beers_per_judge)
 
         #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
         #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
