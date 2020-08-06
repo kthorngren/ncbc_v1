@@ -229,7 +229,7 @@ editor = new $.fn.dataTable.Editor(
 {
     table: "#main-table",
 	ajax: "dt_volunteers",
-	idSrc: 'pkid',
+  idSrc: 'pkid',
     fields: [
         {
             name: "pkid",
@@ -318,6 +318,7 @@ function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_volunteers',
 		dom: 'Blftirp',
+    scrollX: true,
 		rowId: 'pkid',
 	    select: {
     	    style: "single",

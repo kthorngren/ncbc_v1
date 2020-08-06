@@ -4,6 +4,7 @@ from Competitions import DATABASE
 from Competitions import Competitions
 from Sessions import Sessions
 from Email import Email
+from Tools import Tools
 
 
 """
@@ -542,6 +543,148 @@ def test_get_locations(pkid):
 
     print(result)
 
+
+def test_find_person():
+
+    vol = Volunteers().get_volunteers()
+
+    for v in vol:
+        fk_people = v['fk_people']
+        firstname = v['firstname']
+        lastname = v['lastname']
+        email = v['email']
+        phone = v['phone']
+        logger.info('')
+        logger.info(f"{firstname} {lastname} ({email}) has fk_people {fk_people}")
+        people = Tools().find('people', ['firstname', 'lastname', 'nickname', 'alias', 'email'], name=lastname, email=email)
+
+        if fk_people == 0 and len(people) == 0:
+            logger.info(f'  Adding person {firstname} {lastname}')
+
+            sql = f'insert into people (firstname, lastname, email, phone, updated) values ("{firstname}","{lastname}","{email}","{phone}",NOW())'
+            db.db_command(sql=sql)
+
+            if (db.row_count() > 0):
+                logger.info(f'  Inserted person {firstname} {lastname}')
+                # Get inserted person for next step - to obtain the pkid.
+                people = Tools().find('people', ['firstname', 'lastname', 'nickname', 'alias', 'email'], email=email)
+            else:
+                logger.error(f'  *** Unable to insert person {firstname} {lastname} ***')
+
+        num_people_options = len(people)
+        if fk_people == 0 and num_people_options == 0:
+            logger.error('  *** Unable to find match in people for volunteer ***')
+            continue
+
+        if fk_people == 0:
+
+            # If one people in list then check to see if its an exact match .
+            # if exact update the volunteer's fk_people id.
+            if num_people_options == 1:
+                person = people[0]
+
+                if (person['firstname'] == v['firstname'] or person['nickname'] == v['firstname'])  \
+                        and person['lastname'] == v['lastname'] and person['email'] == v['email']:
+                    logger.info(f'  Matched firstname, lastname and email, updating fk_people to {person["pkid"]}')
+                    sql = f'update volunteers set fk_people = {person["pkid"]}, updated = NOW() where pkid = "{v["pkid"]}"'
+                    db.db_command(sql=sql)
+
+                    if (db.row_count() > 0):
+                        logger.info(f'  Updated volunteer {firstname} {lastname} with pkid {v["pkid"]}')
+                    else:
+                        logger.error(f'  *** Unable to update volunteer {firstname} {lastname} with pkid {v["pkid"]} ***')
+
+            else:
+
+                pkid_list = []
+                for p in people:
+                    print(f'  {p}')
+                    pkid_list.append(int(p['pkid']))
+
+                pkid_choice = ''
+                try:
+                    pkid_choice = input('Please choose person using pkid or type "new" for new person: ')
+                    
+                except Exception as e:
+                    pkid_choice = ''
+
+                if pkid_choice == '':
+                    logger.info('  No selection made')
+                    continue
+
+                if isinstance(pkid_choice, str):
+
+                    if pkid_choice.lower() == 'new':
+                        logger.info(f'  Adding person {firstname} {lastname}')
+
+                        sql = f'insert into people (firstname, lastname, email, phone, updated) values ("{firstname}","{lastname}","{email}","{phone}",NOW())'
+                        db.db_command(sql=sql)
+
+                        if (db.row_count() > 0):
+                            logger.info(f'  Inserted person {firstname} {lastname}')
+                            # Get inserted person for next step - to obtain the pkid.
+                            people = Tools().find('people', ['firstname', 'lastname', 'nickname', 'alias', 'email'], email=email)
+                            person = people[0]
+                            sql = f'update volunteers set fk_people = {person["pkid"]}, updated = NOW() where pkid = "{v["pkid"]}"'
+                            db.db_command(sql=sql)
+
+                            if (db.row_count() > 0):
+                                logger.info(f'  Updated volunteer {firstname} {lastname} with fk_people {person["pkid"]}')
+                            else:
+                                logger.error(f'  *** Unable to update volunteer {firstname} {lastname} with pkid {v["pkid"]} ***')
+
+                        else:
+                            logger.error(f'  *** Unable to insert person {firstname} {lastname} ***')
+
+                else:
+                    pkid_choice = int(pkid_choice)
+
+                    if pkid_choice not in pkid_list:
+                        logger.error(f'  Invalid select made: {pkid_choice}')
+                        continue
+
+                    person = people[pkid_list.index(pkid_choice)]
+                    logger.info(f'  Selected {person["pkid"]} for {firstname}, {lastname} and {email}, updating fk_people to {person["pkid"]}')
+
+
+                    sql = f'update volunteers set fk_people = {person["pkid"]}, updated = NOW() where pkid = "{v["pkid"]}"'
+                    db.db_command(sql=sql)
+
+                    if (db.row_count() > 0):
+                        logger.info(f'  Updated volunteer {firstname} {lastname} with pkid {v["pkid"]}')
+                    else:
+                        logger.error(f'  *** Unable to update volunteer {firstname} {lastname} with pkid {v["pkid"]} ***')
+
+                    person_email = person['email']
+
+                    set_email = ''
+                    if person_email != email:
+
+                        choice = ''
+                        try:
+                            choice = input('Email addresses don\'t match, do you want to update (y/n) ')
+                        except Exception as e:
+                            choice = 'n'
+
+                        if choice == 'y':
+                            set_email = f'email = "{email}"'
+                        else:
+                            set_email = ''
+
+                    if set_email:
+                        sql = f'update people set {set_email}, updated = NOW() where pkid = "{person["pkid"]}"'
+                        db.db_command(sql=sql)
+                        print(sql)
+                        if (db.row_count() > 0):
+                            logger.info(f'  Updated person email for {firstname} {lastname} with new email {email}')
+                        else:
+                            logger.error(f'  *** Unable to update person email for {firstname} {lastname} with pkid {person["pkid"]} ***')
+
+                    
+                    
+
+                    
+
 if __name__ == '__main__':
 
 
@@ -554,5 +697,7 @@ if __name__ == '__main__':
 
     #email_changed()
 
-    test_get_locations(pkid=10)
+    #test_get_locations(pkid=10)
+
+    test_find_person()
     pass
