@@ -92,7 +92,10 @@
                   </div>
                   <div class="x_content">
                     <p class="text-muted font-13 m-b-30">Place instructions here</p>
-    			  </div>
+            </div>
+            <div>
+              <label><input id="unassigned" type="checkbox" class="filter"  /> Hide Unassigned</label>
+            </div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
@@ -106,10 +109,12 @@
                                 <th>Lastname</th>
                                 <th>Email</th>
                                 <th>Organization</th>
+                                <th></th>
                                 <th>Firstname</th>
                                 <th>Lastname</th>
-                                <th>1Email</th>
-                                <th>1Organization</th>
+                                <th>Email</th>
+                                <th>Organization</th>
+                                <th>Location</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -170,6 +175,27 @@
 <script>
 
 var table;
+// Todo: make this programatic
+var locations = {
+  105: 'Triangle',
+  106: 'Triangle',
+  107: 'Charlotte',
+  108: 'Charlotte',
+  109: 'Asheville',
+  110: 'Asheville'
+};
+
+
+$.fn.dataTable.ext.search.push(
+    function( settings, searchData, index, rowData, counter ) {
+console.log(rowData);
+      var checked = $('#unassigned').prop('checked');
+        if (checked && rowData.fk_brewers == 0) { 
+             return false;
+        }
+        return true;
+    }
+);
 
 function drawMainTable() {
 	table = $('#main-table').DataTable({
@@ -195,29 +221,50 @@ function drawMainTable() {
 	            orderable: false
     	    },
 	        {
-	        	data: 'firstname',
+            data: 'firstname',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'lastname',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'email',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'organization',
-	        },
+            className: 'excel'
+          },
+          { 
+            data: null,  // divider for excel SS.
+            defaultContent: '  ',
+            visible: false,
+            className: 'excel'
+          },
 	        {
 	        	data: 'vol_firstname',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'vol_lastname',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'vol_email',
+            className: 'excel'
 	        },
 	        {
 	        	data: 'vol_organization',
-	        },
+            className: 'excel'
+          },
+	        {
+            data: 'fk_sessions_list',
+            render: function (data, type, row) {
+              return locations[data.split(',')[0]];
+            },
+            className: 'excel'
+          },          
 	    ],
 	    rowCallback: function (row, data) {
 			if (data.fk_brewers == data.pkid) {
@@ -249,7 +296,16 @@ function drawMainTable() {
 
                 }
             },        
-            {extend: 'excel'}
+
+            {extend: 'excel',
+            messageTop: '<-- Brewery info          Volunteer info -->',
+                exportOptions: {
+                    columns: [ '.excel' ],
+                    modifier: {
+                        search: 'applied'
+                    }
+                }
+            },
     ] 
 	    
 
@@ -296,7 +352,10 @@ function assign_volunteers_to_brewers(data, assign=true) {
 
 $(document).ready(function() {
 	drawMainTable();
+  $('#unassigned').on('change', function() {
 
+    table.draw();
+  });
 
 });
 </script>
