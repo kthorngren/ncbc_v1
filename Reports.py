@@ -78,13 +78,13 @@ class Reports:
         l.add_page()
 
         labels = Entrys().get_inventory(all=True)
-        print(labels)
+        #print(labels)
         for i in sorted(labels, key=lambda r: r['entry_id']):
 
             for x in range(0, number):
                 entry_id = int(i['entry_id'])
-                category = '{}{}'.format(i['category'], i['sub_category'])
-                l.add_label(' {:03d}\n {}\n'.format(entry_id, category))
+                category = f"F {Style('NCBC2020').get_judging_category('{}{}'.format(i['category'], i['sub_category']))}"
+                l.add_label('  {:03d}\n {}\n'.format(entry_id, category))
 
         l.output('public/reports/bottle_labels.pdf')
 
@@ -862,7 +862,7 @@ class FlightSheet(FPDF, HTMLMixin):
 
 if __name__ == '__main__':
 
-    Reports().print_round_bottle_labels(4)
+    Reports().print_round_bottle_labels(6)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 

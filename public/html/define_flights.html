@@ -123,6 +123,7 @@
                                 <th>Sub Category</th>
                                 <th>Category</th>
                                 <th>Total Category</th>
+                                <th>Location</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -192,6 +193,14 @@ var styles_count = {};
 var dispalyRegistered = false;
 var totalCategory = {};
 var judgeCategories = {};
+
+// Todo: get this via ajax
+var locationsMap = {
+  0: '',
+  1: 'Triangle',
+  2: 'Charlotte',
+  3: 'Asheville'
+}
 
 function get_styles_count(full_inventory=true) {
 
@@ -517,7 +526,16 @@ function drawMainTable() {
             render: function(data, type, row) {
               return totalCategory[row.category] === undefined ? 0 : totalCategory[row.category];
             }
-          }
+          },
+          {
+            data: null,
+            visible:false,
+            orderable: false,
+            render: function(data, type, row) {
+              return locationsMap[row.fk_judge_locations];
+            }
+          },
+
 	    ],
 
       buttons: [
@@ -562,7 +580,10 @@ function drawMainTable() {
 
                 }
             },
-            {extend: 'excel'}
+            {
+              extend: 'excelHtml5',
+              //exportOptions: { orthogonal: 'export' }
+            }
         ],
         initComplete: function (settings, json) {
           var api = this.api();
