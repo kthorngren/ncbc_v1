@@ -141,7 +141,7 @@ class Sessions:
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )
-        #print(sql)
+        print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 

@@ -132,8 +132,8 @@ class Flights:
         result = Sessions().get_session_volunteers(session_number, judges=True)
         print('judges')
 
-        #for r in result:
-        #    print(r)
+        for r in result:
+            print(r)
 
         session_list = Sessions().get_daily_pkids(session_number)
         print('session list', session_list)

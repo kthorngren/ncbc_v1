@@ -577,7 +577,7 @@ def test_find_person():
             continue
 
         if fk_people == 0:
-
+            exact_match = False
             # If one people in list then check to see if its an exact match .
             # if exact update the volunteer's fk_people id.
             if num_people_options == 1:
@@ -585,6 +585,7 @@ def test_find_person():
 
                 if (person['firstname'] == v['firstname'] or person['nickname'] == v['firstname'])  \
                         and person['lastname'] == v['lastname'] and person['email'] == v['email']:
+                    exact_match = True
                     logger.info(f'  Matched firstname, lastname and email, updating fk_people to {person["pkid"]}')
                     sql = f'update volunteers set fk_people = {person["pkid"]}, updated = NOW() where pkid = "{v["pkid"]}"'
                     db.db_command(sql=sql)
@@ -594,11 +595,11 @@ def test_find_person():
                     else:
                         logger.error(f'  *** Unable to update volunteer {firstname} {lastname} with pkid {v["pkid"]} ***')
 
-            else:
+            if not exact_match:
 
                 pkid_list = []
                 for p in people:
-                    print(f'  {p}')
+                    #print(f'  {p}')
                     pkid_list.append(int(p['pkid']))
 
                 pkid_choice = ''
@@ -611,6 +612,11 @@ def test_find_person():
                 if pkid_choice == '':
                     logger.info('  No selection made')
                     continue
+
+                try:
+                    pkid_choice = int(pkid_choice)
+                except:
+                    pass
 
                 if isinstance(pkid_choice, str):
 
@@ -637,8 +643,8 @@ def test_find_person():
                             logger.error(f'  *** Unable to insert person {firstname} {lastname} ***')
 
                 else:
-                    pkid_choice = int(pkid_choice)
-
+                    
+                    
                     if pkid_choice not in pkid_list:
                         logger.error(f'  Invalid select made: {pkid_choice}')
                         continue
