@@ -374,6 +374,11 @@ function drawLocationsTable() {
             title: 'Total Entries'
           },
           {
+            data: 'categories',
+            defaultContent: '',
+            title: 'Number of Categories'
+          },
+          {
             data: 'flights',
             defaultContent: '',
             title: 'Number of Flights'
@@ -392,13 +397,51 @@ function drawLocationsTable() {
         //console.log(flights)
         
         data.entries = 0;
+        data.flights = 0;
+
+        categories = [];
+        flightCounts = {};
+        entries = 0;
+        numFlights = 0;
 
         for (i=0; i<flights.length; i++) {
-          data.entries += flights[i].count;
+
+          var catId = flights[i].category_id;
+          var count = flights[i].count;
+          console.log(count)
+          entries += count;
+
+          if ( !flightCounts.hasOwnProperty(catId) ) {
+            flightCounts[catId] = 0;
+          }
+          flightCounts[catId] += count;
+
+          if ( !categories.includes(catId) ) {
+            categories.push(catId);
+          }
+        }
+
+        for (const [key, value] of Object.entries(flightCounts)) {
+
+          if (value > 17) {
+            numFlights += value / 15;
+          } else {
+            numFlights += 1;  // 17 or less is 1 flight
+          }
+
+        }
+
+
+        data.entries = entries;
+        data.flights = Math.ceil(numFlights);
+
+        // covid-19 code, remove next year
+        if ( data.judge_pairs > 8 ) {
+          data.judge_pairs = 8
         }
 
         data.beers = data.entries / data.judge_pairs;
-        data.flights = flights.length;
+        data.categories = categories.length;
         api.row(row).data( data )
       }
 
