@@ -124,6 +124,7 @@
                                 <th>Category</th>
                                 <th>Total Category</th>
                                 <th>Location</th>
+                                <th>Vol w/ Entries Loc</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -204,6 +205,16 @@ var locationsMap = {
   1: 'Triangle',
   2: 'Charlotte',
   3: 'Asheville'
+}
+
+// Todo: make this programatic
+var locAbbr = {
+  105: 'rtp',
+  106: 'rtp',
+  107: 'clt',
+  108: 'clt',
+  109: 'avl',
+  110: 'avl'
 }
 
 function get_styles_count(full_inventory=true) {
@@ -505,15 +516,7 @@ function drawMainTable() {
               var steward = 0;
               var stewardTitle = [];
 
-              // Todo: make this programatic
-              var locAbbr = {
-                105: 'rtp',
-                106: 'rtp',
-                107: 'clt',
-                108: 'clt',
-                109: 'avl',
-                110: 'avl'
-              }
+
 
               if (judges) {
                 for (i=0; i<judges.length; i++) {
@@ -590,7 +593,37 @@ function drawMainTable() {
               return locationsMap[row.fk_judge_locations];
             }
           },
+          {
+            data: null,
+            visible:false,
+            orderable: false,
+            render: function(data, type, row) {
+              var category_id = row.category_id;
+              var judges = judgeCategories[category_id];
+              var locationPkid = [];
 
+              if (judges) {
+                for (i=0; i<judges.length; i++) {
+                  var volunteer = judges[i]
+                  var volLocation = volunteer['fk_sessions_list'].split(',')[0]; // Todo: choose a better way to get location
+
+                  if ( !locationPkid.includes(volLocation) && volunteer.judge == 1 ) {
+                    locationPkid.push(volLocation);
+                  }
+                }
+              }
+
+              var locations = [];
+
+              for (i=0; i<locationPkid.length; i++) {
+                if( !locations.includes(locAbbr[locationPkid[i]])) {
+                  locations.push(locAbbr[locationPkid[i]]);
+                }
+              }
+
+              return locations.join(',');
+            }
+          },
 	    ],
 
       buttons: [
