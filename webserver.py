@@ -1857,15 +1857,26 @@ class Website:
 
         count = 0
         num_judges = 0
-
+        num_covid_judges = 0
 
         for sessions in result['sessions']:
+
+
+            # Todo: remove the covid-19 code
+            covid_judge_count = sessions['judges']
+
+            if covid_judge_count > 8:
+                covid_judge_count = 8
+            if covid_judge_count % 2 == 1:
+                covid_judge_count -= 1
+
 
             judge_count = sessions['judges']
             if judge_count % 2 == 1:
                 judge_count -= 1
 
             num_judges += judge_count
+            num_covid_judges += covid_judge_count
 
             table += '<tr>' \
                      '<td>{}</td>' \
@@ -1898,7 +1909,8 @@ class Website:
 
         num_entries = entries.get('entries', 0)
 
-        beers_per_judge = round(num_entries / (num_judges / 2))
+        #beers_per_judge = round(num_entries / (num_judges / 2))
+        beers_per_judge = f'{round(num_entries / (num_judges / 2))} - covid-19 limit (8): {round(num_entries / (num_covid_judges / 2))}'
 
 
 
