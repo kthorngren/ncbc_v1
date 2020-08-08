@@ -183,18 +183,18 @@ class Competitions:
         uid = gen_uid()
         sessions = db.db_command(sql=sql, uid=uid).all(uid)
 
-        sql = 'select fk_sessions_list, judge from volunteers where fk_competitions = "{}"'.format(self.get_active_competition())
+        sql = 'select fk_sessions_list, judge from volunteers where active="1" and fk_competitions = "{}"'.format(self.get_active_competition())
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
-        print('reslt', result)
+        #print('reslt', result)
         sessions_list = {0: [], 1 : [], 2: []}
         for r in result:
-            print(r)
-            print(r['fk_sessions_list'].split(','))
+            #print(r)
+            #print(r['fk_sessions_list'].split(','))
             sessions_list[r['judge']] += [int(x) for x in r['fk_sessions_list'].split(',')]
 
-        print('sessions_list', sessions_list)
+        #print('sessions_list', sessions_list)
 
         num_judges = 0
 
@@ -206,9 +206,9 @@ class Competitions:
             if r['judging'] == 1:
                 session_type.append('Judging')
 
-            print(r['pkid'], sessions_list[1].count(r['pkid']))
-            print(sessions_list[1])
-            num_judges += sessions_list[1].count(r['pkid'])
+            #print(r['pkid'], sessions_list[1].count(r['pkid']))
+            #print(sessions_list[1])
+
 
             session_judges = self.get_session_volunteers(r['pkid'], judges=True)
             session_stewards = self.get_session_volunteers(r['pkid'], stewards=True)
@@ -225,7 +225,20 @@ class Competitions:
                 'session_other': session_other
             })
 
+        judge_sessions = sessions_list[1]
+
+        set_sessions = set(judge_sessions)
+
+        for s in set_sessions:
+            judge_count = judge_sessions.count(s)
+            print('*** ', judge_count)
+            if judge_count % 2 == 1:
+                judge_count -= 1
+            num_judges += judge_count
+
+
         status['entries']['average'] = round(entries / (num_judges / 2))
+        print(status['entries']['average'] )
 
         #for s in status['sessions']:
         #    print(s)
@@ -251,14 +264,14 @@ class Competitions:
 
 if __name__ == '__main__':
 
-    #c = Competitions()
+    c = Competitions()
 
     #name = c.get_active_competition()
 
-    #result = c.get_comp_status()
+    result = c.get_comp_status()
 
     #print(result)
 
-    Competitions().validate_ncbc_data(entries_report_pkid=1)
+    #Competitions().validate_ncbc_data(entries_report_pkid=1)
 
     pass

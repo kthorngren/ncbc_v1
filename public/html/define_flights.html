@@ -194,6 +194,10 @@ var dispalyRegistered = false;
 var totalCategory = {};
 var judgeCategories = {};
 
+// covid-19 testing - remove next year
+var useEight = false;
+var allowGreaterEight = false;
+
 // Todo: get this via ajax
 var locationsMap = {
   0: '',
@@ -436,9 +440,17 @@ function drawLocationsTable() {
         data.flights = Math.ceil(numFlights);
 
         // covid-19 code, remove next year
-        if ( data.judge_pairs > 8 ) {
-          data.judge_pairs = 8
+        if ( !allowGreaterEight && data.judge_pairs > 8) {
+          data.judge_pairs = 8;
+        } 
+        
+        if ( useEight ) { 
+          if ( (allowGreaterEight && data.judge_pairs <= 8) || !allowGreaterEight ) {
+            data.judge_pairs = 8;
+          }
         }
+        // end c-19 code
+
 
         data.beers = data.entries / data.judge_pairs;
         data.categories = categories.length;
