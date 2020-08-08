@@ -196,7 +196,7 @@ var judgeCategories = {};
 
 // covid-19 testing - remove next year
 var useEight = false;
-var allowGreaterEight = false;
+var allowGreaterEight = true;
 
 // Todo: get this via ajax
 var locationsMap = {
@@ -370,7 +370,7 @@ function drawLocationsTable() {
           {
             data: 'beers',
             defaultContent: '',
-            title: 'Beers/Judge Pair'
+            title: 'Beers/Judge Pair for day'
           },
           {
             data: 'entries',

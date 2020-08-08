@@ -181,7 +181,7 @@ class Website:
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
-            'average': 'Number of Beers Per Judge',
+            'average': 'Number of Beers Per Judge (day)',
             'brewers': 'Brewers',
             'judged': 'Entries Judged',
             'no_desc': 'Specialty Entries W/O Description',
@@ -1861,7 +1861,12 @@ class Website:
 
         for sessions in result['sessions']:
 
-            num_judges += sessions['judges']
+            judge_count = sessions['judges']
+            if judge_count % 2 == 1:
+                judge_count -= 1
+
+            num_judges += judge_count
+
             table += '<tr>' \
                      '<td>{}</td>' \
                      '<td>{}</td>' \

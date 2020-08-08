@@ -231,14 +231,14 @@ class Competitions:
 
         for s in set_sessions:
             judge_count = judge_sessions.count(s)
-            print('*** ', judge_count)
+            #print('*** ', judge_count)
             if judge_count % 2 == 1:
                 judge_count -= 1
             num_judges += judge_count
 
 
         status['entries']['average'] = round(entries / (num_judges / 2))
-        print(status['entries']['average'] )
+        #print(status['entries']['average'] )
 
         #for s in status['sessions']:
         #    print(s)
