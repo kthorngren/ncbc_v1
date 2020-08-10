@@ -629,7 +629,8 @@ class Ncbc:
                     r = s.get(self.url)
 
                     if r.status_code == 200:
-                        entries = r.content.replace(b'\x00', b'').decode('ascii','ignore').splitlines()
+                        # todo: find a way to handle commas within the fields - .replace(b'Make Art, Not Friends', b'Make Art\, Not Friends')
+                        entries = r.content.replace(b'\x00', b'').replace(b'Make Art, Not Friends', b'Make Art\, Not Friends').decode('ascii','ignore').splitlines()
                         logger.info('Retrieved {} CSV file with {} lines including heading'.format(self.name, len(entries)))
 
                         header = True
@@ -637,13 +638,14 @@ class Ncbc:
                         #print(self.header)
                         #self.header = [x.decode('utf-8') for x in self.header]
 
-                        for e in reader(entries, escapechar='\\', doublequote=False):
+                        for e in reader(entries, escapechar='\\', doublequote=False, quotechar='"'):
                             if header:
                                 self.header = [x.replace('""', '"').replace('"', r'\"') for x in e]
                                 #print(self.header)
                                 header = False
                             else:
-                                self.entries.append([x.replace('""', '"').replace('"', r'\"').strip() for x in e])
+                                self.entries.append([x.replace('""', '"').replace('""', '"').replace('"', r'\"').strip() for x in e])
+                                #self.entries.append([re.sub(r'(.)\1{2,}', r'\1', x).replace('"', r'\"').strip() for x in e])
                                 #print([x.strip('\"').strip() for x in e])
                             pass
                     else:
@@ -911,7 +913,10 @@ class Ncbc:
         temp[self.entry_fields['Entry Notes']] = desc
 
 
-        values = [escape_sql(temp[v].strip()) for k, v in self.entry_fields.items()]
+        values = [escape_sql(temp[v].strip()).replace(r'\\"', r'\"') for k, v in self.entry_fields.items()]
+
+        for v in values:
+            print(v)
 
         entry_id = self.generate_entry_id()
 
@@ -919,7 +924,6 @@ class Ncbc:
 
         sql = 'insert into entries ({}) values ("{}", NOW(), "0", "0", "{}", "{}", "{}", "{}")'.format(','.join(db_fields), '","'.join(values), fk_people, Competitions().get_active_competition(), entry_id, error)
         db.db_command(sql=sql)
-
 
         #todo: get next entry id
         #todo: get brewer pkid
@@ -987,6 +991,7 @@ class Ncbc:
             if not result:  # Record not find, insert it
                 count += 1
                 #self.get_person()
+
                 logger.info('Inserting raw_data for attendee_id: {}'.format(attendee_id))
 
                 #removed finding brewer with firstname and last name
@@ -2080,7 +2085,7 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    process_new_entries(pkid=6)
+    #process_new_entries(pkid=6)
 
     process_new_volunteers(pkid=7)
 

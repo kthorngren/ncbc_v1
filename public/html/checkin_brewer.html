@@ -268,7 +268,8 @@ editor = new $.fn.dataTable.Editor(
 function drawMainTable() {
 	table = $('#main-table').DataTable({
 		ajax: 'dt_checkin_brewer',
-		dom: 'lftirp',
+    dom: 'Blftirp',
+    buttons: ['excel'],
 		lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
 		rowId: 'pkid',
 		scrollX: true,

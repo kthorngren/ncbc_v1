@@ -124,7 +124,7 @@
                                 <th>Category</th>
                                 <th>Total Category</th>
                                 <th>Location</th>
-                                <th>Vol w/ Entries Loc</th>
+                                <th>Judges w/ Entries</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -366,7 +366,8 @@ function save_judging_location(category, fk_judge_locations) {
 
 function drawLocationsTable() {
   $('#locations-table').DataTable({
-		ajax: 'get_locations_table',
+    ajax: 'get_locations_table',
+    dom: 'Blftirp',
 		paging: false,
 
   		columns: [
@@ -377,6 +378,11 @@ function drawLocationsTable() {
           {
             data: 'judge_pairs',
             title: '# Judge Pairs'
+          },
+          {
+            data: 'judge_tables',
+            defaultContent: '',
+            title: '# Judging Tables (4 Sessions)'
           },
           {
             data: 'beers',
@@ -396,9 +402,10 @@ function drawLocationsTable() {
           {
             data: 'flights',
             defaultContent: '',
-            title: 'Number of Flights'
+            title: 'Number of Flights/Tables'
           },
       ],
+      buttons: ['excel'],
       
       rowCallback: function (row, data) {
         var api = this.api();
@@ -423,7 +430,7 @@ function drawLocationsTable() {
 
           var catId = flights[i].category_id;
           var count = flights[i].count;
-          console.log(count)
+          //console.log(count)
           entries += count;
 
           if ( !flightCounts.hasOwnProperty(catId) ) {
@@ -438,14 +445,16 @@ function drawLocationsTable() {
 
         for (const [key, value] of Object.entries(flightCounts)) {
 
+          console.log(key, value)
+
           if (value > 17) {
-            numFlights += value / 15;
+            numFlights += Math.ceil(value / 15);  // Round up the # of flights
           } else {
             numFlights += 1;  // 17 or less is 1 flight
           }
 
         }
-
+        console.log(numFlights)
 
         data.entries = entries;
         data.flights = Math.ceil(numFlights);
@@ -462,8 +471,8 @@ function drawLocationsTable() {
         }
         // end c-19 code
 
-
-        data.beers = data.entries / data.judge_pairs;
+        data.judge_tables = data.judge_pairs * 4;
+        data.beers = (data.entries / data.judge_pairs).toFixed(1);
         data.categories = categories.length;
         api.row(row).data( data )
       }
@@ -630,6 +639,7 @@ function drawMainTable() {
 
             {
                 text: 'Initialize Flights',
+                enabled: false,  // Todo: re-aneble next year, dont want to accidentally click it now
                 action: function ( e, dt, node, config ) {
 
     				        init_flights(true);
