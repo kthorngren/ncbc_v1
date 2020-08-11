@@ -80,7 +80,7 @@ class Flights:
             if r['other_cert']:
                 r['rank'] += ranks['Other'][r['other_cert']]
 
-            r['rank'] += r['ncbc_points']
+            r['rank'] += r['ncbc_points'] if r['ncbc_points'] else 0
 
         #get reverse ordered list of judges by the ranking
         judges = [x for x in sorted(result, key=lambda k: k['rank'], reverse=True)]

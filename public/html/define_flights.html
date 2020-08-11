@@ -194,10 +194,10 @@ var styles_count = {};
 var dispalyRegistered = false;
 var totalCategory = {};
 var judgeCategories = {};
-
+  
 // covid-19 testing - remove next year
 var useEight = false;
-var allowGreaterEight = false;
+var allowGreaterEight = true;
 
 // Todo: get this via ajax
 var locationsMap = {
@@ -639,7 +639,7 @@ function drawMainTable() {
 
             {
                 text: 'Initialize Flights',
-                enabled: false,  // Todo: re-aneble next year, dont want to accidentally click it now
+                //enabled: false,  // Todo: re-aneble next year, dont want to accidentally click it now
                 action: function ( e, dt, node, config ) {
 
     				        init_flights(true);

@@ -827,9 +827,55 @@ function save_flights() {
     });
 }
 
-
-
 function get_styles_count(full_inventory=true) {
+
+  $.ajax({
+      url: "/get_styles_count",
+      type: 'post',
+      data: {data: full_inventory},
+      success: function(json) {
+          var styles_count = JSON.parse(json);
+
+          styles_count = styles_count.data;
+          totalCategory = {};
+
+          table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+                var data = this.data();
+              var count = 0;
+              var catSubcat = data.sub_category_id.match(/[a-z]+|[^a-z]+/gi);
+              var category = data.category;
+
+              if (catSubcat.length === 2) {
+                var category_id = catSubcat[0];
+                var sub_category_id = catSubcat[1];
+                if (styles_count.hasOwnProperty(category_id)) {
+                  if (styles_count[category_id].hasOwnProperty(sub_category_id)) {
+                    count = styles_count[category_id][sub_category_id]
+                  }
+                }
+                data.count = count;
+
+                // Track total entries for the category
+                if ( !totalCategory.hasOwnProperty(category) ) {
+                  totalCategory[category] = 0;
+                }
+                totalCategory[category] += count;
+              }
+
+          });
+          table.rows().invalidate().draw(false);
+			    sessions_table.draw(false);
+
+      },
+
+      error: function (jqXHR, exception) {
+        //set_status('Error collecting version info: ' + get_xhr_error(jqXHR, exception));
+      },
+  });
+}
+
+
+function get_styles_count_old(full_inventory=true) {
 
 	$.ajax({
       	url: "/get_styles_count",
