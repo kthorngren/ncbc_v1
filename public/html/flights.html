@@ -117,6 +117,7 @@ tr.strikeout {
                       <div class="x_content panel-body">
 
                         <div class="col-md-12 hidden-small">
+                          <div id="locations"></div>
                           <table id="main-table" class="table table-hover table-bordered table-striped" cellpadding="0" width="100%">
                             <thead>
                               <tr>
@@ -313,6 +314,84 @@ var hj_judge_dislikes = [];
 var sj_judge_likes = [];
 var sj_judge_entries = [];
 var sj_judge_dislikes = [];
+
+// Todo: get this via ajax
+var locationsMap = {
+  0: '',
+  1: 'Triangle',
+  2: 'Charlotte',
+  3: 'Asheville'
+}
+
+// Todo: make this programatic
+var locAbbr = {
+  105: 'rtp',
+  106: 'rtp',
+  107: 'clt',
+  108: 'clt',
+  109: 'avl',
+  110: 'avl'
+}
+
+var locMapping = {
+  105: 1,
+  106: 1,
+  107: 2,
+  108: 2,
+  109: 3,
+  110: 3
+}
+
+
+$.fn.dataTable.ext.search.push(
+    function( settings, searchData, index, rowData, counter ) {
+
+      if ( settings.nTable.id !== 'main-table' ) {
+        return true;
+      }
+
+      var val = $('#filter-location').val();
+
+      if (val == 0) {
+        return true;
+      }
+
+      return rowData.fk_judge_locations == val;
+    }
+);
+
+$.fn.dataTable.ext.search.push(
+    function( settings, searchData, index, rowData, counter ) {
+
+      if ( settings.nTable.id !== 'sessions' ) {
+        return true;
+      }
+
+      var val = $('#filter-location').val();
+
+      if (val == 0) {
+        return true;
+      }
+      return locMapping[rowData.session_pkid] == val;
+    }
+);
+
+function buildSelect() {
+  var select = $('<select id="filter-location"><option value="0"></option></select>')
+
+  // Todo:  Get this from the JSON response
+  var locations = [{"name": "Triangle", "pkid": 1}, 
+                    {"name": "Charlotte", "pkid": 2}, 
+                    {"name": "Asheville", "pkid": 3}
+                  ];
+
+  for (i=0; i<locations.length; i++) {
+    var location = locations[i];
+    select.append( '<option value="' + location.pkid + '">'+ location.name + '</option>' );
+  }
+
+  $(select).appendTo($('#locations'));
+}
 
 function clear_tables() {
 
@@ -947,7 +1026,8 @@ $(document).ready(function() {
 	drawMainTable();
 
 	drawSessionsTable();
-	drawFlightSheetTable();
+  drawFlightSheetTable();
+  buildSelect();
 
 	sessions_table.on('select', function ( e, dt, type, indexes ) {
 		var data = sessions_table.row( { selected: true } ).data();
@@ -1302,6 +1382,11 @@ $('#main-table').on('click', '.group', function() {
 	//generate_flights(parseInt(cat_number));
 
 
+});
+
+$('#filter-location').on('change', function () {
+  table.draw();
+  sessions_table.draw();  
 });
 
 });

@@ -1381,7 +1381,7 @@ class Website:
     def dt_tables(self, *args, **kwargs):
 
         sql = 'select tables.pkid, tables.name, tables.head_judge, tables.second_judge, ' \
-              's.pkid as session_pikd, s.name as session_name from tables ' \
+              's.pkid as session_pkid, s.name as session_name from tables ' \
               'inner join sessions as s on s.pkid = fk_sessions ' \
               'where tables.fk_competitions = "{}"'.format(Competitions().get_active_competition())
 
