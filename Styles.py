@@ -319,7 +319,7 @@ if __name__ == '__main__':
     print(Style('NCBC2020').get_judging_category('35A'))
     print(Style('NCBC2020').get_judging_category_name('21A'))
 
-    print(Style().get_styles('NCBC2020'))
+    #print(Style().get_styles('NCBC2020'))
 
     #result = Style('BJCP2015').get_styles_for_group(-1, style_type=['beer', 1], req_spec=True)
 

@@ -261,7 +261,7 @@ class Entrys:
 
     def get_brewer_categories(self, fk_brewers):
 
-        sql = 'SELECT distinct category FROM entries where fk_brewers = "{}" order by CAST(category AS UNSIGNED)'.format(fk_brewers)
+        sql = 'SELECT category, sub_category FROM entries where fk_brewers = "{}" order by CAST(category AS UNSIGNED)'.format(fk_brewers)
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
@@ -269,7 +269,27 @@ class Entrys:
         category_list = []
 
         for r in result:
-            category_list.append(r['category'])
+            style = f"{r['category']}{r['sub_category']}"
+            
+            category_list.append(Style('NCBC2020').get_judging_category(style))
+
+            print(Style('NCBC2020').get_judging_category(style), style)
+
+        return sorted(list(set(category_list)))
+
+    def get_brewer_sub_categories(self, fk_brewers):
+
+        sql = 'SELECT category, sub_category FROM entries where fk_brewers = "{}" order by CAST(category AS UNSIGNED)'.format(fk_brewers)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        category_list = []
+
+        for r in result:
+            style = f"{r['category']}{r['sub_category']}"
+            
+            category_list.append(style)
 
         return category_list
 
@@ -363,7 +383,10 @@ class Entrys:
             category_list = self.get_brewer_categories(fk_brewers)
 
             for cat in category_list:
-                categories[cat].append(dict(
+
+                # todo: fix this going for, don't change to int in casae category has letters
+                int_cat = int(cat)
+                categories[int_cat].append(dict(
                     firstname=r['firstname'],
                     lastname=r['lastname'],
                     judge=r['judge'],
@@ -452,12 +475,19 @@ if __name__ == '__main__':
 
     #test_get_topN()
 
+    """
     result = Entrys().category_with_judges()
     for r in result:
         print(r)
 
         for b in result[r]:
             print('  ', b)
+    """
 
+    result = Entrys().get_brewer_categories(46)
+    print(result)
+
+    result = Entrys().get_brewer_sub_categories(46)
+    print(result)
 
     pass

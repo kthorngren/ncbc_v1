@@ -515,7 +515,9 @@ function drawMainTable() {
 
 	    	//$(row).data(data);
 
-        var categoryId = data.category_id.toString();
+        // todo: make this consitent and not use integer
+        //var categoryId = data.category_id.toString();
+        var categoryId = ("00" + data.category_id).substr(-2,2);
         var color = '';
         var title = [];
 
@@ -1074,16 +1076,19 @@ $(document).ready(function() {
 	table.on( 'select', function ( e, dt, type, indexes ) {
     	var sessions = sessions_table.row( { selected: true } ).data();
 
-    	var data = table.row( { selected: true } ).data();
-      var categoryId = data.category_id.toString();
-
+      var data = table.row( { selected: true } ).data();
+      
+      // todo: make the data.category_id and format from DB the same
+      //var categoryId = data.category_id.toString();
+      var categoryId = ("00" + data.category_id).substr(-2,2);
+      //console.log(hj_judge_entries.indexOf(categoryId), hj_judge_entries)
     	if (sessions) {
     		// Make sure judge does not have entries in category and
     		// make sure table is not already in list - skip if so
     		if (hj_judge_entries.indexOf(categoryId) === -1 &&
     				hj_judge_dislikes.indexOf(categoryId) === -1 &&
             sj_judge_entries.indexOf(categoryId) === -1 &&
-        		sj_judge_dislikes.indexOf(categoryId) === -1 &&
+        		sj_judge_dislikes.indexOf(categoryId) === -1 && 
             data.tables.indexOf(sessions.name) == -1 &&
     				data.judged != 1
     				) {
@@ -1216,10 +1221,12 @@ $('#main-table').on('click', '.group', function() {
   if (selected_table) {
     var table_name = selected_table.name;
     console.log('tablename', selected_table.name)
+    //console.log(selected_table)
 
   	var row = $(this).closest('tr');
     //console.log(row.text().split(' '))
-  	var flightId = row.text().split(' ')[2];
+    var flightId = row.text().split(' ')[2];
+    console.log('flight id', flightId);
 
     flightCategories = [];
 
@@ -1258,12 +1265,14 @@ $('#main-table').on('click', '.group', function() {
     //console.log(flightCategories);
 
     var assigned_tables = data[0].tables;
-    //console.log(assigned_tables);
+    //console.log('assigned tables', assigned_tables);
     var judged = data[0].judged
 
     var selectedIndex = assigned_tables.indexOf(table_name);
 
     if (selectedIndex > -1) {
+
+      // Remove table from category
       //console.log('selectedIndex > -1')
       table.rows(indexes).every( function ( rowIdx, tableLoop, rowLoop ) {
           var d = this.data();
@@ -1305,12 +1314,15 @@ $('#main-table').on('click', '.group', function() {
 
       // Draw once all updates are done
     } else {
+      // Add table to category
       //console.log('data.judged', judged)
       catFound = false;
 
       // Loop through flight categories to see if judge is not to be assigned.
       for (i=0; i < flightCategories.length; i++) {
-        var catId = flightCategories[i].toString();
+        // todo: make consistent category ID
+        //var catId = flightCategories[i].toString();
+        var catId = ("00" + flightCategories[i]).substr(-2,2);
 
         if (hj_judge_entries.indexOf(catId) > -1 |
             hj_judge_dislikes.indexOf(catId) > -1 ||
