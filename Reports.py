@@ -84,7 +84,7 @@ class Reports:
             for x in range(0, number):
                 entry_id = int(i['entry_id'])
                 category = f"F {Style('NCBC2020').get_judging_category('{}{}'.format(i['category'], i['sub_category']))}"
-                l.add_label('  {:03d}\n {}\n'.format(entry_id, category))
+                l.add_label(' {:03d}\n{}\n'.format(entry_id, category))
 
         l.output('public/reports/bottle_labels.pdf')
 

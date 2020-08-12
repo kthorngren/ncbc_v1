@@ -2085,7 +2085,7 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    #process_new_entries(pkid=6)
+    process_new_entries(pkid=6)
 
     process_new_volunteers(pkid=7)
 
