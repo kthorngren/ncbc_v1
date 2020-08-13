@@ -1586,11 +1586,12 @@ class Website:
         self.db.db_command(sql=sql)
 
         for flight in flights:
+            print(flight)
             flight['tables'] = escape_sql(json.dumps(flight['tables']))
             sql = 'insert into flights (number, category, style, category_id, sub_category_id, ' \
-                  'tables, fk_competitions) ' \
+                  'tables, fk_competitions, sub_session, fk_judge_locations) ' \
                   'values ("{d[number]}", "{d[category]}", "{d[style]}", "{d[category_id]}", ' \
-                  '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}")'.format(d=flight,
+                  '"{d[sub_category_id]}", "{d[tables]}", "{fk_competitions}", "{d[sub_session]}", "{d[fk_judge_locations]}")'.format(d=flight,
                                                                  fk_competitions=Competitions().get_active_competition(),
                                                                  )
             self.db.db_command(sql=sql)

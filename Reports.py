@@ -158,6 +158,54 @@ class Reports:
 
         l.output('public/reports/bos_cup_labels.pdf')
 
+    def flight_avery_cup_labels(self, entries, flight, filename):
+
+        LABELS_PER_LINE = 9
+        LINES_PER_PAGE = 12
+        PADDING = 5
+        l = PDFLabel('Avery-5160', font = 'Courier', font_size=13)
+        l.add_page()
+        labels = Entrys().get_inventory(inventory=False)
+        label_count = 0
+        category = ''
+        print(entries)
+
+        count = 0
+
+        if entries:
+            l.add_label("===Flt===")
+            l.add_label("==={:03d}===".format(int(flight)))
+            label_count += 2
+
+            while label_count % LABELS_PER_LINE != 0:
+                l.add_label(' ')
+                label_count += 1
+            # print('add space', label_count)
+
+            for i in sorted(entries, key=lambda r: int(r['category'])):
+                print(i)
+                #if category != i['category']:
+                category = i['category']
+                #print('cat change')
+                #print(f"print cat{i['category']}", label_count)
+
+
+                entry_id = int(i['entry_id'])
+                l.add_label('  {:03d}'.format(entry_id))
+                l.add_label('  {:03d}'.format(entry_id))
+                #l.add_label('  {:03d}'.format(entry_id))
+                #l.add_label('  {:03d}'.format(entry_id))
+                label_count += 2
+
+                #if count % 2 == 0:
+                #    l.add_label(' ')
+                #    label_count += 1
+
+                count += 1
+                #print('print entry id', i['entry_id'], label_count)
+            l.output(f'public/flights/{filename}.pdf')
+
+
 
     def flight_round_cup_labels(self, entries, flight, filename):
 
@@ -469,6 +517,8 @@ class Reports:
 
         # todo: plan is to return filenames to web page for links
         #return filenames
+
+
 
 
 
@@ -862,8 +912,8 @@ class FlightSheet(FPDF, HTMLMixin):
 
 if __name__ == '__main__':
 
-    Reports().print_round_bottle_labels(6)
-    #Reports().print_round_cup_labels()
+    #Reports().print_round_bottle_labels(6)
+    Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
 
