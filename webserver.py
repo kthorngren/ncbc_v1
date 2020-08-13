@@ -617,6 +617,10 @@ class Website:
               'inner join brewers as brewer on brewer.pkid = fk_brewers '
 
         result = self.dt.parse_request(sql=sql, table='entries', debug=True, *args, **kwargs)
+
+        for r in result['data']:
+            print(r)
+            r['flight'] = Style('NCBC2020').get_judging_category(f"{r['category']}{r['sub_category']}")
         return json.dumps(result, cls=DatetimeEncoder)
 
 

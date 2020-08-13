@@ -100,14 +100,15 @@
                                 <th colspan="3">Entry</th>
 
 
-                                <th colspan="8" style="text-align:center">Editable Fields</th>
-                                <th colspan="3" style="text-align:center">Use Receive Entries Page</th>
+                                <th colspan="9" style="text-align:center">Editable Fields</th>
+                                <th colspan="5" style="text-align:center">Use Receive Entries Page</th>
                               </tr>
                               <tr>
                                 <th>pkid</th>
                                 <th></th>
                                 <th>ID</th>
                                 <th>Brewer</th>
+                                <th>Flight</th>
                                 <th>Category</th>
                                 <th>Sub Category</th>
                                 <th>Beer Name</th>
@@ -118,6 +119,8 @@
                                 <th>Checked In</th>
                                 <th>Location 0</th>
                                 <th>Location 1</th>
+                                <th>One Bottle</th>
+                                <th>Comments</th>
                               </tr>
 	                        </thead>
                           </table>
@@ -313,16 +316,24 @@ function drawMainTable() {
 	            orderable: false
     	    },
           {
-	        	data: 'entry_id',
+            data: 'entry_id',
+            className: 'export'
 	        },
           {
 	        	data: 'brewer.organization',
+            className: 'export'
+	        },
+	        {
+	        	data: 'flight',
+            className: 'export'
 	        },
 	        {
 	        	data: 'category',
+            className: 'export'
 	        },
 	        {
 	        	data: 'sub_category',
+            className: 'export'
 	        },
 	        {
 	        	data: 'name',
@@ -361,10 +372,13 @@ function drawMainTable() {
 	        		{
 	        			if ( type === 'display' ) {
 	        				return '<input type="checkbox" class="inventory-enabled">';
-	        			}
+                }
+                if ( type === 'export') {
+                  return data != 0 ? data : '';
+                }
 	        			return data;
 	        		},
-            	className: "dt-body-center"
+              className: 'export'
 	        },
 	        {
 	        	data: 'location_0',
@@ -372,7 +386,24 @@ function drawMainTable() {
 	        {
 	        	data: 'location_1',
 	        },
-	    ],
+	        {
+            data: 'one_bottle',
+            className: 'export',
+            visible: false,
+            render: function ( data, type, row ) {
+
+                if ( type === 'export') {
+                  return data != 0 ? data : '';
+                }
+	        			return data;
+	        		},
+            	className: "dt-body-center"
+          },
+	        {
+	        	data: 'comments',
+            className: 'export'
+          },
+  	    ],
 
 	    rowCallback: function ( row, data )
 	    	{
@@ -406,7 +437,8 @@ function drawMainTable() {
                         .set( values );
                 }
             },
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+        { extend: 'excel', exportOptions: { orthogonal: 'export', columns: ['.export', 15] } }
     ],
     drawCallback: function () {
     	get_specialty_wo_desc();

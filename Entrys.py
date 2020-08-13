@@ -368,7 +368,7 @@ class Entrys:
 
     def category_with_judges(self):
 
-        sql = 'select * from volunteers where fk_brewers != "0"'
+        sql = 'select * from volunteers where fk_brewers != "0" and active = "1"'
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
