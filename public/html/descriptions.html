@@ -321,7 +321,8 @@ function drawMainTable() {
                         .set( values );
                 }
             },        
-        { extend: "remove", editor: editor }
+        { extend: "remove", editor: editor },
+        {extend: 'excel'}
     ],
     drawCallback: function () {
     	get_specialty_wo_desc();
