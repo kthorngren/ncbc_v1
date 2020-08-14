@@ -141,7 +141,8 @@ class Sessions:
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )
-        print(sql)
+        sql += ' order by lastname ASC, firstname ASc'
+        #print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -210,6 +211,23 @@ def get_session_mapping():
 
     return result
 
+def build_session_checkin_csv():
+
+    result = Sessions().get_sessions(judging=True)
+
+    for r in result:
+        people = Sessions().get_session_volunteers(r['pkid'])
+
+        if people:
+            print(f'\nVolunteer Checkin for {r["name"]}')
+            print('Initials, Name')
+            
+            for p in people:
+                print(f',{p["firstname"]} {p["lastname"]}')
+
+        
+
+
 if __name__ == '__main__':
 
     #result = Sessions().get_sessions(judging=True)
@@ -221,8 +239,13 @@ if __name__ == '__main__':
 
     #    print(session)
 
+    """
     result = Sessions().get_session_volunteers(98, judges=True)
     for r in result:
         print(r)
+
+    """
+
+    build_session_checkin_csv()
 
     pass

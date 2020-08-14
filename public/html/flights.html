@@ -431,7 +431,7 @@ function drawMainTable() {
       order: [[0, 'asc', 3, 'asc']],
 		columns: [
 	        {
-	        	data: 'number',
+            data: 'number',
 	        },
 	        {
 	        	data: 'category',
@@ -462,13 +462,30 @@ function drawMainTable() {
 	        				table_num = '';
 	        			}
 	        			return  table_num;
-	        		}
+              }
+              if (type === 'export') {
+                return data.join(' ');
+              }
 	        		return data;
 	        	}
 	        },
 	        {
 	        	data: 'cat_total',
 	        	defaultContent: 0,
+	        	visible: false
+          },
+	        {
+	        	data: 'sub_session',
+            defaultContent: 0,
+            render: function (data, type, row) {
+              if (data == 1) {
+                return 'AM';
+              }
+              if (data == 2) {
+                return 'PM';
+              }
+              return '';
+            },
 	        	visible: false
 	        },
 	    ],
@@ -627,8 +644,7 @@ function drawMainTable() {
                 text: 'Use Registered Count',
                 action: function ( e, dt, node, config ) {
 
-    				get_styles_count(true);
-
+                  get_styles_count(true);
 
                 }
             },
@@ -636,7 +652,7 @@ function drawMainTable() {
                 text: 'Use Inventory Count',
                 action: function ( e, dt, node, config ) {
 
-					get_styles_count(false);
+                  get_styles_count(false);
 
                 }
             },
@@ -673,7 +689,10 @@ function drawMainTable() {
 
                 }
             },
-            {extend: 'excel'}
+            {
+              extend: 'excel',
+              exportOptions: { orthogonal: 'export' }
+            }
     ]
 
 
@@ -781,9 +800,9 @@ function drawSessionsTable() {
 	    },
 	    rowGroup: {
 	    	dataSrc: 'session_name',
-            startRender: function ( rows, group ) {
-                return group +' ('+rows.count()+' Tables)';
-            },
+            //startRender: function ( rows, group ) {
+            //    return group +' ('+rows.count()+' Tables)';
+            //},
             startRender: function ( rows, group ) {
             	var sum = rows
                     .data()
@@ -940,6 +959,12 @@ function get_styles_count(full_inventory=true) {
 
           styles_count = styles_count.data;
           totalCategory = {};
+            //reset table_beer_count counters
+            for (var key in table_beer_count) {
+                if (table_beer_count.hasOwnProperty(key)) {
+                    table_beer_count[key] = 0;
+                }
+            }
 
           table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
                 var data = this.data();
@@ -963,7 +988,11 @@ function get_styles_count(full_inventory=true) {
                 }
                 totalCategory[category] += count;
               }
-
+				//update table beer counter with newly loaded data
+        for (var i=0; i<data.tables.length; i++) {
+   			 		table_beer_count[data.tables[i]] = table_beer_count[data.tables[i]] + count / data.tables.length;
+   			 	}
+ 
           });
           table.rows().invalidate().draw(false);
 			    sessions_table.draw(false);

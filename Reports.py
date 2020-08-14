@@ -2,6 +2,7 @@ import json
 from textwrap import wrap, dedent, fill
 import csv
 import re
+from collections import defaultdict
 
 from Tools import Tools
 from Competitions import DATABASE
@@ -69,6 +70,33 @@ class Reports:
     def __init__(self):
 
         pass
+
+    def table_assignments(self):
+
+        sql = f'select * from tables where fk_competitions = "{Competitions().get_active_competition()}"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        tables = {}
+
+        for r in result:
+            head_judge = json.loads(r['head_judge'])
+            second_judge = json.loads(r['second_judge'])
+            hj_certs = f' (BJCP {head_judge["bjcp_rank"]})' if head_judge["bjcp_rank"] else ''
+            sj_certs = f' (BJCP {second_judge["bjcp_rank"]})' if second_judge["bjcp_rank"] else ''
+
+            tables[r['name']] = {
+                    'head_judge': f'{head_judge["firstname"]} {head_judge["lastname"]}{hj_certs}',
+                    'second_judge': f'{second_judge["firstname"]} {second_judge["lastname"]}{sj_certs}'
+                }
+            
+
+        for t in tables:
+            print(f'\n{t}')
+
+            print(f'Head Judge: {tables[t]["head_judge"]}')
+            print(f'Second Judge: {tables[t]["second_judge"]}')
 
 
     def print_round_bottle_labels(self, number=4):
@@ -909,13 +937,14 @@ class FlightSheet(FPDF, HTMLMixin):
         """
 
 
-
 if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels(6)
-    Reports().print_round_cup_labels()
+    #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
+
+    Reports().table_assignments()
 
     #session = 100
     #Reports().print_checkin(session)
