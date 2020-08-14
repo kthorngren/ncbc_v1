@@ -63,6 +63,7 @@ class Style:
         :return: Style Name or '' if not found
         """
 
+
         if version is None:
             version = self.version
         #print(style_group, style_num, version)
@@ -71,11 +72,15 @@ class Style:
         except:
             pass
 
-        sql = 'select style_name from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
+        # todo:  decide if this is needed goung forward - Remove leading 0
+        style_group = str(int(style_group))
+
+        #sql = 'select style_name from baseline_styles where style_num="{}" and style_group="{}" and version="{}"'.format(style_num.upper(), style_group, version.upper())
+        sql = 'select style_name from baseline_styles where style_num="{}{}" and version="{}"'.format(style_group, style_num.upper(), version.upper())
         #logger.info(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
-
+        #print(result)
         return result.get('style_name', '')
 
     def get_category_name(self, style_group, version=None):

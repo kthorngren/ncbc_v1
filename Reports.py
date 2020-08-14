@@ -83,20 +83,20 @@ class Reports:
         for r in result:
             head_judge = json.loads(r['head_judge'])
             second_judge = json.loads(r['second_judge'])
-            hj_certs = f' (BJCP {head_judge["bjcp_rank"]})' if head_judge["bjcp_rank"] else ''
-            sj_certs = f' (BJCP {second_judge["bjcp_rank"]})' if second_judge["bjcp_rank"] else ''
+            hj_certs = f'(BJCP {head_judge["bjcp_rank"]})' if head_judge["bjcp_rank"] else ''
+            sj_certs = f'(BJCP {second_judge["bjcp_rank"]})' if second_judge["bjcp_rank"] else ''
 
             tables[r['name']] = {
-                    'head_judge': f'{head_judge["firstname"]} {head_judge["lastname"]}{hj_certs}',
-                    'second_judge': f'{second_judge["firstname"]} {second_judge["lastname"]}{sj_certs}'
+                    'head_judge': f'{head_judge["firstname"]} {head_judge["lastname"]}',
+                    'hj_certs': hj_certs,
+                    'sj_certs': sj_certs,
+                    'second_judge': f'{second_judge["firstname"]} {second_judge["lastname"]}'
                 }
             
 
         for t in tables:
-            print(f'\n{t}')
+            print(f'{t},Head Judge:,{tables[t]["head_judge"]},{tables[t]["hj_certs"]},Second Judge:,{tables[t]["second_judge"]},{tables[t]["sj_certs"]}')
 
-            print(f'Head Judge: {tables[t]["head_judge"]}')
-            print(f'Second Judge: {tables[t]["second_judge"]}')
 
 
     def print_round_bottle_labels(self, number=4):
@@ -119,39 +119,75 @@ class Reports:
 
     def print_round_cup_labels(self):
 
+        paging = False
+
         LABELS_PER_LINE = 9
-        LINES_PER_PAGE = 12
+        LINES_PER_PAGE = 12 if paging else 1
         PADDING = 5
-        l = PDFLabel('050-circle', font = 'Courier', font_size=13)
-        l.add_page()
-        labels = Entrys().get_inventory(inventory=False)
-        label_count = 0
-        category = ''
-        for i in sorted(labels, key=lambda r: int(r['category'])):
-            print(i['category'])
-            if category != i['category']:
-                category = i['category']
-                print('cat change')
-                while label_count % (LABELS_PER_LINE * LINES_PER_PAGE) != 0:
-                    l.add_label(' ')
-                    label_count += 1
-                    print('space', label_count)
-                l.add_label("===Cat===")
-                l.add_label("==={:03d}===".format(int(i['category'])))
-                label_count += 2
-                print(f"print cat{i['category']}", label_count)
-                while label_count % LABELS_PER_LINE != 0:
-                    l.add_label(' ')
-                    label_count += 1
-                    print('add space', label_count)
 
+        sql = 'SELECT * FROM flights where fk_competitions = "5"'
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
 
-            entry_id = int(i['entry_id'])
-            l.add_label('  {:03d}'.format(entry_id))
-            l.add_label('  {:03d}'.format(entry_id))
-            label_count += 2
-            print('print entry id', i['entry_id'], label_count)
-        l.output('public/reports/cup_labels.pdf')
+        fk_judge_locations = {}
+        for r in result:
+            flight = r['number']
+            location = r['fk_judge_locations']
+            fk_judge_locations[flight] = location
+
+        print(fk_judge_locations)
+        labels = Entrys().get_inventory(inventory=True)
+
+        for label in labels:
+            label['flight'] = Style('NCBC2020').get_judging_category(f'{label["category"]}{label["sub_category"]}')
+ 
+
+        # Todo add support for locations
+
+        locations = {
+            1: 'Triangle',
+            3: 'Asheville'
+        }
+        for location in [1, 3]:
+            l = PDFLabel('050-circle', font = 'Courier', font_size=13)
+            l.add_page()
+            label_count = 0
+            category = ''
+            prev_cat = ''
+            entry_id_count = 0
+            for i in sorted(labels, key=lambda r: int(r['flight'])):
+                #print(i)
+                if fk_judge_locations[int(i['flight'])] == location:
+                    #print(i['flight'], i['entry_id'])
+                    
+                    if category != i['flight']:
+                        category = i['flight']
+                        #print('cat change', category)
+                        if prev_cat: 
+                            print(f'Flt: {prev_cat} Num: {entry_id_count}')
+                        entry_id_count = 0
+                        while label_count % (LABELS_PER_LINE * LINES_PER_PAGE) != 0:
+                            l.add_label(' ')
+                            label_count += 1
+                            #print('space', label_count)
+                        l.add_label("===Flt===")
+                        l.add_label("==={:03d}===".format(int(i['flight'])))
+                        label_count += 2
+                        #print(f"print cat{i['flight']}", label_count)
+                        while label_count % LABELS_PER_LINE != 0:
+                            l.add_label(' ')
+                            label_count += 1
+                            #print('add space', label_count)
+                    else:
+                        prev_cat = i['flight']
+
+                    entry_id = int(i['entry_id'])
+                    entry_id_count += 1
+                    l.add_label('  {:03d}'.format(entry_id))
+                    l.add_label('  {:03d}'.format(entry_id))
+                    label_count += 2
+                    #print('print entry id', i['entry_id'], label_count)
+            l.output(f'public/reports/{locations[location]} cup_labels.pdf')
 
 
     def print_round_bos_cup_labels(self):
@@ -283,8 +319,9 @@ class Reports:
             l.output(f'public/flights/{filename}.pdf')
 
 
-    def flight_pull_sheets(self, my_flights):
+    def flight_pull_sheets(self, my_flights, descriptions=True):
 
+        unasigned_counter = 1
 
         for category in my_flights:
 
@@ -307,11 +344,24 @@ class Reports:
             # Flight categories
 
             list_of_categories = []
-            for r in result:
-                print(r)
-                list_of_categories.append(f'{r["category_id"]}{r["sub_category_id"]}')
+            location = ''
 
+            # todo: fetch this from DB
+            judge_locations = {
+                0: 'Unassigned',
+                1: 'Triangle',
+                2: 'Charlotte',
+                3: 'Asheville'
+            }
+            if result:
+                location = judge_locations.get(result[0]['fk_judge_locations'], '')
+                location = f' - {location}' if location else ''
 
+                for r in result:
+                    #print('flight:', r)
+                    # todo: make more generic
+                    #list_of_categories.append(f'{r["category_id"]}{r["sub_category_id"]}')
+                    list_of_categories.append(f'{r["sub_category_id"]}')
 
             try:
                 tables_list = json.loads(result[0]['tables'])
@@ -319,15 +369,22 @@ class Reports:
                 tables_list = []
 
             # Tables
-            print(tables_list)
+            #print('tables_list', tables_list)
 
+            if tables_list:
 
+                sql = 'select * from tables where name in ("{}") and fk_competitions = "{}"'.format('","'.join(tables_list), Competitions().get_active_competition())
 
-            sql = 'select * from tables where name in ("{}") and fk_competitions = "{}"'.format('","'.join(tables_list), Competitions().get_active_competition())
+                uid = gen_uid()
+                tables = db.db_command(sql=sql, uid=uid).all(uid)
+            
+            else:
+                # todo: fi - specicif to ncbc 2020 to pre build flight sheets and build mini BOS if needed
+                if result[0]['number'] in (27, 13):
+                    tables = [None, None]
+                else:
+                    tables = [None]
 
-
-            uid = gen_uid()
-            tables = db.db_command(sql=sql, uid=uid).all(uid)
 
             # Assigned judges
             #for t in tables:
@@ -337,48 +394,62 @@ class Reports:
 
             for table in tables:
 
-                table_list.append(table)
+                if table:
+                    table_list.append(table)
 
-                try:
-                    head_judge = json.loads(table['head_judge'])
-                except:
-                    head_judge = {}
-                hj_certs = []
+                    try:
+                        head_judge = json.loads(table['head_judge'])
+                    except:
+                        head_judge = {}
+                    hj_certs = []
 
-                if head_judge['bjcp_rank']:
-                    hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
-                if head_judge['cicerone']:
-                    hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
-                if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
-                    hj_certs.append(head_judge['other_cert'])
+                    if head_judge['bjcp_rank']:
+                        hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
+                    if head_judge['cicerone']:
+                        hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
+                    if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
+                        hj_certs.append(head_judge['other_cert'])
 
 
-                try:
-                    second_judge = json.loads(table['second_judge'])
-                except:
-                    second_judge = {}
-                sj_certs = []
+                    try:
+                        second_judge = json.loads(table['second_judge'])
+                    except:
+                        second_judge = {}
+                    sj_certs = []
 
-                if second_judge['bjcp_rank']:
-                    sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
-                if second_judge['cicerone']:
-                    sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
-                if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
-                    sj_certs.append(second_judge['other_cert'])
+                    if second_judge['bjcp_rank']:
+                        sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
+                    if second_judge['cicerone']:
+                        sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
+                    if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
+                        sj_certs.append(second_judge['other_cert'])
 
-                flights[table['name']] = {
-                    # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
-                    'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
-                    'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
-                    'category': category,
-                    'table': table['name'],
-                    'category_name': '{} {}'.format(category, Style('BJCP2015').get_category_name(category)),
-                    'beers': []
-                }
+                    flights[table['name']] = {
+                        # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                        'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
+                        'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
+                        'category': category,
+                        'table': table['name'],
+                        'category_name': '{} {}'.format(category, Style('NCBC2020').get_category_name(category)),
+                        'beers': []
+                    }
 
+                else:
+                    flights[f'Unassigned {unasigned_counter}'] = {
+                        # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                        'head_judge': '',
+                        'second_judge': '',
+                        'category': category,
+                        'table': '',
+                        'category_name': '{} {}'.format(category, Style('NCBC2020').get_category_name(category)),
+                        'beers': []
+                    }
+
+                    unasigned_counter += 1
+                #print(flights[table['name']] )
             category_list = []
 
-
+            #print('list_of_categories', list_of_categories)
             sql = 'select * from entries ' \
                   '' \
                   'where CONCAT(category, sub_category) in ("{}")  and fk_competitions = "{}" and inventory = "1" ' \
@@ -394,33 +465,37 @@ class Reports:
             entry = {}
             for c in cat:
                 #print(c)
-                if Style('BJCP2015').is_specialty(str(c['category']), str(c['sub_category']) ):
-                    c['is_specialty'] = 1
+                if Style('NCBC2020').is_specialty(str(c['category']), str(c['sub_category']) ):
+                    c['is_specialty'] = 1 if descriptions else 0
                 else:
                     c['is_specialty'] = 0
 
-                c['style_name'] = Style('BJCP2015').get_style_name(str(c['category']), str(c['sub_category']))
+                c['style_name'] = Style('NCBC2020').get_style_name(str(c['category']), str(c['sub_category']))
 
-
+                if not descriptions:
+                    #if c['entry_id'] == 581:
+                    #    print(c)
+                    c['notes'] = c['comments']  # Get inventory comments for cellar
+                else:
+                    c['notes'] = ''
 
                 if c['category'] not in categories:
                     categories[c['category']] = []
                 categories[c['category']].append(c)
-            print('doing cat')
+            #print('doing cat')
             while len(cat) > 0 and flights:
                 #print('cat', flights)
                 for f in flights:
                     if cat:
-                        print(cat)
+                        #print(cat)
                         flights[f]['beers'].append(cat.pop(0))
 
             #for f in flights:
             #    print(flights[f])
             #    for b in flights[f]['beers']:
             #        print(b)
-
+            miniBos_count = 1
             for f in flights:
-                #print(f)
 
                 flight = flights[f]
 
@@ -429,10 +504,16 @@ class Reports:
                     'second_judge': flight['second_judge']
                 }
 
+                if len(flights) > 1:
+                    mini = f' (mBOS {miniBos_count} of {len(flights)})'
+                else:
+                    mini = ''
+
+                miniBos_count += 1
 
                 pdf = FlightSheet()
 
-                pdf.flight = f'{f}: Flight Number: {category}: # of Entries: {len(flight["beers"])}'
+                pdf.flight = f'{f}: Flight: {category} {Style("NCBC2020").get_category_name(category)}: # of Entries: {len(flight["beers"])}{mini}'
 
                 #print(pdf.flight)
 
@@ -442,7 +523,9 @@ class Reports:
                 pdf.intro(judge_info)
                 pdf.table(flight['beers'])
 
-                filename = 'public/flights/{}.pdf'.format(f'Flight: {category} {f} ')
+                sheet_type = f'Cellar - {f}' if not descriptions else f
+
+                filename = 'public/flights/{}.pdf'.format(f'Flight {category} - {sheet_type}{location} ')
 
 
                 pdf.output(filename, 'F')
@@ -524,7 +607,7 @@ class Reports:
 
         pdf = FlightSheet()
 
-        pdf.flight = f'NC Brewers Cup BOS 2019'
+        pdf.flight = f'NC Brewers Cup BOS 2020'
 
         #print(pdf.flight)
 
@@ -659,13 +742,15 @@ class FlightSheet(FPDF, HTMLMixin):
         #self.cell(w=80)
 
         # set the font for the header, B=Bold
-        self.set_font("Arial", style="B", size=15)
+        #self.set_font("Arial", style="B", size=15)
+        self.set_font("Arial", style="B", size=12)
         # page title
         #self.image("files/ncbg-logo.png", x=12, y=12, w=31)
         #self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
         #self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2019", border=1, ln=0, align="C")
         self.cell(epw, 16, self.flight, border=1, ln=0, align="C")
         # insert a line break of 20 pixels
+        self.set_font("Arial", style="B", size=15)
 
         self.ln(5)
 
@@ -722,8 +807,11 @@ class FlightSheet(FPDF, HTMLMixin):
 
         hj = judges['head_judge'].split('|')
         sj = judges['second_judge'].split('|')
-        hj=['','','']
-        sj=['','','']
+
+        if len(hj) != 4:
+            hj=['','','']
+        if len(sj) != 4:
+            sj=['','','']
 
         for j in range(0, 3):
             self.cell(col_width, line_ht * th, '  {}'.format(hj[j]), border='L', align=align)
@@ -848,7 +936,7 @@ class FlightSheet(FPDF, HTMLMixin):
             self.cell(col_widths[2], 2 * th, str(beer['entry_id']), border='RTB', align='L')
             self.cell(col_widths[3], 2 * th, f"{beer['category']}{beer['sub_category']}", border='RTB', align='L')
             self.cell(col_widths[4], 2 * th, beer['style_name'], border='RTB', align='L')
-            self.cell(col_widths[5], 2 * th, '', border='RTB', align='L')
+            self.cell(col_widths[5], 2 * th, beer['notes'], border='RTB', align='L')
             self.ln(2 * th)
 
             printed_lines += 1
@@ -937,14 +1025,29 @@ class FlightSheet(FPDF, HTMLMixin):
         """
 
 
+def generate_flight_sheets():
+
+    sql = 'select number from flights where fk_judge_locations = "1" and fk_competitions = "5"'
+    uid = gen_uid()
+    result = db.db_command(sql=sql, uid=uid).all(uid)
+
+    flights = list(set([int(x['number']) for x in result]))
+
+
+    Reports().flight_pull_sheets(flights)
+    Reports().flight_pull_sheets(flights, descriptions=False)
+
 if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels(6)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
-    result = Reports().flight_pull_sheets([0])
-    print(result)
+    generate_flight_sheets()
+
+    #result = Reports().flight_pull_sheets([17, 28, 14, 7, 3, 27, 24])
+    #result = Reports().flight_pull_sheets([17, 28, 14, 7, 3, 27, 24], descriptions=False)
+    #print(result)
 
     #Reports().table_assignments()
 

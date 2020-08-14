@@ -827,5 +827,5 @@ if __name__ == '__main__':
 
     #test_find_person()
 
-    Volunteers().email_confirmation_to_all()
+    #Volunteers().email_confirmation_to_all()
     pass
