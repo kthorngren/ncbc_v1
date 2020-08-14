@@ -449,7 +449,7 @@ class Reports:
 
                 filenames[f] = filename
 
-            self.flight_round_cup_labels(dup_cat, category, f'Flight Number {category} Cup Labels')
+            #self.flight_round_cup_labels(dup_cat, category, f'Flight Number {category} Cup Labels')
 
         # todo: plan is to return filenames to web page for links
         #return filenames
@@ -943,8 +943,10 @@ if __name__ == '__main__':
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
+    result = Reports().flight_pull_sheets([0])
+    print(result)
 
-    Reports().table_assignments()
+    #Reports().table_assignments()
 
     #session = 100
     #Reports().print_checkin(session)
