@@ -25,7 +25,8 @@ commercial_labels={
 'Avery-3422':{'paper-size':'A4','metric':'mm','marginLeft':0,'marginTop':8.5, 'NX':3,'NY':8,'SpaceX':0,'SpaceY':0,'width':70,'height':35,'font-size':9},
 '075-circle':{'paper-size':'letter','metric':'mm','marginLeft':16.0, 'marginTop':15.0, 'NX':9, 'NY':12, 'SpaceX':1.5, 'SpaceY':1.5, 'width':19.05, 'height':19.05,'font-size':8},
 '075-circle-LP':{'paper-size':'letter','metric':'mm','marginLeft':16.0, 'marginTop':12.0, 'NX':9, 'NY':12, 'SpaceX':1.7, 'SpaceY':2.0, 'width':19.05, 'height':19.05,'font-size':8},
-'050-circle':{'paper-size':'letter','metric':'mm','marginLeft':26.0, 'marginTop':20.0, 'NX':9, 'NY':12, 'SpaceX':5.0, 'SpaceY':5.0, 'width':14.0, 'height':14.0,'font-size':4},
+'050-circle-old':{'paper-size':'letter','metric':'mm','marginLeft':26.0, 'marginTop':20.0, 'NX':9, 'NY':12, 'SpaceX':5.0, 'SpaceY':5.0, 'width':14.0, 'height':14.0,'font-size':4},
+'050-circle':{'paper-size':'letter','metric':'mm','marginLeft':17.0, 'marginTop':17.0, 'NX':9, 'NY':12, 'SpaceX':6.5, 'SpaceY':6.5, 'width':14.0, 'height':14.0,'font-size':4},
 }
 
 # LP Lisa PArker's printer

@@ -9,6 +9,7 @@ from Competitions import DATABASE
 from Competitions import Competitions
 from Entrys import Entrys
 from Styles import Style
+from Brewers import Brewers
 
 
 from pdflabels import PDFLabel
@@ -121,6 +122,7 @@ class Reports:
 
         paging = False
 
+        # Use 9 and 12 becuase we can't get all the way to the margins
         LABELS_PER_LINE = 9
         LINES_PER_PAGE = 12 if paging else 1
         PADDING = 5
@@ -148,7 +150,7 @@ class Reports:
             1: 'Triangle',
             3: 'Asheville'
         }
-        for location in [1, 3]:
+        for location in [3]:  # todo: Get the session locations from DB
             l = PDFLabel('050-circle', font = 'Courier', font_size=13)
             l.add_page()
             label_count = 0
@@ -188,6 +190,73 @@ class Reports:
                     label_count += 2
                     #print('print entry id', i['entry_id'], label_count)
             l.output(f'public/reports/{locations[location]} cup_labels.pdf')
+
+    def master_flight_list(self):
+
+        sql = 'SELECT * FROM flights where fk_competitions = "5"'
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        fk_judge_locations = {}
+        for r in result:
+            flight = r['number']
+            location = r['fk_judge_locations']
+            fk_judge_locations[flight] = location
+
+        #print(fk_judge_locations)
+        labels = Entrys().get_inventory(inventory=True)
+
+        for label in labels:
+            label['flight'] = Style('NCBC2020').get_judging_category(f'{label["category"]}{label["sub_category"]}')
+ 
+
+        # Todo add support for locations
+
+        locations = {
+            1: 'Triangle',
+            3: 'Asheville'
+        }
+        for location in [1, 3]:
+            category = ''
+            prev_cat = ''
+            entry_id_count = 0
+            new_cat = True
+            for i in sorted(labels, key=lambda r: int(r['flight'])):
+                #print(i)
+
+                if fk_judge_locations[int(i['flight'])] == location:
+                    if new_cat:
+                        print(f"\n{i['flight']} {Style('NCBC2020').get_category_name(i['flight'])}")
+                        new_cat = False
+                        prev_cat = i['flight']
+
+                    #print(i['flight'], i['entry_id'])
+                    
+                    if category != i['flight']:
+                        category = i['flight']
+                        new_cat = True
+                        #print('cat change', category)
+                        #if prev_cat: 
+                        #    print(f'\nFlight: {prev_cat}, Number: {entry_id_count}')
+                        entry_id_count = 0
+                    else:
+                        prev_cat = i['flight']
+                    brewer = Brewers().get_brewer(i['fk_brewers'])
+                    style_name = Style('NCBC2020').get_style_name(str(i['category']), str(i['sub_category']))
+                    print(f",{i['entry_id']},{str(i['category'])}{str(i['sub_category'])} {style_name},{brewer['organization']},{i['comments']},")
+
+                    """
+                    {'pkid': 511, 'entry_id': 611, 'category': '32', 'sub_category': 'A', 
+                    'fk_competitions': 5, 'description': 'Base style is an oatmeal/tropical stout, smoke is from peat smoked malt.', 
+                    'name': 'Temporal Justice', 'fk_brewers': 72, 'original_description': None, 
+                    'inventory': 1, 'judged': 0, 'place': 0, 'bos': 0, 'bos_place': 0, 
+                    'updated': datetime.datetime(2020, 8, 7, 16, 4, 5), 'location_0': '', 'location_1': '', 
+                    'one_bottle': 0, 'comments': '', 'ncbc_validation': 0, 'flight': '29'}
+                    """
+
+                    #print('print entry id', i['entry_id'], label_count)
+            
+
 
 
     def print_round_bos_cup_labels(self):
@@ -1027,7 +1096,7 @@ class FlightSheet(FPDF, HTMLMixin):
 
 def generate_flight_sheets():
 
-    sql = 'select number from flights where fk_judge_locations = "1" and fk_competitions = "5"'
+    sql = 'select number from flights where fk_judge_locations = "3" and fk_competitions = "5"'
     uid = gen_uid()
     result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -1040,14 +1109,12 @@ def generate_flight_sheets():
 if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels(6)
-    #Reports().print_round_cup_labels()
+    Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
-    generate_flight_sheets()
+    #generate_flight_sheets()
+    #Reports().master_flight_list()
 
-    #result = Reports().flight_pull_sheets([17, 28, 14, 7, 3, 27, 24])
-    #result = Reports().flight_pull_sheets([17, 28, 14, 7, 3, 27, 24], descriptions=False)
-    #print(result)
 
     #Reports().table_assignments()
 
