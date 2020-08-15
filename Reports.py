@@ -607,6 +607,225 @@ class Reports:
         #return filenames
 
 
+    def flight_mini_bos_pull_sheets(self, my_flights, descriptions=True):
+
+        unasigned_counter = 1
+
+        for category in my_flights:
+
+            flights = {}
+            table_list = []
+            filenames = {}
+
+            #print('category', category)
+
+            sql = 'select * from flights where number = "{}" and ' \
+                  'fk_competitions = "{}"'.format(category, Competitions().get_active_competition())
+
+            uid = gen_uid()
+            result = db.db_command(sql=sql, uid=uid).all(uid)
+
+
+            flight_cat = []
+            flight_sub_cat = []
+
+            # Flight categories
+
+            list_of_categories = []
+            location = ''
+
+            # todo: fetch this from DB
+            judge_locations = {
+                0: 'Unassigned',
+                1: 'Triangle',
+                2: 'Charlotte',
+                3: 'Asheville'
+            }
+            if result:
+                location = judge_locations.get(result[0]['fk_judge_locations'], '')
+                location = f' - {location}' if location else ''
+
+                for r in result:
+                    #print('flight:', r)
+                    # todo: make more generic
+                    #list_of_categories.append(f'{r["category_id"]}{r["sub_category_id"]}')
+                    list_of_categories.append(f'{r["sub_category_id"]}')
+
+            try:
+                tables_list = json.loads(result[0]['tables'])
+            except:
+                tables_list = []
+
+            # Tables
+            #print('tables_list', tables_list)
+            """
+            if tables_list:
+
+                sql = 'select * from tables where name in ("{}") and fk_competitions = "{}"'.format('","'.join(tables_list), Competitions().get_active_competition())
+
+                uid = gen_uid()
+                tables = db.db_command(sql=sql, uid=uid).all(uid)
+            
+            else:
+                # todo: fi - specicif to ncbc 2020 to pre build flight sheets and build mini BOS if needed
+                if result[0]['number'] in (27, 13):
+                    tables = [None, None]
+                else:
+                    tables = [None]
+            """
+            tables = [None]
+
+            # Assigned judges
+            #for t in tables:
+            #    print(t)
+
+            cup_labels = {}
+
+            for table in tables:
+
+                if table:
+                    table_list.append(table)
+
+                    try:
+                        head_judge = json.loads(table['head_judge'])
+                    except:
+                        head_judge = {}
+                    hj_certs = []
+
+                    if head_judge['bjcp_rank']:
+                        hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
+                    if head_judge['cicerone']:
+                        hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
+                    if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
+                        hj_certs.append(head_judge['other_cert'])
+
+
+                    try:
+                        second_judge = json.loads(table['second_judge'])
+                    except:
+                        second_judge = {}
+                    sj_certs = []
+
+                    if second_judge['bjcp_rank']:
+                        sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
+                    if second_judge['cicerone']:
+                        sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
+                    if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
+                        sj_certs.append(second_judge['other_cert'])
+
+                    flights[table['name']] = {
+                        # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                        'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
+                        'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
+                        'category': category,
+                        'table': table['name'],
+                        'category_name': '{} {}'.format(category, Style('NCBC2020').get_category_name(category)),
+                        'beers': []
+                    }
+
+                else:
+                    flights[f'Unassigned {unasigned_counter}'] = {
+                        # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                        'head_judge': '',
+                        'second_judge': '',
+                        'category': category,
+                        'table': '',
+                        'category_name': '{} {}'.format(category, Style('NCBC2020').get_category_name(category)),
+                        'beers': []
+                    }
+
+                    unasigned_counter += 1
+                #print(flights[table['name']] )
+            category_list = []
+
+            #print('list_of_categories', list_of_categories)
+            sql = 'select * from entries ' \
+                  '' \
+                  'where CONCAT(category, sub_category) in ("{}")  and fk_competitions = "{}" and mini_bos = "1" and inventory = "1" ' \
+                  'order by category, sub_category, entry_id'.format('","'.join(list_of_categories), Competitions().get_active_competition())
+            uid = gen_uid()
+            cat  = db.db_command(sql=sql, uid=uid).all(uid)
+
+            dup_cat = cat.copy()
+
+            categories = {}
+
+
+            entry = {}
+            for c in cat:
+                #print(c)
+                if Style('NCBC2020').is_specialty(str(c['category']), str(c['sub_category']) ):
+                    c['is_specialty'] = 1 if descriptions else 0
+                else:
+                    c['is_specialty'] = 0
+
+                c['style_name'] = Style('NCBC2020').get_style_name(str(c['category']), str(c['sub_category']))
+
+                if not descriptions:
+                    #if c['entry_id'] == 581:
+                    #    print(c)
+                    c['notes'] = c['comments']  # Get inventory comments for cellar
+                else:
+                    c['notes'] = ''
+
+                if c['category'] not in categories:
+                    categories[c['category']] = []
+                categories[c['category']].append(c)
+            #print('doing cat')
+            while len(cat) > 0 and flights:
+                #print('cat', flights)
+                for f in flights:
+                    if cat:
+                        #print(cat)
+                        flights[f]['beers'].append(cat.pop(0))
+
+            #for f in flights:
+            #    print(flights[f])
+            #    for b in flights[f]['beers']:
+            #        print(b)
+            miniBos_count = 1
+            for f in flights:
+
+                flight = flights[f]
+
+                judge_info = {
+                    'head_judge': flight['head_judge'],
+                    'second_judge': flight['second_judge']
+                }
+
+                if len(flights) > 1:
+                    mini = f' (mBOS {miniBos_count} of {len(flights)})'
+                else:
+                    mini = ''
+
+                miniBos_count += 1
+
+                pdf = FlightSheet()
+
+                pdf.flight = f'{f}: Flight: {category} {Style("NCBC2020").get_category_name(category)}: # of Entries: {len(flight["beers"])}{mini}'
+
+                #print(pdf.flight)
+
+                pdf.alias_nb_pages()
+                pdf.add_page()
+
+                pdf.intro(judge_info)
+                pdf.table(flight['beers'])
+
+                sheet_type = f'Cellar - {f}' if not descriptions else f
+
+                filename = 'public/flights/{}.pdf'.format(f'MB-Flight {category} - {sheet_type}{location} ')
+
+
+                pdf.output(filename, 'F')
+
+                filenames[f] = filename
+
+            #self.flight_round_cup_labels(dup_cat, category, f'Flight Number {category} Cup Labels')
+
+        # todo: plan is to return filenames to web page for links
+        #return filenames
+
     def bos_flight_pull_sheets(self):
 
 
@@ -1106,14 +1325,32 @@ def generate_flight_sheets():
     Reports().flight_pull_sheets(flights)
     Reports().flight_pull_sheets(flights, descriptions=False)
 
+def generate_mini_bos_flight_sheets(flight):
+
+    sql = f'select number from flights where fk_judge_locations = "3" and number="{flight}" and fk_competitions = "5"'
+    uid = gen_uid()
+    result = db.db_command(sql=sql, uid=uid).all(uid)
+
+    flights = list(set([int(x['number']) for x in result]))
+
+
+    Reports().flight_mini_bos_pull_sheets(flights)
+    Reports().flight_mini_bos_pull_sheets(flights, descriptions=False)
+
+
 if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels(6)
-    Reports().print_round_cup_labels()
+    #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
 
     #generate_flight_sheets()
     #Reports().master_flight_list()
+
+    flight =1
+    
+
+    generate_mini_bos_flight_sheets(flight)
 
 
     #Reports().table_assignments()
