@@ -2,6 +2,8 @@ from Tools import Tools
 from Sessions import Sessions
 from Competitions import DATABASE
 from Competitions import Competitions
+from Entrys import Entrys
+from Styles import Style
 
 
 """
@@ -173,15 +175,115 @@ class Flights:
         return result
 
 
+def complete_flight():
+
+    flights = Flights().get_flights()
+
+    flight_numbers = set([x['number'] for x in flights])
+
+    print(flight_numbers)
+    print(flights[0])
+
+    try:
+        choice = input('Enter flight number to process: ')
+    except Exception as e:
+        choice = ''
+    
+    try:
+        choice = int(choice)
+    except:
+        choice = ''
+
+    if choice == '':
+        return
+
+    print(choice in flight_numbers)
+
+    my_flight = '{:02d}'.format(choice)
+    print(my_flight)
+
+    entries = Entrys().get_inventory(inventory=True)
+
+    cat_entries = {}
+
+    for entry in entries:
+        entry_flight = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+
+        if entry_flight == my_flight and entry['judged'] == 0:
+            cat_entries[entry['entry_id']] = entry
+    
+    if not cat_entries:
+        return
+    print(cat_entries.keys())
+
+    place = {}
+    
+    for i in range(1, 5):
+
+        get_input = True
+
+        while get_input:
+
+            try:
+                choice = input(f'Place {i}: ')
+            except Exception as e:
+                choice = ''
+
+            try:
+                choice = int(choice)
+            except:
+                choice = ''
+
+            if choice in cat_entries or choice == '':
+                place[i] = choice
+                get_input = False
+    print(place)
+
+    try:
+        choice = input('Is this correct (y/n) ')
+    except Exception as e:
+        choice = ''
+
+    choice = choice.lower()
+
+    if choice == 'y':
+        print('save')
+
+        sql_entry_ids = '","'.join([str(x) for x in cat_entries.keys()])
+        sql = (f'update entries set judged="1" where fk_competitions = "{Competitions().get_active_competition()}" '
+                f'and entry_id in ("{sql_entry_ids}")'
+              )
+        db.db_command(sql=sql)
+
+        for p in place:
+            if place[p]:
+                sql = (f'update entries set place="{p}" where fk_competitions = "{Competitions().get_active_competition()}" '
+                        f'and entry_id = "{place[p]}"'
+                    )
+                db.db_command(sql=sql)
+
+
+
+
+
+
+
+        
+    
+
+
 if __name__ == '__main__':
 
+    complete_flight()
 
+    """
     result = Flights().auto_assign_judges(89)
 
     for p in result['pairing']:
         print(p)
 
     print('remaining', result['judges'])
+    """
 
 
 
