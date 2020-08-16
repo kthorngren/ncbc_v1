@@ -181,8 +181,8 @@ def complete_flight():
 
     flight_numbers = set([x['number'] for x in flights])
 
-    print(flight_numbers)
-    print(flights[0])
+    #print(flight_numbers)
+    #print(flights[0])
 
     try:
         choice = input('Enter flight number to process: ')
@@ -197,10 +197,10 @@ def complete_flight():
     if choice == '':
         return
 
-    print(choice in flight_numbers)
+    print(f'Found flight {choice in flight_numbers}')
 
     my_flight = '{:02d}'.format(choice)
-    print(my_flight)
+    print(f'Entry IDs for flight {my_flight}')
 
     entries = Entrys().get_inventory(inventory=True)
 
@@ -213,8 +213,10 @@ def complete_flight():
             cat_entries[entry['entry_id']] = entry
     
     if not cat_entries:
+        print('Found no entry IDs')
         return
-    print(cat_entries.keys())
+
+    print(list(cat_entries.keys()))
 
     place = {}
     
@@ -247,7 +249,7 @@ def complete_flight():
     choice = choice.lower()
 
     if choice == 'y':
-        print('save')
+        print('Saving flight places')
 
         sql_entry_ids = '","'.join([str(x) for x in cat_entries.keys()])
         sql = (f'update entries set judged="1" where fk_competitions = "{Competitions().get_active_competition()}" '
@@ -275,8 +277,8 @@ def mini_bos_flight():
 
     flight_numbers = set([x['number'] for x in flights])
 
-    print(flight_numbers)
-    print(flights[0])
+    #print(flight_numbers)
+    #print(flights[0])
 
     try:
         choice = input('Enter mini-BOS flight number to process: ')
@@ -291,10 +293,10 @@ def mini_bos_flight():
     if choice == '':
         return
 
-    print(choice in flight_numbers)
+    print(f'Found flight {choice in flight_numbers}')
 
     my_flight = '{:02d}'.format(choice)
-    print(my_flight)
+    print(f'Entry IDs for flight {my_flight}')
 
     entries = Entrys().get_inventory(inventory=True)
 
@@ -307,8 +309,9 @@ def mini_bos_flight():
             cat_entries[entry['entry_id']] = entry
     
     if not cat_entries:
+        print('Found no entry IDs')
         return
-    print(cat_entries.keys())
+    print(list(cat_entries.keys()))
 
     mini_bos = []
     choice = True
@@ -345,13 +348,13 @@ def mini_bos_flight():
     choice = choice.lower()
     
     if choice == 'y':
-        print('save')
+        print('Saving Mini-BOS entries')
 
         sql_entry_ids = '","'.join([str(x) for x in mini_bos])
         sql = (f'update entries set mini_bos="1" where fk_competitions = "{Competitions().get_active_competition()}" '
                 f'and entry_id in ("{sql_entry_ids}")'
               )
-        print(sql)
+        #print(sql)
         db.db_command(sql=sql)
 
 
@@ -359,7 +362,7 @@ def mini_bos_flight():
 
 if __name__ == '__main__':
 
-    complete_flight()
+    #complete_flight()
     #mini_bos_flight()
 
     """

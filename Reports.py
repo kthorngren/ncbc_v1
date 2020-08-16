@@ -1347,10 +1347,8 @@ if __name__ == '__main__':
     #generate_flight_sheets()
     #Reports().master_flight_list()
 
-    flight =1
-    
-
-    generate_mini_bos_flight_sheets(flight)
+    #flight = 1
+    #generate_mini_bos_flight_sheets(flight)
 
 
     #Reports().table_assignments()
@@ -1396,3 +1394,4 @@ if __name__ == '__main__':
             if beer['is_specialty'] == 1:
                 print(f'  {beer["description"]}')
     """
+    pass
