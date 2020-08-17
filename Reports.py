@@ -282,7 +282,7 @@ class Reports:
         category = ''
         for r in sorted(result, key=lambda x: x['flight']):
             #if r['entry_id'] == 214:
-            l.add_label("===Cat===")
+            l.add_label("===Flt===")
             l.add_label("==={:03d}===".format(int(r['flight'])))
 
             for x in range(0, 7):
