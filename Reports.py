@@ -269,7 +269,10 @@ class Reports:
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        print(result)
+        for r in result:
+            r['flight'] = Style('NCBC2020').get_judging_category(f'{r["category"]}{r["sub_category"]}')
+
+        #print(result)
 
 
 
@@ -277,10 +280,10 @@ class Reports:
         l.add_page()
         label_count = 0
         category = ''
-        for r in result:
+        for r in sorted(result, key=lambda x: x['flight']):
             #if r['entry_id'] == 214:
             l.add_label("===Cat===")
-            l.add_label("==={:03d}===".format(int(r['category'])))
+            l.add_label("==={:03d}===".format(int(r['flight'])))
 
             for x in range(0, 7):
                 l.add_label(' ')
@@ -826,12 +829,15 @@ class Reports:
         # todo: plan is to return filenames to web page for links
         #return filenames
 
-    def bos_flight_pull_sheets(self):
+
+
+    def bos_flight_pull_sheets(self, descriptions=True):
 
 
 
 
         category_list = []
+        flights = {}
 
 
         sql = 'select * from entries ' \
@@ -847,36 +853,108 @@ class Reports:
 
         entry = {}
         for c in cat:
-            if Style('BJCP2015').is_specialty(str(c['category']), str(c['sub_category']) ):
-                c['is_specialty'] = 1
+            if Style('NCBC2020').is_specialty(str(c['category']), str(c['sub_category']) ):
+                c['is_specialty'] = 1 if descriptions else 0
             else:
                 c['is_specialty'] = 0
 
-            c['style_name'] = Style('BJCP2015').get_style_name(str(c['category']), str(c['sub_category']))
+            c['style_name'] = Style('NCBC2020').get_style_name(str(c['category']), str(c['sub_category']))
+            flight_number = Style('NCBC2020').get_judging_category(f'{c["category"]}{c["sub_category"]}')
+            flight_name = Style('NCBC2020').get_category_name(flight_number)
+            c['medal'] = f'{flight_number} {flight_name}'
 
+            if not descriptions:
+                #if c['entry_id'] == 581:
+                #    print(c)
+                c['notes'] = c['comments']  # Get inventory comments for cellar
+            else:
+                c['notes'] = ''
 
+            #print(c)
 
             if c['category'] not in categories:
                 categories[c['category']] = []
             categories[c['category']].append(c)
             #print(c)
 
-            print(f'{c["entry_id"]},{c["category"]}{c["sub_category"]},{c["style_name"].replace(",",";")}')
+            #print(f'{c["entry_id"]},{c["category"]}{c["sub_category"]},{c["style_name"].replace(",",";")}')
 
-            if int(c['is_specialty']) == 1 or c['category'] == '35':
-                print(' , ,{}'.format(c['description'].replace('\n', '').replace(',',  ';')))
+            #if int(c['is_specialty']) == 1 or c['category'] == '35':
+            #    print(' , ,{}'.format(c['description'].replace('\n', '').replace(',',  ';')))
 
         #for c in categories:
         #    print(c)
 
-        return
+        tables = [None]
 
+        # Assigned judges
+        #for t in tables:
+        #    print(t)
+
+        cup_labels = {}
+
+        for table in tables:
+
+            if table:
+                table_list.append(table)
+
+                try:
+                    head_judge = json.loads(table['head_judge'])
+                except:
+                    head_judge = {}
+                hj_certs = []
+
+                if head_judge['bjcp_rank']:
+                    hj_certs.append('BJCP {}'.format(head_judge['bjcp_rank']))
+                if head_judge['cicerone']:
+                    hj_certs.append('Cicerone {}'.format(head_judge['cicerone']))
+                if head_judge['other_cert'] and head_judge['other_cert'] != 'Apprentice':
+                    hj_certs.append(head_judge['other_cert'])
+
+
+                try:
+                    second_judge = json.loads(table['second_judge'])
+                except:
+                    second_judge = {}
+                sj_certs = []
+
+                if second_judge['bjcp_rank']:
+                    sj_certs.append('BJCP {}'.format(second_judge['bjcp_rank']))
+                if second_judge['cicerone']:
+                    sj_certs.append('Cicerone {}'.format(second_judge['cicerone']))
+                if second_judge['other_cert'] and second_judge['other_cert'] != 'Apprentice':
+                    sj_certs.append(second_judge['other_cert'])
+
+                flights[table['name']] = {
+                    # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                    'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
+                    'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
+                    'category': 'NC Brewers CUP BOS 2020',
+                    'table': table['name'],
+                    'category_name': '',
+                    'beers': []
+                }
+
+            else:
+                flights['BOS'] = {
+                    # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
+                    'head_judge': '',
+                    'second_judge': '',
+                    'category': 'NC Brewers CUP BOS 2020',
+                    'table': '',
+                    'category_name': '',
+                    'beers': []
+                }
+
+
+
+        cat = sorted(cat, key = lambda x: x['medal'])
 
         while len(cat) > 0:
             #print('cat', flights)
             if cat:
-                print(cat)
-                flights[f]['beers'].append(cat.pop(0))
+                #print(cat)
+                flights['BOS']['beers'].append(cat.pop(0))
 
         #for f in flights:
         #    print(flights[f])
@@ -904,11 +982,13 @@ class Reports:
 
 
 
-        #pdf.intro(judge_info)
-        pdf.table(flight['beers'])
+        pdf.bos_intro(judge_info)
+        pdf.bos_table(flight['beers'])
 
-        filename = 'public/flights/BOS Flights.pdf'
-
+        if descriptions:
+            filename = 'public/flights/BOS Judge Flight Sheets.pdf'
+        else:
+            filename = 'public/flights/BOS Cellar Flight Sheets.pdf'
 
         pdf.output(filename, 'F')
 
@@ -916,6 +996,74 @@ class Reports:
 
         # todo: plan is to return filenames to web page for links
         #return filenames
+
+
+
+    def bos_grid_sheets(self):
+
+
+
+
+        category_list = []
+        flights = []
+
+
+        sql = 'select * from entries ' \
+              'where fk_competitions = "{}" and place = "1" ' \
+              'order by LPAD(entries.category, 2, "0"), sub_category'.format(Competitions().get_active_competition())
+        uid = gen_uid()
+        cat  = db.db_command(sql=sql, uid=uid).all(uid)
+
+        dup_cat = cat.copy()
+
+        categories = {}
+
+
+        entry = {}
+        for c in cat:
+            if Style('NCBC2020').is_specialty(str(c['category']), str(c['sub_category']) ):
+                c['is_specialty'] = 1
+            else:
+                c['is_specialty'] = 0
+
+            c['style_name'] = Style('NCBC2020').get_style_name(str(c['category']), str(c['sub_category']))
+            flight_number = Style('NCBC2020').get_judging_category(f'{c["category"]}{c["sub_category"]}')
+            flight_name = Style('NCBC2020').get_category_name(flight_number)
+            c['medal'] = f'{flight_number} {flight_name}'
+
+
+            if c['category'] not in categories:
+                categories[c['category']] = []
+            categories[c['category']].append(c)
+
+
+        cat = sorted(cat, key = lambda x: x['medal'])
+
+        """
+        for c in cat:
+
+            print(c['entry_id'], c['medal'], f'{c["category"]}{c["sub_category"]} {c["style_name"]}')
+        """
+        
+        pdf = FlightSheet()
+
+        pdf.flight = f'NC Brewers Cup BOS 2020'
+
+        #print(pdf.flight)
+
+        pdf.alias_nb_pages()
+        pdf.add_page(orientation='Landscape')
+
+
+        
+        pdf.bos_grid(cat)
+
+        filename = 'public/flights/BOS Grid Sheets.pdf'
+
+
+        pdf.output(filename, 'F')
+
+        
 
 
 
@@ -1116,6 +1264,67 @@ class FlightSheet(FPDF, HTMLMixin):
         self.line(10, 75, epw + 15, 75)
         self.ln(20)
 
+    def bos_intro(self, judges):
+
+        #ncbg = ['NC Brewers Guild', 'PO Box 27921', 'Raleigh, NC 27611']
+
+        # Effective page width, or just epw
+        epw = self.w - 2.5 * self.l_margin
+
+        # Set column width to 1/4 of effective page width to distribute content
+        # evenly across table and page
+        col_width = epw / 2
+
+        # Since we do not need to draw lines anymore, there is no need to separate
+        # headers from data matrix.
+
+        # Text height is the same as current font size
+        th = self.font_size
+
+        self.ln(3 * th)
+
+        self.set_font("Arial", size=12)
+
+        self.cell(col_width, 2 * th, '', border='LTB', align='L')
+        self.cell(5, 2 * th, ' ', border='LR')
+        self.cell(col_width, 2 * th, '', border='RTB', align='L')
+        self.ln(2 * th)
+
+
+        index = 0
+        line_ht = 1
+        align = 'L'
+
+        #add blank line
+        self.cell(col_width, line_ht * th, ' ', border='L', align=align)
+        self.cell(5, line_ht * th, ' ', border='LR')
+        self.cell(col_width, line_ht * th, ' ', border='R', align=align)
+        self.ln(line_ht * th)
+
+        hj = judges['head_judge'].split('|')
+        sj = judges['second_judge'].split('|')
+
+        if len(hj) != 4:
+            hj=['','','']
+        if len(sj) != 4:
+            sj=['','','']
+
+        for j in range(0, 3):
+            self.cell(col_width, line_ht * th, '  {}'.format(hj[j]), border='L', align=align)
+            self.cell(5, line_ht * th, ' ', border='LR')
+            self.cell(col_width, line_ht * th, '  {}'.format(sj[j]), border='R', align=align)
+
+            index += 1
+            self.ln(line_ht * th)
+
+        self.cell(col_width, line_ht * th, '', border='BL')
+        self.cell(5, line_ht * th, ' ', border='LR')
+        self.cell(col_width, line_ht * th, '', border='BR')
+
+        self.line(10, 75, epw + 15, 75)
+        self.ln(20)
+
+
     def table(self, beers):
 
         LINES_PER_PAGE = 25
@@ -1312,6 +1521,374 @@ class FlightSheet(FPDF, HTMLMixin):
         self.cell(col_widths[4], 2 * th, '$0.00', border='RTB', align='L')
         """
 
+    def bos_table(self, beers):
+
+        LINES_PER_PAGE = 25
+        # Remember to always put one of these at least once.
+        self.set_font('Times', '', 10.0)
+
+        # Effective page width, or just epw
+        epw = self.w - 2 * self.l_margin
+
+        # Set column width to 1/4 of effective page width to distribute content
+        # evenly across table and page
+        col_width = epw / 2
+
+        # Since we do not need to draw lines anymore, there is no need to separate
+        # headers from data matrix.
+
+
+
+        # Text height is the same as current font size
+        th = self.font_size
+
+
+        # Line break equivalent to 4 lines
+        #self.ln(4 * th)
+
+
+        first_label = True
+        label_count = 0
+
+        image_y = 100
+
+        self.set_font('Times', 'B', 14.0)
+
+
+        #col_widths = [20,20,60,60,30]
+        col_widths = [5, 15,20,50,50,50]
+
+        self.cell(col_widths[0], 2 * th, '#', border='LRTB', align='C')
+        self.cell(col_widths[1], 2 * th, 'Judged', border='RTB', align='C')
+        self.cell(col_widths[2], 2 * th, 'Entry ID', border='RTB', align='C')
+        self.cell(col_widths[3], 2 * th, 'Medal Category', border='RTB', align='C')
+        self.cell(col_widths[4], 2 * th, 'BJCP Style', border='RTB', align='C')
+        self.cell(col_widths[5], 2 * th, 'Notes', border='RTB', align='C')
+        self.ln(2 * th)
+
+        self.set_font('Times', '', 10.0)
+
+        printed_lines = 0
+        count = 0
+        first_page = True
+
+        # Here we add more padding by passing 2*th as height
+        for beer in beers:
+            # Get list of description lines.
+            if beer['is_specialty'] == 1:
+                # https://pymotw.com/2/textwrap/
+                desc = dedent(beer['description']).strip().replace(u"\u2019", "")
+
+                if len(desc) == 0:
+                    desc = '** No description provide by brewer  **'
+                desc = fill(desc, width=110)
+
+                desc = desc.split('\n')
+            else:
+                desc = []
+            count += 1
+            # Todo: check to see if descriotion plus category will fit on the page
+            # if not print blank rows and start on new page
+
+            #print('num lines to print', len(desc) + 1, printed_lines)
+            #print('is there room', (LINES_PER_PAGE - (printed_lines % LINES_PER_PAGE)) > (len(desc) + 1))
+
+            # If descript too long to fit on current page go to next
+            if not (LINES_PER_PAGE - (printed_lines % LINES_PER_PAGE)) > (len(desc) + 1):
+
+                # Add blank lines to end of page
+                while printed_lines % LINES_PER_PAGE != 0:
+                    #print('while')
+                    self.cell(col_widths[0], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[1], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[2], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[3], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[4], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[5], 2 * th, '', border='', align='L')
+                    self.ln(2 * th)
+                    printed_lines += 1
+
+                #if first_page and LINES_PER_PAGE == printed_lines:
+                #    first_page = False
+                #    LINES_PER_PAGE = LINES_PER_PAGE + 5
+                #    print('incrementing lines per page', LINES_PER_PAGE)
+
+                # Skip 4 lines at the top.  If not first page then skip 8 more lines to include bottom of previous page
+                for i in range(0,4 if first_page else 12):
+                    first_page = False
+                    self.cell(col_widths[0], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[1], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[2], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[3], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[4], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[5], 2 * th, '', border='', align='L')
+                    self.ln(2 * th)
+
+            self.cell(col_widths[0], 2 * th, str(count) , border='LRTB', align='L')
+            self.cell(col_widths[1], 2 * th, '', border='LRTB', align='L')
+            self.cell(col_widths[2], 2 * th, str(beer['entry_id']), border='RTB', align='L')
+            self.cell(col_widths[3], 2 * th, beer['medal'], border='RTB', align='L')
+            self.cell(col_widths[4], 2 * th, f"{beer['category']}{beer['sub_category']} {beer['style_name']}", border='RTB', align='L')
+            self.cell(col_widths[5], 2 * th, beer['notes'], border='RTB', align='L')
+            self.ln(2 * th)
+
+            printed_lines += 1
+
+            """
+            Looks like this can be removed
+            if printed_lines % LINES_PER_PAGE == 0:
+                for i in range(0,4):
+                    self.cell(col_widths[0], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[1], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[2], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[3], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[4], 2 * th, '', border='', align='L')
+                    self.cell(col_widths[5], 2 * th, '', border='', align='L')
+                    self.ln(2 * th)
+            """
+
+            # Print each description line
+            desc_line = 1
+            for d in desc:
+                self.cell(col_widths[0], 2 * th, '', border='LRTB', align='L')
+                self.cell(col_widths[1], 2 * th, '', border='LRTB', align='L')
+
+                # Set the cell border ro remove grid lines
+                if desc_line == 1 and desc_line == len(desc):
+                    border = 'RTB'
+                elif desc_line == 1:
+                    border = 'RT'
+                elif desc_line == len(desc):
+                    border = 'RB'
+                else:
+                    border = 'R'
+                self.cell(190 - (col_widths[0] + col_widths[1]), 2 * th, d, border=border, align='L')
+                self.ln(2 * th)
+                printed_lines += 1
+                desc_line += 1
+
+                """
+                Looks like this can be removed
+                if printed_lines % LINES_PER_PAGE == 0:
+                    for i in range(0,4):
+                        self.cell(col_widths[0], 2 * th, '', border='', align='L')
+                        self.cell(col_widths[1], 2 * th, '', border='', align='L')
+                        self.cell(col_widths[2], 2 * th, '', border='', align='L')
+                        self.cell(col_widths[3], 2 * th, '', border='', align='L')
+                        self.cell(col_widths[4], 2 * th, '', border='', align='L')
+                        self.cell(col_widths[5], 2 * th, '', border='', align='L')
+                        self.ln(2 * th)
+                """
+
+
+        """
+        Can remove - tries to pad page with blank lines
+
+        # Todo: calc total lines differently to fill the last page with blank lines
+        # todo: fix this first- table 4 has a bug where a blank pag eis generated.
+        #total_lines = 25 - len(beers)
+
+        print('printer lines', printed_lines)
+        if printed_lines < LINES_PER_PAGE:
+            total_lines = LINES_PER_PAGE - (printed_lines % LINES_PER_PAGE)
+        elif printed_lines == LINES_PER_PAGE:
+            total_lines = 0
+        else:
+            total_lines = (printed_lines % LINES_PER_PAGE)
+
+        print('total_lines', total_lines)
+        for i in range(0, total_lines):
+            self.cell(col_widths[0], 2 * th, ' ', border='LRB', align='L')
+            self.cell(col_widths[1], 2 * th, ' ', border='RTB', align='L')
+            self.cell(col_widths[2], 2 * th, ' ', border='RTB', align='L')
+            self.cell(col_widths[3], 2 * th, ' ', border='RTB', align='L')
+            self.cell(col_widths[4], 2 * th, ' ', border='RTB', align='L')
+            self.cell(col_widths[5], 2 * th, ' ', border='RTB', align='L')
+            self.ln(2 * th)
+        """
+
+        """
+        Total lines - can remove
+        self.set_font('Times', 'B', 10.0)
+        self.cell(col_widths[0], 2 * th, ' ', border='', align='L')
+        self.cell(col_widths[1], 2 * th, ' ', border='', align='L')
+        self.cell(col_widths[2], 2 * th, ' ', border='', align='L')
+        self.cell(col_widths[3], 2 * th, 'Total:', border='LRTB', align='R')
+        self.cell(col_widths[4], 2 * th, '$0.00', border='RTB', align='L')
+        """
+
+    def build_grids(self, l1, l2, l3, col_width, col_height, th):
+        self.set_font('Times', 'B', 10.0)
+        for i in l1:
+            self.cell(col_width, col_height, str(i), border='LRT')
+        self.ln(2 * th)
+        for z in range (0, 3):
+            for i in l1:
+                self.cell(col_width, col_height, '', border='LR')
+            self.ln(2 * th)
+        self.set_font('Times', 'B', 12.0)
+        for i in l1:
+            self.cell(col_width, col_height, f'Entry ID: {i}', border='LR', align='C')
+        self.ln(2 * th)
+        for i in l2:
+            self.cell(col_width, col_height, f'Medal Category: {i}', border='LR', align='C')
+        self.ln(2 * th)
+        for i in l3:
+            self.cell(col_width, col_height, f'BJCP Style: {i}', border='LR', align='C')
+        self.ln(2 * th)
+        for z in range (0, 3):
+            for i in l1:
+                self.cell(col_width, col_height, '', border='LR')
+            self.ln(2 * th)
+        for i in l1:
+            self.cell(col_width, col_height, '', border='LRB')
+        self.ln(2 * th)
+
+
+    def bos_grid(self, beers):
+
+        LINES_PER_PAGE = 25
+        # Remember to always put one of these at least once.
+        self.set_font('Times', '', 10.0)
+
+        # Effective page width, or just epw
+        epw = self.w - 2 * self.l_margin
+
+        # Set column width to 1/4 of effective page width to distribute content
+        # evenly across table and page
+        col_width = epw / 2
+
+        # Since we do not need to draw lines anymore, there is no need to separate
+        # headers from data matrix.
+
+
+
+        # Text height is the same as current font size
+        th = self.font_size
+
+
+        # Line break equivalent to 4 lines
+        #self.ln(4 * th)
+
+
+        first_label = True
+        label_count = 0
+
+        image_y = 100
+
+        self.set_font('Times', 'B', 14.0)
+
+        """
+        #col_widths = [20,20,60,60,30]
+        col_widths = [5, 15,20,50,50,50]
+
+        self.cell(col_widths[0], 2 * th, '#', border='LRTB', align='C')
+        self.cell(col_widths[1], 2 * th, 'Judged', border='RTB', align='C')
+        self.cell(col_widths[2], 2 * th, 'Entry ID', border='RTB', align='C')
+        self.cell(col_widths[3], 2 * th, 'Medal Category', border='RTB', align='C')
+        self.cell(col_widths[4], 2 * th, 'BJCP Style', border='RTB', align='C')
+        self.cell(col_widths[5], 2 * th, 'Notes', border='RTB', align='C')
+        self.ln(2 * th)
+        """
+
+        self.set_font('Times', '', 10.0)
+
+        count = 0
+        first_page = True
+        col_width =  epw / 3  # 3 columns per line
+        col_height = th * 2
+        cell_height = th * 22  # Todo: how to calc col height
+
+        
+        cell_lines = defaultdict(list)
+
+        # Build cell data structure
+        for beer in beers:
+
+            cell_lines[count].append(beer['entry_id'])
+            count += 1
+            cell_lines[count].append(beer['medal'])
+            count += 1
+            cell_lines[count].append(f"{beer['category']}{beer['sub_category']} {beer['style_name']}")
+            
+            count += 1
+
+            if count % 3 == 0:
+                count -= 3
+
+        #for line in sorted(cell_lines):
+        #    print(line, cell_lines[line])
+
+        count = 0
+        row_count = -1
+        l1 = []
+        l2 = []
+        l3 = []
+        self.ln(4 * th)
+
+        while cell_lines[0]:
+
+            if count > 0 and count % 3 == 0:
+                if row_count > 2 and row_count % 2 == 0:
+                    #print('new page')
+                    self.add_page(orientation='Landscape')
+                    self.ln(4 * th)
+                """
+                print(l1)
+                print(l2)
+                print(l3)
+                """
+
+                self.build_grids(l1, l2, l3, col_width, col_height, th)
+                l1 = []
+                l2 = []
+                l3 = []
+
+            
+            if cell_lines[0]:
+                l1.append(cell_lines[0].pop(0))
+                l2.append(cell_lines[1].pop(0))
+                l3.append(cell_lines[2].pop(0))
+
+                row_count += 1
+
+
+
+            count += 1
+
+        if l1:
+            #print('new page')
+            self.add_page(orientation='Landscape')
+            self.ln(4 * th)
+            self.build_grids(l1, l2, l3, col_width, col_height, th)
+           
+
+            
+
+
+
+
+
+
+
+            """
+            entry_string = f"Entry ID: {beer['entry_id']}\nMedal Category: {beer['medal']}\nBJCP Category: {beer['category']}{beer['sub_category']} {beer['style_name']}"
+            if count > 0 and count % 3 == 0:
+                if count % 6 == 0:   
+                    print('next page')
+                    self.add_page(orientation='Landscape')
+                    #self.ln(6 * col_height)
+                    self.ln(4 * th)
+                else:
+                    print('next line', printed_lines)
+                    self.ln(col_height)
+            self.cell(col_width, col_height, self.multi_cell(10,th,entry_string), border='LRTB')
+            count += 1
+            """
+
+
+
+
 
 def generate_flight_sheets():
 
@@ -1338,11 +1915,14 @@ def generate_mini_bos_flight_sheets(flight):
     Reports().flight_mini_bos_pull_sheets(flights, descriptions=False)
 
 
+
+
 if __name__ == '__main__':
 
     #Reports().print_round_bottle_labels(6)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
+    Reports().bos_grid_sheets()
 
     #generate_flight_sheets()
     #Reports().master_flight_list()
@@ -1378,6 +1958,7 @@ if __name__ == '__main__':
     #print(result)
 
     #Reports().bos_flight_pull_sheets()
+    #Reports().bos_flight_pull_sheets(descriptions=False)
     """
     for r in result:
         #print(r)

@@ -1,3 +1,6 @@
+from collections import defaultdict
+from operator import itemgetter
+
 from Tools import Tools
 from Sessions import Sessions
 from Competitions import DATABASE
@@ -173,6 +176,7 @@ class Flights:
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
         return result
+
 
 
 def complete_flight():
@@ -358,12 +362,230 @@ def mini_bos_flight():
         db.db_command(sql=sql)
 
 
+def get_completed_flights():
+
+    # Todo: get from db
+    locations = {
+        1: 'RTP',
+        3: 'AVL'
+    }
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True)
+
+    judged_flights = {}
+
+    for entry in entries:
+        entry_flight = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+
+        fk_judge_locations = [x for x in flights if x['number'] == int(entry_flight)]
+
+        if entry['judged'] == 1:
+
+            if entry_flight not in judged_flights:
+                judged_flights[entry_flight] = {
+                    1: '',
+                    2: '',
+                    3: '',
+                    4: '',
+                    'pulled_bos': 'No',
+                    'loc': locations[fk_judge_locations[0]['fk_judge_locations']] if fk_judge_locations else ''
+                }
+
+            place = entry['place']
+
+            if place:
+                judged_flights[entry_flight][place] = entry['entry_id']
+
+                if place == 1:
+                    judged_flights[entry_flight]['pulled_bos'] = 'Yes' if entry['pulled_bos'] == 1 else 'No'
+
+    for flight in sorted(judged_flights):
+
+        print(f'{flight} {judged_flights[flight]}')
+    print(f'Number of completed flights: {len(judged_flights)}')
+
+
+def get_completed_flights_avl_only():
+
+    # Todo: get from db
+    locations = {
+        1: 'RTP',
+        3: 'AVL'
+    }
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True)
+
+    judged_flights = {}
+
+    for entry in entries:
+        entry_flight = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+
+        fk_judge_locations = [x for x in flights if x['number'] == int(entry_flight)]
+
+        if entry['judged'] == 1:
+
+            if entry_flight not in judged_flights:
+                judged_flights[entry_flight] = {
+                    1: '',
+                    2: '',
+                    3: '',
+                    4: '',
+                    'pulled_bos': 'No',
+                    'loc': locations[fk_judge_locations[0]['fk_judge_locations']] if fk_judge_locations else ''
+                }
+
+            place = entry['place']
+
+            if place:
+                judged_flights[entry_flight][place] = entry['entry_id']
+
+                if place == 1:
+                    judged_flights[entry_flight]['pulled_bos'] = 'Yes' if entry['pulled_bos'] == 1 else 'No'
+
+    flt_count = 0
+    for flight in sorted(judged_flights):
+        
+        # Todo: only interested in AVL beers this year
+        if judged_flights[flight]['loc'] == 'AVL':
+            flt_count += 1
+            print(f'{flight} {judged_flights[flight]}')
+    print(f'Number of completed flights: {flt_count}')
+
+    
+def get_completed_flights_rtp_only():
+
+    # Todo: get from db
+    locations = {
+        1: 'RTP',
+        3: 'AVL'
+    }
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True)
+
+    judged_flights = {}
+
+    for entry in entries:
+        entry_flight = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+
+        fk_judge_locations = [x for x in flights if x['number'] == int(entry_flight)]
+
+        if entry['judged'] == 1:
+
+            if entry_flight not in judged_flights:
+                judged_flights[entry_flight] = {
+                    1: '',
+                    2: '',
+                    3: '',
+                    4: '',
+                    'pulled_bos': 'No',
+                    'loc': locations[fk_judge_locations[0]['fk_judge_locations']] if fk_judge_locations else ''
+                }
+
+            place = entry['place']
+
+            if place:
+                judged_flights[entry_flight][place] = entry['entry_id']
+
+                if place == 1:
+                    judged_flights[entry_flight]['pulled_bos'] = 'Yes' if entry['pulled_bos'] == 1 else 'No'
+
+    flt_count = 0
+    for flight in sorted(judged_flights):
+        
+        # Todo: only interested in AVL beers this year
+        if judged_flights[flight]['loc'] == 'RTP':
+            flt_count += 1
+            print(f'{flight} {judged_flights[flight]}')
+    print(f'Number of completed flights: {flt_count}')
+
+    
+
+def mark_bos_pulled():
+
+    # todo: make finction more generic
+
+    sql = 'select entry_id from entries where place = "1" and pulled_bos = "0" and fk_competitions = "5"'
+
+    uid = gen_uid()
+    result = db.db_command(sql=sql, uid=uid).all(uid)
+
+    entry_ids = [x['entry_id'] for x in result]
+    print(entry_ids)
+
+    try:
+        entry_id = input('Enter BOS Entry ID Pulled: ')
+    except Exception as e:
+        entry_id = ''
+    
+    try:
+        entry_id = int(entry_id)
+    except:
+        entry_id = ''
+
+    if entry_id == '':
+        return
+
+    found_entry = entry_id in entry_ids
+    print(f'Found entry {entry_id} - {found_entry}')
+
+    if found_entry:
+
+        try:
+            choice = input(f'BOS Entry {entry_id} has been pulled (y/n) ')
+        except Exception as e:
+            choice = ''
+
+        choice = choice.lower()
+        
+        if choice == 'y':
+            print(f'Setting {entry_id} as found')
+
+            sql = (f'update entries set pulled_bos="1" where fk_competitions = "{Competitions().get_active_competition()}" '
+                    f'and entry_id = "{entry_id}"'
+                )
+            #print(sql)
+            db.db_command(sql=sql)
+
+
+def winner_report():
+
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True, place=True)
+
+    winners = defaultdict(list)
+
+    for entry in entries:
+        flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+        flight_name = Style('NCBC2020').get_category_name(flight_number)
+        style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+        brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+        winners[f'{flight_number} {flight_name}'].append([f'"{flight_name}"',
+                                                        f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                        f'{entry["place"]}',
+                                                        f'"{brewer["organization"]}"',
+                                                        f'"{entry["name"]}"'
+        ])
+        
+        
+    
+    for cat in sorted(winners):
+        for entry in sorted(winners[cat], key = lambda x: int(x[2])):
+            print(','.join(entry))
+
 
 
 if __name__ == '__main__':
 
     #complete_flight()
     #mini_bos_flight()
+    #get_completed_flight()
+    #mark_bos_pulled()
+    winner_report()
 
     """
     result = Flights().auto_assign_judges(89)

@@ -1,6 +1,11 @@
 
 from Flights import complete_flight
 from Flights import mini_bos_flight
+from Flights import get_completed_flights
+from Flights import get_completed_flights_avl_only
+from Flights import get_completed_flights_rtp_only
+from Flights import mark_bos_pulled
+
 from Reports import generate_mini_bos_flight_sheets
 
 if __name__ == '__main__':
@@ -14,6 +19,10 @@ if __name__ == '__main__':
             ('\n\n1: Enter Mini-BOS Entry IDs'
                 '\n2: Process Mini-BOS Flight Sheets'
                 '\n3: Enter Flight Places'
+                '\n4: Mark BOS Entry as Pulled'
+                '\n5: Show Completed Flights AVL Only'
+                '\n6: Show Completed Flights RTP Only'
+                '\n7: Show Completed Flights'
                 '\nq: Quit'
                 '\n'
             )
@@ -40,8 +49,15 @@ if __name__ == '__main__':
 
                 if choice:
                     generate_mini_bos_flight_sheets(choice)
-                    
+
         elif option == '3':
             complete_flight()
-        
+        elif option == '4':
+            mark_bos_pulled()        
+        elif option == '5':
+            get_completed_flights_avl_only()
+        elif option == '6':
+            get_completed_flights_rtp_only()
+        elif option == '7':
+            get_completed_flights()
 

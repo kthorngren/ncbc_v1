@@ -229,19 +229,22 @@ class Entrys:
 
         return result['pkid']
 
-    def get_inventory(self, all=False, inventory=False, wo_location=False):
+    def get_inventory(self, all=False, inventory=False, wo_location=False, place=False):
 
         where = 'fk_competitions ="{}"'.format(Competitions().get_active_competition())
 
         if not all:
             where += ' and inventory = "{}"'.format('1' if inventory else '0')
 
+        if place:
+            where += ' and place <> "0"'
+
         if wo_location:
             where += ' and ((location_0 is NULL or location_0 = "") or ' \
                      '(location_1 is NULL or location_1 = ""))'
 
         sql = 'select * from entries where {}'.format(where)
-
+        #print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
