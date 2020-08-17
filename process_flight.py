@@ -5,6 +5,8 @@ from Flights import get_completed_flights
 from Flights import get_completed_flights_avl_only
 from Flights import get_completed_flights_rtp_only
 from Flights import mark_bos_pulled
+from Flights import enter_overall_winners
+from Flights import winner_report
 
 from Reports import generate_mini_bos_flight_sheets
 from Reports import bos_flight_sheets
@@ -27,6 +29,8 @@ if __name__ == '__main__':
                 '\n6: Show Completed Flights RTP Only'
                 '\n7: Show Completed Flights'
                 '\n8: Generate BOS Flight Sheets, Cup Labels and Placemats'
+                '\n9: Enter Overall Winners'
+                '\n10: Winners Report'
                 '\nq: Quit'
                 '\n'
             )
@@ -69,4 +73,8 @@ if __name__ == '__main__':
             bos_flight_sheets()
             bos_round_cup_labels()
             bos_placemats()
+        elif option == "9":
+            enter_overall_winners()
+        elif option == "10":
+            winner_report()
 

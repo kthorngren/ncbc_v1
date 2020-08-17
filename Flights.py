@@ -270,6 +270,53 @@ def complete_flight():
 
 
 
+def enter_overall_winners():
+
+    sql = 'select * from entries where fk_competitions="5" and place="1"'
+    uid = gen_uid()
+    result = db.db_command(sql=sql, uid=uid).all(uid)
+
+    entry_ids = [x['entry_id'] for x in result]
+    print(entry_ids)
+
+    place = {}
+    
+    for i in range(1, 5):
+
+        get_input = True
+
+        while get_input:
+
+            try:
+                choice = input(f'Place {i}: ')
+            except Exception as e:
+                choice = ''
+
+            try:
+                choice = int(choice)
+            except:
+                choice = ''
+
+            if choice in entry_ids or choice == '':
+                place[i] = choice
+                get_input = False
+    print(place)
+
+    try:
+        choice = input('Is this correct (y/n) ')
+    except Exception as e:
+        choice = ''
+
+    choice = choice.lower()
+
+    if choice == 'y':
+
+        for p in place:
+            if place[p]:
+                sql = (f'update entries set bos_place="{p}" where fk_competitions = "{Competitions().get_active_competition()}" '
+                        f'and entry_id = "{place[p]}"'
+                    )
+                db.db_command(sql=sql)
 
 
 
@@ -555,6 +602,35 @@ def winner_report():
 
     flights = Flights().get_flights()
     entries = Entrys().get_inventory(inventory=True, place=True)
+
+    sql = 'select * from entries where fk_competitions="5" and bos_place<>"0"'
+    uid = gen_uid()
+    bos = db.db_command(sql=sql, uid=uid).all(uid)
+
+    winners = []
+
+    if bos:
+        print('\nNCBC 2020 Best Of Show')
+    for entry in bos:
+
+        flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+        flight_name = Style('NCBC2020').get_category_name(flight_number)
+        style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+        brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+        winners.append([f'"{flight_name}"',
+                                                        f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                        f'BOS {entry["bos_place"]}',
+                                                        f'"{brewer["organization"]}"',
+                                                        f'"{entry["name"]}"',
+        ])
+        
+        
+    
+    for entry in sorted(winners, key = lambda x: x[2]):
+        print(','.join(entry))
+
+    print('\nNCBC 2020 Category Winners')
 
     winners = defaultdict(list)
 
