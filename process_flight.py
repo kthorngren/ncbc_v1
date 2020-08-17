@@ -7,6 +7,9 @@ from Flights import get_completed_flights_rtp_only
 from Flights import mark_bos_pulled
 
 from Reports import generate_mini_bos_flight_sheets
+from Reports import bos_flight_sheets
+from Reports import bos_placemats
+from Reports import bos_round_cup_labels
 
 if __name__ == '__main__':
 
@@ -23,6 +26,7 @@ if __name__ == '__main__':
                 '\n5: Show Completed Flights AVL Only'
                 '\n6: Show Completed Flights RTP Only'
                 '\n7: Show Completed Flights'
+                '\n8: Generate BOS Flight Sheets, Cup Labels and Placemats'
                 '\nq: Quit'
                 '\n'
             )
@@ -60,4 +64,9 @@ if __name__ == '__main__':
             get_completed_flights_rtp_only()
         elif option == '7':
             get_completed_flights()
+        elif option == '8':
+            bos_flight_sheets(descriptions=False)
+            bos_flight_sheets()
+            bos_round_cup_labels()
+            bos_placemats()
 

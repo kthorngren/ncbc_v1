@@ -292,7 +292,7 @@ class Reports:
                 #l.add_label('  {:03d}{}{}'.format(r['entry_id'],int(r['category']), r['sub_category']))
                 l.add_label('  {:03d}'.format(r['entry_id']))
 
-        l.output('public/reports/bos_cup_labels.pdf')
+        l.output('public/flights/bos/bos_cup_labels.pdf')
 
     def flight_avery_cup_labels(self, entries, flight, filename):
 
@@ -973,7 +973,9 @@ class Reports:
 
         pdf = FlightSheet()
 
-        pdf.flight = f'NC Brewers Cup BOS 2020'
+        sheet_type = 'Judge' if descriptions else 'Cellar'
+
+        pdf.flight = f'{sheet_type} Flight Sheet - NC Brewers Cup BOS 2020'
 
         #print(pdf.flight)
 
@@ -986,9 +988,9 @@ class Reports:
         pdf.bos_table(flight['beers'])
 
         if descriptions:
-            filename = 'public/flights/BOS Judge Flight Sheets.pdf'
+            filename = 'public/flights/bos/BOS Judge Flight Sheets.pdf'
         else:
-            filename = 'public/flights/BOS Cellar Flight Sheets.pdf'
+            filename = 'public/flights/bos/BOS Cellar Flight Sheets.pdf'
 
         pdf.output(filename, 'F')
 
@@ -1058,7 +1060,7 @@ class Reports:
         
         pdf.bos_grid(cat)
 
-        filename = 'public/flights/BOS Grid Sheets.pdf'
+        filename = 'public/flights/bos/BOS Grid Sheets.pdf'
 
 
         pdf.output(filename, 'F')
@@ -1915,6 +1917,21 @@ def generate_mini_bos_flight_sheets(flight):
     Reports().flight_mini_bos_pull_sheets(flights, descriptions=False)
 
 
+def bos_round_cup_labels():
+
+    Reports().print_round_bos_cup_labels()
+
+def bos_placemats():
+
+    Reports().bos_grid_sheets()
+
+def bos_flight_sheets(descriptions=True):
+
+    Reports().bos_flight_pull_sheets(descriptions=False)
+    Reports().bos_flight_pull_sheets()
+
+
+
 
 
 if __name__ == '__main__':
@@ -1922,7 +1939,7 @@ if __name__ == '__main__':
     #Reports().print_round_bottle_labels(6)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
-    Reports().bos_grid_sheets()
+    #Reports().bos_grid_sheets()
 
     #generate_flight_sheets()
     #Reports().master_flight_list()
