@@ -1728,9 +1728,9 @@ class FlightSheet(FPDF, HTMLMixin):
             for i in l1:
                 self.cell(col_width, col_height, '', border='LR')
             self.ln(2 * th)
-        self.set_font('Times', 'B', 12.0)
+        self.set_font('Times', 'B', 24.0)
         for i in l1:
-            self.cell(col_width, col_height, f'Entry ID: {i}', border='LR', align='C')
+            self.cell(col_width, col_height, f'{i}', border='LR', align='C')
         self.ln(2 * th)
         for i in l2:
             self.cell(col_width, col_height, f'Medal Category: {i}', border='LR', align='C')
