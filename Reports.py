@@ -1722,23 +1722,24 @@ class FlightSheet(FPDF, HTMLMixin):
     def build_grids(self, l1, l2, l3, col_width, col_height, th):
         self.set_font('Times', 'B', 10.0)
         for i in l1:
-            self.cell(col_width, col_height, str(i), border='LRT')
+            self.cell(col_width, col_height, '', border='LRT')
         self.ln(2 * th)
-        for z in range (0, 3):
-            for i in l1:
-                self.cell(col_width, col_height, '', border='LR')
-            self.ln(2 * th)
-        self.set_font('Times', 'B', 24.0)
+        self.set_font('Times', 'B', 56.0)
         for i in l1:
             self.cell(col_width, col_height, f'{i}', border='LR', align='C')
         self.ln(2 * th)
+        for z in range (0, 5):
+            for i in l1:
+                self.cell(col_width, col_height, '', border='LR')
+            self.ln(2 * th)
+        self.set_font('Times', 'B', 12.0)
         for i in l2:
             self.cell(col_width, col_height, f'Medal Category: {i}', border='LR', align='C')
         self.ln(2 * th)
         for i in l3:
             self.cell(col_width, col_height, f'BJCP Style: {i}', border='LR', align='C')
         self.ln(2 * th)
-        for z in range (0, 3):
+        for z in range (0, 0):
             for i in l1:
                 self.cell(col_width, col_height, '', border='LR')
             self.ln(2 * th)
