@@ -1737,7 +1737,7 @@ class FlightSheet(FPDF, HTMLMixin):
             self.cell(col_width, col_height, f'Medal Category: {i}', border='LR', align='C')
         self.ln(2 * th)
         for i in l3:
-            self.cell(col_width, col_height, f'BJCP Style: {i}', border='LR', align='C')
+            self.cell(col_width, col_height, f'Style: {i}', border='LR', align='C')
         self.ln(2 * th)
         for z in range (0, 0):
             for i in l1:
