@@ -929,7 +929,7 @@ class Reports:
                     # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
                     'head_judge': '{} {}|{}| | '.format(head_judge['firstname'], head_judge['lastname'], ', '.join(hj_certs)),
                     'second_judge': '{} {}|{}| | '.format(second_judge['firstname'], second_judge['lastname'], ', '.join(sj_certs)),
-                    'category': 'NC Brewers CUP BOS 2020',
+                    'category': 'NC Brewers CUP BOS 2021',
                     'table': table['name'],
                     'category_name': '',
                     'beers': []
@@ -940,7 +940,7 @@ class Reports:
                     # the `|` are used for line splitting in FlightSheet, need four lines for intro area.
                     'head_judge': '',
                     'second_judge': '',
-                    'category': 'NC Brewers CUP BOS 2020',
+                    'category': 'NC Brewers CUP BOS 2021',
                     'table': '',
                     'category_name': '',
                     'beers': []
@@ -975,7 +975,7 @@ class Reports:
 
         sheet_type = 'Judge' if descriptions else 'Cellar'
 
-        pdf.flight = f'{sheet_type} Flight Sheet - NC Brewers Cup BOS 2020'
+        pdf.flight = f'{sheet_type} Flight Sheet - NC Brewers Cup BOS 2021'
 
         #print(pdf.flight)
 
@@ -1049,7 +1049,7 @@ class Reports:
         
         pdf = FlightSheet()
 
-        pdf.flight = f'NC Brewers Cup BOS 2020'
+        pdf.flight = f'NC Brewers Cup BOS 2021'
 
         #print(pdf.flight)
 
@@ -1937,7 +1937,7 @@ def bos_flight_sheets(descriptions=True):
 
 if __name__ == '__main__':
 
-    #Reports().print_round_bottle_labels(6)
+    Reports().print_round_bottle_labels(6)
     #Reports().print_round_cup_labels()
     #Reports().print_round_bos_cup_labels()
     #Reports().bos_grid_sheets()

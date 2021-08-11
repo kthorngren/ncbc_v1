@@ -119,6 +119,21 @@ class Sessions:
 
         return result
 
+    def get_judge_location_by_session(self, pkid):
+
+        sql = f'select fk_judge_locations from sessions where pkid = "{pkid}"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        if result:
+
+            return self.get_judge_location(result['fk_judge_locations'])
+
+        return ''
+
+
+
     def get_session_volunteers(self, session_number, judges=False, stewards=False, all=False):
 
         where = ''
@@ -141,8 +156,8 @@ class Sessions:
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )
-        sql += ' order by lastname ASC, firstname ASc'
-        #print(sql)
+        sql += ' order by lastname ASC, firstname ASC'
+        #print('volunteers sql: ', sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -163,7 +178,7 @@ class Sessions:
             data['head_judge'] = escape_sql(json.dumps(session_pairs.get('hj_judges', '')))
             data['second_judge'] = escape_sql(json.dumps(session_pairs.get('sj_judges', '')))
 
-            print('session pairs', data)
+            #print('session pairs', data)
 
             sql = 'insert ignore into judge_pairing (fk_sessions, judges, head_judge, second_judge) values ' \
             ' ("{}", "", "", "") '.format(fk_sessions)
@@ -188,7 +203,7 @@ class Sessions:
         sql = 'select pkid from sessions where day = ' \
               '(select day from sessions ' \
               'where pkid = "{}" and fk_competitions = "{}")'.format(session_number, Competitions().get_active_competition())
-        print(sql)
+        #print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -202,7 +217,7 @@ class Sessions:
 
 def get_session_mapping():
 
-    ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2020')
+    ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
 
     sql = 'select * from session_mapping where fk_competitions = "{}"'.format(Competitions().get_active_competition())
 

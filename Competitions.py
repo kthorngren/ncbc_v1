@@ -10,7 +10,7 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2020'
+        DATABASE = 'ncbc-2021'
     else:
         DATABASE = 'comp_test'
 except ImportError:
@@ -138,7 +138,7 @@ class Competitions:
                                                                 pkid=Competitions().get_active_competition(),
                                                                 where=where
                                                                 )
-        print(sql)
+        #print(sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -237,7 +237,19 @@ class Competitions:
             num_judges += judge_count
 
 
-        status['entries']['average'] = round(entries / (num_judges / 2))
+        session_count = self.get_session_count()
+        total_sessions = 0
+        locations = []
+
+        for k, v in session_count.items():
+            total_sessions += v
+            locations.append(f'{k}: {v}')
+
+        status['entries']['average'] = int(entries / total_sessions)
+        status['entries']['locations'] = ', '.join(locations)
+        status['entries']['locations_total'] = total_sessions
+
+        #status['entries']['average'] = round(entries / (num_judges / 2)) if num_judges > 0 else 0
         #print(status['entries']['average'] )
 
         #for s in status['sessions']:
@@ -245,6 +257,37 @@ class Competitions:
 
 
         return status
+
+    def get_session_count(self):
+
+        location_session_count = {}
+        
+        sql = f'select pkid, name, fk_judge_locations from sessions where judging="1" and fk_competitions = "{self.get_active_competition()}"'
+        uid = gen_uid()
+        sessions = db.db_command(sql=sql, uid=uid).all(uid)
+
+        for session in sessions:
+
+            fk_judge_locations = session['fk_judge_locations']
+            pkid = session['pkid']
+            sql = f'select city from judge_locations where pkid = "{fk_judge_locations}"'
+
+            uid = gen_uid()
+            session_name = db.db_command(sql=sql, uid=uid).one(uid)
+            session_name = session_name['city']
+
+            num_judges = len(self.get_session_volunteers(pkid, judges=True))
+
+            if session_name not in location_session_count:
+                location_session_count[session_name] = 0
+            num_sessions = int(num_judges/2)
+            location_session_count[session_name] += num_sessions
+
+
+        #print(location_session_count)    
+
+        return  location_session_count
+
 
 
     def validate_ncbc_data(self, entries_report_pkid=0, volunteers_report_pkid=1):
@@ -268,10 +311,13 @@ if __name__ == '__main__':
 
     #name = c.get_active_competition()
 
-    result = c.get_comp_status()
+    #result = c.get_comp_status()
 
     #print(result)
 
     #Competitions().validate_ncbc_data(entries_report_pkid=1)
+
+    session_count = c.get_session_count()
+    print(session_count)
 
     pass

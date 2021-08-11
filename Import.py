@@ -65,8 +65,8 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2020'
-        NCBC_DB = 'ncbc-data-2020'
+        DATABASE = 'ncbc-2021'
+        NCBC_DB = 'ncbc-data-2021'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'

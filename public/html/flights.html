@@ -318,29 +318,33 @@ var sj_judge_dislikes = [];
 // Todo: get this via ajax
 var locationsMap = {
   0: '',
-  1: 'Triangle',
-  2: 'Charlotte',
-  3: 'Asheville'
+  5: 'Raleigh',
+  6: 'Asheville'
 }
 
 // Todo: make this programatic
 var locAbbr = {
-  105: 'rtp',
-  106: 'rtp',
-  107: 'clt',
-  108: 'clt',
-  109: 'avl',
-  110: 'avl'
+  116: 'rtp',
+  117: 'rtp',
+  120: 'rtp',
+  124: 'rtp',
+  118: 'avl',
+  119: 'avl',
+  126: 'avl',
+  127: 'avl'
 }
 
 var locMapping = {
-  105: 1,
-  106: 1,
-  107: 2,
-  108: 2,
-  109: 3,
-  110: 3
+  116: 1,
+  117: 1,
+  120: 1,
+  124: 1,
+  118: 2,
+  119: 2,
+  126: 2,
+  127: 2
 }
+
 
 
 $.fn.dataTable.ext.search.push(
@@ -380,9 +384,8 @@ function buildSelect() {
   var select = $('<select id="filter-location"><option value="0"></option></select>')
 
   // Todo:  Get this from the JSON response
-  var locations = [{"name": "Triangle", "pkid": 1}, 
-                    {"name": "Charlotte", "pkid": 2}, 
-                    {"name": "Asheville", "pkid": 3}
+  var locations = [{"name": "Raleigh", "pkid": 5}, 
+                    {"name": "Asheville", "pkid": 6}
                   ];
 
   for (i=0; i<locations.length; i++) {

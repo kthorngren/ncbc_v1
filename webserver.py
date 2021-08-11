@@ -32,7 +32,7 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2020'
+        DATABASE = 'ncbc-2021'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -56,8 +56,8 @@ class Website:
         self.db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
         self.dt = Datatables(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
-        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2020')
-        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2020')
+        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
+        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
 
 
     def get_instructions(self, page_name):
@@ -176,12 +176,12 @@ class Website:
     @cherrypy.expose
     def get_comp_stats(self):
 
-        order = ['entries', 'average', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
+        order = ['entries', 'locations', 'average', 'checked_in', 'no_desc', 'judged', 'remaining', 'brewers']
 
         mapping = {
             'checked_in': 'Entries Checked In',
             'entries': 'Total Entries',
-            'average': 'Number of Beers Per Judge (day)',
+            'average': 'Number of Beers Per Judge (per session)',
             'brewers': 'Brewers',
             'judged': 'Entries Judged',
             'no_desc': 'Specialty Entries W/O Description',
@@ -202,6 +202,8 @@ class Website:
         for k in order:
             if k == 'brewers':
                 temp.append({'name': mapping.get(k, k), 'value': entries[k], 'title': brewers})
+            elif k == 'locations':
+                temp.append({'name': f'Sessions: {entries["locations"]}', 'value': entries['locations_total']})
             elif k == 'no_desc':
                 temp.append({'name': mapping.get(k, k), 'value': entries[k], 'title': no_desc_brewers})
             else:
@@ -1271,6 +1273,7 @@ class Website:
             location_pkid = location['pkid']
             judges = Sessions().get_session_volunteers(session['pkid'], judges=True)
             judge_pairs = int(len(judges) / 2)
+            print('judges: ', location_name, len(judges), judge_pairs, session['pkid'])
 
             if location_name not in session_data:
                 session_data[location_name] = {
@@ -1435,54 +1438,56 @@ class Website:
             uid = gen_uid()
             judges = self.db.db_command(sql=sql, uid=uid).all(uid)
 
-            judges = judges[0]
+            if judges:
 
-            try:
-                head_judge = json.loads(judges['head_judge'])
-            except:
-                head_judge = []
+                judges = judges[0]
 
-            try:
-                second_judge = json.loads(judges['second_judge'])
-            except:
-                second_judge = []
+                try:
+                    head_judge = json.loads(judges['head_judge'])
+                except:
+                    head_judge = []
 
-            number_of_judges = 0
+                try:
+                    second_judge = json.loads(judges['second_judge'])
+                except:
+                    second_judge = []
 
-            for j in head_judge:
-                if number_of_judges < j['order']:
-                    number_of_judges = j['order']
-                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+                number_of_judges = 0
 
-                if judges_table not in tables:
-                    tables[judges_table] = {
-                        'name': judges_table,
-                        'session_name': session['name'],
-                        'fk_sessions': session['pkid'],
-                        'head_judge': j,
-                        'second_judge': {}
-                    }
+                for j in head_judge:
+                    if number_of_judges < j['order']:
+                        number_of_judges = j['order']
+                    judges_table = 'Table {}'.format(str(j['order'] + session_counter))
 
-                tables[judges_table]['head_judge'] = j
+                    if judges_table not in tables:
+                        tables[judges_table] = {
+                            'name': judges_table,
+                            'session_name': session['name'],
+                            'fk_sessions': session['pkid'],
+                            'head_judge': j,
+                            'second_judge': {}
+                        }
+
+                    tables[judges_table]['head_judge'] = j
 
 
-            for j in second_judge:
-                if number_of_judges < j['order']:
-                    number_of_judges = j['order']
-                judges_table = 'Table {}'.format(str(j['order'] + session_counter))
+                for j in second_judge:
+                    if number_of_judges < j['order']:
+                        number_of_judges = j['order']
+                    judges_table = 'Table {}'.format(str(j['order'] + session_counter))
 
-                if judges_table not in tables:
-                    tables[judges_table] = {
-                        'name': judges_table,
-                        'session_name': session['name'],
-                        'fk_sessions': session['pkid'],
-                        'head_judge': {},
-                        'second_judge': j
-                    }
+                    if judges_table not in tables:
+                        tables[judges_table] = {
+                            'name': judges_table,
+                            'session_name': session['name'],
+                            'fk_sessions': session['pkid'],
+                            'head_judge': {},
+                            'second_judge': j
+                        }
 
-                tables[judges_table]['second_judge'] = j
+                    tables[judges_table]['second_judge'] = j
 
-            session_counter += number_of_judges + 5
+                session_counter += number_of_judges + 5
 
         tables_list = []
         for t in tables:
@@ -1919,7 +1924,7 @@ class Website:
 
 
 
-        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2020, 8, 7) - datetime.date.today()).days + 1, table, beers_per_judge)
+        email_params['msg'] = email_params.get('message', '').format(num_entries,  num_brewers, (datetime.date(2021, 8, 14) - datetime.date.today()).days + 1, table, beers_per_judge)
 
         #email_params['msg'] = email_params['msg'].format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)
         #email_params['msg'] = '{}{}{}{}{} '.format(num_entries,  num_brewers, (datetime.date(2018, 9, 23) - datetime.date.today()).days, table, beers_per_judge)

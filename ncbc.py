@@ -78,8 +78,8 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2020'
-        NCBC_DB = 'ncbc-data-2020'
+        DATABASE = 'ncbc-2021'
+        NCBC_DB = 'ncbc-data-2021'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -116,7 +116,7 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
         # set the font for the header, B=Bold
         self.set_font("Arial", style="B", size=15)
         # page title
-        self.cell(epw, 10, "NC Brewers Cup 2020 Entry Labels", border=1, ln=0, align="C")
+        self.cell(epw, 10, "NC Brewers Cup 2021 Entry Labels", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
         self.ln(5)
 
@@ -232,11 +232,11 @@ class BottleLabelFPDF(FPDF, HTMLMixin):
                 self.cell(epw, 0.0, 'Entry Labels for {}'.format(label[0]), align='C')
                 self.ln(4 * th)
 
-                self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2020', border='LT', align='C')
+                self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2021', border='LT', align='C')
                 self.cell(5, 2 * th, ' ', border='LR' if z == 1 else 'L')
 
                 if z == 1:
-                    self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2020', border='RT', align='C')
+                    self.cell(col_width, 2 * th, 'NC Brewer\'s Cup 2021', border='RT', align='C')
                 self.ln(2 * th)
 
                 self.cell(col_width, 2 * th, 'Homebrew Competition' if homebrew else 'Commercial Competition', border='LB', align='C')
@@ -345,7 +345,7 @@ class InvoiceFPDF(FPDF, HTMLMixin):
         # page title
         self.image("files/ncbg-logo.png", x=12, y=12, w=31)
         self.image("files/NCBClogo.jpg", x=epw-5, y=9, w=14)
-        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2020", border=1, ln=0, align="C")
+        self.cell(epw, 16, "        Invoice for Donation to the NC Brewers Cup 2021", border=1, ln=0, align="C")
         # insert a line break of 20 pixels
 
         self.ln(5)
@@ -879,7 +879,7 @@ class Ncbc:
         cat, sub_cat = self.parse_category(self.get_field(entry, 'BJCP Category Selection'), self.get_field(entry, 'BJCP Subcategory'))
 
         #not a valid cat sub category combo
-        if not Style('BJCP2015').get_style_name(cat, sub_cat):
+        if not Style('NCBC2020').get_style_name(cat, sub_cat):
             error = 'Invalid category or sub category: {} {}'.format(cat, sub_cat)
 
         temp[self.entry_fields['BJCP Category Selection']] = cat
@@ -1171,7 +1171,7 @@ class Ncbc:
 
             label = [
                     'Entry Number: {:05d}'.format(int(entry['entry_id'])),
-                    'Category: {d[category]}{d[sub_category]} - {name}'.format(d=entry, name=Style().get_style_name(entry['category'], entry['sub_category'], 'BJCP2015')),
+                    'Category: {d[category]}{d[sub_category]} - {name}'.format(d=entry, name=Style().get_style_name(entry['category'], entry['sub_category'], 'NCBC2020')),
                     'Contact: {d[first_name]} {d[last_name]}'.format(d=entry),
                     'Email: {d[email]}'.format(d=entry),
                     'Phone: {d[phone]}'.format(d=entry),
@@ -1216,7 +1216,7 @@ class Ncbc:
                                                                                     name=Style().get_style_name(
                                                                                         entry['category'],
                                                                                         entry['sub_category'],
-                                                                                        'BJCP2015')),
+                                                                                        'NCBC2020')),
                          '{d[name]}'.format(d=entry),
                          '$0.00'
                          ])
@@ -1628,21 +1628,21 @@ def process_new_entries(pkid=1):
                 msg += 'are poured in the cellar, and therefore never seen by the judges.  \n'
                 msg += '\n'
                 msg += 'Please fill in the quantities and include the zero dollar invoice with your entries '
-                msg += 'when they are dropped off at the Durham competition site (The Cookery, 1101 W Chapel Hill St, Durham, NC 27701).  Please let Lisa (lisa@ncbeer.org) and I know '
+                msg += 'when they are dropped off at Pro Chiller (319 Farmington Rd., Mocksville, NC 27701).  Please let Lisa (lisa@ncbeer.org) and I know '
                 msg += 'if you have any questions or issues.\n'
                 msg += '\n'
                 msg += 'In-Person Delivery:\n'
-                msg += '  Tuesday August 11th + Wednesday, August 12th,  9am - 5pm\n'
-                msg += '  The Cookery\n'
-                msg += '  Durham, NC 27701\n'
-                msg += '  1101 W Chapel Hill St.\n'
+                msg += '  Wednesday August 11th + Thursday, August 12th,  9am - 5pm\n'
+                msg += '  Pro Chiller Systems, Inc.\n'
+                msg += '  319 Farmington Rd.\n'
+                msg += '  Mocksville, NC 27701\n'
                 msg += '\n'
                 msg += 'Shipping your entries?  Please direct all shipments to:\n'
                 msg += '  Attn: Lisa Parker\n'
                 msg += '  3451 Hawk Ridge Road\n'
                 msg += '  Chapel Hill, NC 27516\n'
                 msg += '  (919) 951-8588\n'
-                msg += '  * Shipments must arrive by: Tuesday evening, August 11th\n'
+                msg += '  * Shipments must arrive by: Monday evening, August 9th\n'
                 msg += '\n'
                 msg += 'Thanks,\nLisa and Kevin\n\n'
                 msg += 'Lisa Parker\n'
@@ -1674,6 +1674,7 @@ def process_new_entries(pkid=1):
                 result = e.send_message(message, rcpt=[brewer])
                 #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
                 #result = False
+
             else:
                 result = None
                 logger.info('Skipping emailing brewers - please run script again to email')
@@ -2085,9 +2086,9 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
-    process_new_entries(pkid=6)
+    #process_new_entries(pkid=8)
 
-    process_new_volunteers(pkid=7)
+    process_new_volunteers(pkid=9)
 
     #validate_ncbc(pkid=1)
 

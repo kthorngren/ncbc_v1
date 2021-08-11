@@ -68,14 +68,18 @@ class Volunteers:
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        email_list = [x['email'] for x in result]
+        email_list = [x['email'].lower() for x in result]
+        email_list = list(set(email_list))
+        print(len(email_list))
 
         sql = 'select distinct email from ncbc_email_list'
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
-        email_list += [x['email'] for x in result]
+        email_list += [x['email'].lower() for x in result if x['email'].lower() not in email_list]
+        print(len(email_list))
+
 
         return email_list
 
@@ -221,7 +225,7 @@ class Volunteers:
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).one(uid)
 
-        print(result)
+        #print(result)
         
         fk_sessions = result['fk_sessions_list'].split(',')
 
@@ -447,7 +451,7 @@ class Volunteers:
 
             msg = 'Hi {firstname},<br/>' \
                   '<br/>' \
-                  'Welcome to the NC Brewers Cup Commercial Competition for 2020.  The NC Brewers Guild and I would like to ' \
+                  'Welcome to the NC Brewers Cup Commercial Competition for 2021.  The NC Brewers Guild and I would like to ' \
                   'thank you for volunteering your time.  Below you will find your current schedule.  Please review ' \
                   'it closely to make sure the schedule is correct and your volunteer type (judge/steward) is correct.<br/>' \
                   '<br/>' \
@@ -616,6 +620,12 @@ class Volunteers:
 
     def find_volunteer_entries(self):
 
+        judging_sessions = [str(x['pkid']) for x in Sessions().get_sessions(judging=True)]
+
+        
+
+        #print(judging_sessions)
+
         sql = 'select b.pkid, b.firstname, b.lastname, b.email, b.organization, v.pkid as vol_pkid, ' \
               'v.firstname as vol_firstname, v.lastname as vol_lastname, v.email as vol_email, ' \
               'v.organization as vol_organization, v.fk_brewers as fk_brewers, v.fk_sessions_list ' \
@@ -628,7 +638,23 @@ class Volunteers:
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
-        print(sql)
+        #print(sql)
+
+        for r in result:
+            fk_sessions_list = r['fk_sessions_list'].split(',')
+            #print('fk_sessions_list', fk_sessions_list)
+
+            for fk in fk_sessions_list:
+
+                #print(fk)
+
+                if fk in judging_sessions:
+                    location = Sessions().get_judge_location_by_session(fk)
+
+                    if location:
+                        r['location'] = location['city']
+                    else:
+                        r['location'] = 'Unknown'
 
         return result
 
@@ -823,7 +849,7 @@ if __name__ == '__main__':
 
     #email_changed()
 
-    #test_get_locations(pkid=10)
+    test_get_locations(pkid=10)
 
     #test_find_person()
 

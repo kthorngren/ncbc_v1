@@ -493,4 +493,8 @@ if __name__ == '__main__':
     result = Entrys().get_brewer_sub_categories(46)
     print(result)
 
+    result = Entrys().get_entries_by_brewer(29)
+    for r in result:
+        #print(r)
+        print(f'Entry ID: {r["entry_id"]}  {r["category"]}{r["sub_category"]} {r["name"]}')
     pass

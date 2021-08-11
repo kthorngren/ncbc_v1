@@ -188,7 +188,7 @@ var locations = {
 
 $.fn.dataTable.ext.search.push(
     function( settings, searchData, index, rowData, counter ) {
-console.log(rowData);
+//console.log(rowData);
       var checked = $('#unassigned').prop('checked');
         if (checked && rowData.fk_brewers == 0) { 
              return false;
@@ -259,10 +259,13 @@ function drawMainTable() {
             className: 'excel'
           },
 	        {
-            data: 'fk_sessions_list',
+            data: 'location',
+            /*
             render: function (data, type, row) {
+              console.log(data.split(','))
               return locations[data.split(',')[0]];
             },
+            */
             className: 'excel'
           },          
 	    ],
