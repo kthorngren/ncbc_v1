@@ -217,7 +217,7 @@ class Sessions:
 
 def get_session_mapping():
 
-    ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
+    ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2022')
 
     sql = 'select * from session_mapping where fk_competitions = "{}"'.format(Competitions().get_active_competition())
 

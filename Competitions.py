@@ -10,7 +10,7 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2021'
+        DATABASE = 'ncbc-2022'
     else:
         DATABASE = 'comp_test'
 except ImportError:

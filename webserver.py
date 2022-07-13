@@ -32,7 +32,7 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2021'
+        DATABASE = 'ncbc-2022'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -56,8 +56,8 @@ class Website:
         self.db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
         self.dt = Datatables(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
-        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
-        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2021')
+        self.ncbc_db = Database(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2022')
+        self.ncbc_dt = Datatables(local_host['host'], local_host['user'], local_host['password'], 'ncbc-data-2022')
 
 
     def get_instructions(self, page_name):
