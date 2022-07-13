@@ -146,7 +146,7 @@ class Sessions:
         if not all:
             where += ' and active = "1" '
 
-        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
+        sql = 'select volunteers.firstname, volunteers.lastname, volunteers.email, volunteers.fk_sessions_list, volunteers.fk_brewers, ' \
               'p.bjcp_id, p.bjcp_rank, p.cicerone, ' \
                 'p.ncbc_points, p.dont_pair, p.speed, p.other_cert, p.pkid, p.likes, p.dislikes ' \
                 'from volunteers '\
@@ -157,7 +157,7 @@ class Sessions:
                                                                 where=where
                                                                 )
         sql += ' order by lastname ASC, firstname ASC'
-        #print('volunteers sql: ', sql)
+        print('volunteers sql: ', sql)
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -254,13 +254,13 @@ if __name__ == '__main__':
 
     #    print(session)
 
-    """
-    result = Sessions().get_session_volunteers(98, judges=True)
+    
+    result = Sessions().get_session_volunteers(127)
     for r in result:
-        print(r)
+        print(f"{r['firstname']}, {r['lastname']}, {r['email']}")
 
-    """
+    
 
-    build_session_checkin_csv()
+    #build_session_checkin_csv()
 
     pass

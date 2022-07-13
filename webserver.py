@@ -1248,9 +1248,11 @@ class Website:
             'where pkid in '
             f'  (select distinct(fk_judge_locations) from sessions where fk_competitions = "{Competitions().get_active_competition()}")'
         )
-
+        #print('define_locations: ',sql)
         uid = gen_uid()
         result['locations'] = self.db.db_command(sql=sql, uid=uid).all(uid)
+
+        #print(result)
 
         return json.dumps(result, cls=DatetimeEncoder)
 
@@ -1427,6 +1429,7 @@ class Website:
         uid = gen_uid()
         result = self.db.db_command(sql=sql, uid=uid).all(uid)
         session_counter = 0
+        table_label = 65  #chr(65) == A
 
         tables = {}
 
@@ -1462,14 +1465,15 @@ class Website:
                     if judges_table not in tables:
                         tables[judges_table] = {
                             'name': judges_table,
+                            'label': f'Table {chr(table_label)}',
                             'session_name': session['name'],
                             'fk_sessions': session['pkid'],
                             'head_judge': j,
                             'second_judge': {}
                         }
-
+                    table_label += 1
                     tables[judges_table]['head_judge'] = j
-
+                table_label = 65  #chr(65) == A
 
                 for j in second_judge:
                     if number_of_judges < j['order']:
@@ -1479,15 +1483,22 @@ class Website:
                     if judges_table not in tables:
                         tables[judges_table] = {
                             'name': judges_table,
+                            'label': f'Table {chr(table_label)}',
                             'session_name': session['name'],
                             'fk_sessions': session['pkid'],
                             'head_judge': {},
                             'second_judge': j
                         }
-
+                
+                    table_label += 1
                     tables[judges_table]['second_judge'] = j
 
+                table_label = 65  #chr(65) == A
+                
+
                 session_counter += number_of_judges + 5
+                
+                table_label = 65  #chr(65) == A
 
         tables_list = []
         for t in tables:
@@ -1512,8 +1523,9 @@ class Website:
             head_judge = escape_sql(json.dumps(table['head_judge']))
             second_judge = escape_sql(json.dumps(table['second_judge']))
 
-            sql = 'insert into tables (name, fk_sessions, fk_competitions, head_judge, second_judge) ' \
-                  'values ("{}", "{}", "{}", "{}", "{}")'.format(table['name'],
+            sql = 'insert into tables (name, label, fk_sessions, fk_competitions, head_judge, second_judge) ' \
+                  'values ("{}", "{}", "{}", "{}", "{}", "{}")'.format(table['name'],
+                                                                 table['label'],
                                                                  table['fk_sessions'],
                                                                  Competitions().get_active_competition(),
                                                                  head_judge,

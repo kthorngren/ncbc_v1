@@ -244,6 +244,129 @@ class Volunteers:
         
         return result
 
+
+    def email_white_labs_info(self):
+
+        logger.info('Starting process to email all active volunteers')
+        result = Volunteers().get_volunteers(active=True, changed=True)
+
+        errors = []
+        email_counter = 0
+
+        if len(result) == 0:
+            logger.info('No volunteers to email')
+            errors.append('No volunteers to email')
+            return {'count': email_counter, 'error': errors}
+
+        e = Email('files/kevin.json')
+
+        for r in result:    
+
+            #if r["email"] != 'kevin.thorngren@gmail.com':
+            #    continue
+
+            firstname = r['firstname'].title()
+            logger.info(f'Processing {r["firstname"]} {r["lastname"]} - {r["email"]}')
+
+            sessions = Sessions().get_fk_sessions(r['fk_sessions_list'])
+
+            vol_types = []
+            comments = ''
+
+
+            table = '<table border="1" style="border-collapse:collapse" cellpadding="2" >' \
+                     '<thead>' \
+                     '<tr>' \
+                     '<th>Session</th>' \
+                     '<th>Start</th>' \
+                     '<th>End</th>' \
+                     '<th>Comments</th>' \
+                     '</tr>' \
+                     '</thead>' \
+                     '<tbody>'
+
+            for session in sessions:
+
+                if session['setup'] == 1:
+                    if 'Setup' not in vol_types:
+                        vol_types.append('Setup')
+                    comments = ''
+                elif 'AM' in session['name']:
+                    comments = 'Light breakfast'
+                elif 'PM' in session['name']:
+                    comments = 'Lunch'
+
+                session['session_start'] = session['session_start'].strftime('%m-%d-%Y %H:%M:%S')
+                session['session_end'] = session['session_end'].strftime('%m-%d-%Y %H:%M:%S')
+
+                table += '<tr>' \
+                    '<td>{d[name]}</td>' \
+                    '<td>{d[session_start]}</td>' \
+                    '<td>{d[session_end]}</td>' \
+                    '<td>{comments}</td>' \
+                    '</tr>'.format(d=session, comments=comments)
+
+            vol_types.append('Judge' if r['judge'] == 1 else 'Steward' if r['judge'] == 0 else 'Staff')
+
+            table += '</tbody>' \
+                     '</table>'
+
+            table = '<h3>Volunteer Type: {}</h3>'.format(', '.join(vol_types)) + table
+
+            locations = Volunteers().get_judging_location(pkid=r['pkid'])
+
+            html = f'<h3>Your Competition Location{"s" if len(locations) > 1 else ""}</h3>'
+            br = ''
+            for l in locations:
+                html += (f'{br}{l["name"]}<br>'
+                        f'{l["address"]}<br>'
+                        f'{l["city"]} {l["state"]} {l["zip"]}<br>'
+                )
+                br = '<br>'
+
+            msg = 'Hi {firstname},<br/>' \
+                  '<br/>' \
+                  'You probably saw this from Lisa but just wanted to make sure everyone has the White Labs entrance instructions.<br/>' \
+                  '<br/>' \
+                  '** Please park in the upper parking lot, behind the building, and enter via the upper entrance out back, alongside the gravel patio with picnic tables and orange umbrellas. The Culture Room is located directly inside the door, opposite the upstairs restrooms.**<br/>' \
+                  '<br/>' \
+                  '{table}' \
+                  '<br/>' \
+                  '{html}' \
+                  '<br/>' \
+                  'Please let me know if you have any questions.<br/>' \
+                  '<br/>' \
+                  'Thanks,<br/>' \
+                  'Kevin<br/>'.format(firstname=firstname, table=table, html=html)
+
+            message = e.create_html_message(sender='NC Brewers Cup <kevin.thorngren@gmail.com>',
+                                                to=r['email'],
+                                                #to='kevin.thorngren@gmail.com',
+                                                subject='NC Brewers Cup White Labs Information',
+                                                message_text=msg,
+                                                )
+            """
+            if DATABASE != 'competitions':
+                logger.info('Skipping email due to using test DB')
+                result = False
+            else:
+            """
+            result = e.send_message(message, rcpt=[r['email']])
+            #result = False  # remove this for prod
+            #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
+            #break
+
+
+            if result:
+                email_counter += 1
+            else:
+                logger.error('Welcome email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+                errors.append('Welcome email not sent to {d[firstname]} {d[lastname]}, pkid: {d[pkid]}'.format(d=r))
+
+        return {'count': email_counter, 'error': errors}
+
+
+
     def email_confirmation_to_all(self):
 
         logger.info('Starting process to email all active volunteers')
@@ -327,7 +450,9 @@ class Volunteers:
                   '<br/>' \
                   'Just a quick email with your session information for this weekend.  Please arrive around 8:30 to get checked in.  We plan to start judging at 9:00AM.<br/>' \
                   '<br/>' \
-                  'We have 632 entries from 94 brewers this year to judge between the Triangle and Asheville sites.<br/>' \
+                  'We are finalizing the inventory today but have around 800 entries from 110 brewers this year to judge between the Raliegh and Asheville sites.<br/>' \
+                  '<br/>' \
+                  'I hope everyone got the email from Lisa yesterday with the competition logistics and COVID protocol.  If not please let me know and I will forward it to you.<br/>' \
                   '<br/>' \
                   '{table}' \
                   '<br/>' \
@@ -353,6 +478,7 @@ class Volunteers:
             result = e.send_message(message, rcpt=[r['email']])
             #result = False  # remove this for prod
             #result = e.send_message(message, rcpt=['kevin.thorngren@gmail.com'])
+            #break
 
 
             if result:
@@ -849,9 +975,10 @@ if __name__ == '__main__':
 
     #email_changed()
 
-    test_get_locations(pkid=10)
+    #test_get_locations(pkid=10)
 
     #test_find_person()
 
     #Volunteers().email_confirmation_to_all()
+    #Volunteers().email_white_labs_info()
     pass

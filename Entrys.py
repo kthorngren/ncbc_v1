@@ -1,3 +1,4 @@
+#from Brewers import Brewers
 from collections import defaultdict 
 
 from Competitions import DATABASE
@@ -80,9 +81,14 @@ class Entrys:
         return result
 
 
-    def get_entries_by_brewer(self, pkid, order_by=''):
+    def get_entries_by_brewer(self, pkid, order_by='', inventory=None):
 
-        sql = 'select * from entries where fk_brewers = "{}"'.format(pkid)
+        where_cluase = ''
+        if inventory == True:
+            where_cluase = ' and inventory = "1"'
+        elif inventory == False:
+            where_cluase = ' and inventory = "0"'
+        sql = 'select * from entries where fk_brewers = "{}" {}'.format(pkid, where_cluase)
 
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
@@ -92,6 +98,25 @@ class Entrys:
 
         return result
 
+    def get_entry_count_by_brewer(self, pkid, inventory=None):
+
+        where_cluase = ''
+        if inventory == True:
+            where_cluase = ' and inventory = "1"'
+        elif inventory == False:
+            where_cluase = ' and inventory = "0"'
+
+        sql = 'select count(*) from entries where fk_brewers = "{}" {}'.format(pkid, where_cluase)
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        if result:
+            result = result['count(*)']
+        else:
+            result = None
+
+        return result
 
     def insert(self, record):
 
@@ -229,7 +254,7 @@ class Entrys:
 
         return result['pkid']
 
-    def get_inventory(self, all=False, inventory=False, wo_location=False, place=False):
+    def get_inventory(self, all=False, inventory=False, wo_location=False, place=None):
 
         where = 'fk_competitions ="{}"'.format(Competitions().get_active_competition())
 
@@ -238,6 +263,8 @@ class Entrys:
 
         if place:
             where += ' and place <> "0"'
+        elif place is False:
+            where += ' and place = "0"'
 
         if wo_location:
             where += ' and ((location_0 is NULL or location_0 = "") or ' \
@@ -245,6 +272,18 @@ class Entrys:
 
         sql = 'select * from entries where {}'.format(where)
         #print(sql)
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).all(uid)
+
+        return result
+
+    def get_brewers(self, order_by=''):
+
+        if order_by:
+            order_by = 'order by {}'.format(order_by)
+
+        sql = 'select * from brewers where fk_competitions = "{}" {}'.format(Competitions().get_active_competition(), order_by)
+
         uid = gen_uid()
         result = db.db_command(sql=sql, uid=uid).all(uid)
 
@@ -405,6 +444,58 @@ class Entrys:
         return categories
 
 
+    def get_missing_entries_all(self):
+
+        brewers = self.get_brewers(order_by='organization')
+
+        print('\nFlight,Entry ID, Category, Brewer, Name')
+
+        count = 0
+
+        for brewer in brewers:
+
+            pkid = brewer['pkid']
+            brewry_name = brewer['organization']
+            #inv = self.get_entry_count_by_brewer(pkid, inventory=True)
+            #not_inv = self.get_entry_count_by_brewer(pkid, inventory=False)
+
+            entries = self.get_entries_by_brewer(pkid, inventory=False)
+            count += len(entries)
+
+            for e in entries:
+
+                flight_number = Style('NCBC2020').get_judging_category(f'{e["category"]}{e["sub_category"]}')
+
+                print(f'{flight_number},{e["entry_id"]},{e["category"]}{e["sub_category"]},{brewry_name},{e["name"]}')
+                #print(e)
+
+        print(f'\nNumber of missing entries: {count}')
+
+
+
+    def get_missing_entries(self):
+
+        brewers = self.get_brewers(order_by='organization')
+
+        print('\nFlight,Entry ID, Category, Brewer, Name')
+
+        for brewer in brewers:
+
+            pkid = brewer['pkid']
+            brewry_name = brewer['organization']
+            inv = self.get_entry_count_by_brewer(pkid, inventory=True)
+            not_inv = self.get_entry_count_by_brewer(pkid, inventory=False)
+
+            if inv > 0 and not_inv > 0:
+                entries = self.get_entries_by_brewer(pkid)
+
+                for e in entries:
+
+                    if e['inventory'] == 0:
+                        flight_number = Style('NCBC2020').get_judging_category(f'{e["category"]}{e["sub_category"]}')
+
+                        print(f'{flight_number},{e["entry_id"]},{e["category"]}{e["sub_category"]},{brewry_name},{e["name"]}')
+                        #print(e)
 
 
        
@@ -487,6 +578,7 @@ if __name__ == '__main__':
             print('  ', b)
     """
 
+    """
     result = Entrys().get_brewer_categories(46)
     print(result)
 
@@ -498,3 +590,9 @@ if __name__ == '__main__':
         #print(r)
         print(f'Entry ID: {r["entry_id"]}  {r["category"]}{r["sub_category"]} {r["name"]}')
     pass
+    """
+
+    #result = Entrys().get_missing_entries()
+    result = Entrys().get_missing_entries_all()
+
+    

@@ -90,6 +90,9 @@ class Flights:
         #get reverse ordered list of judges by the ranking
         judges = [x for x in sorted(result, key=lambda k: k['rank'], reverse=True)]
 
+        for i in judges:
+            print(i['firstname'], i['dislikes'])
+
         # split the judges in half
         half = len(judges) // 2
         head_judges = judges[:half]
@@ -114,6 +117,7 @@ class Flights:
                 #if head judge pkid not in judge do not pair with and
                 #judge pkid not in head judge do not pair with then pair the judges
                 if hj_pkid not in j_dont_pair and str(judge['pkid']) not in hj_dont_pair:
+                    print('pairing judge:', judge)
                     pairing.append([hj, judge])
                     break
 
@@ -653,6 +657,149 @@ def winner_report():
         for entry in sorted(winners[cat], key = lambda x: int(x[2])):
             print(','.join(entry))
 
+def orgainzers_pull_list():
+
+
+    flights = Flights().get_flights()
+    winners_entries = Entrys().get_inventory(inventory=True, place=True)
+    entries = Entrys().get_inventory(inventory=True, place=False)
+
+        
+    with open(f'public/reports/Orgainzers pull list.csv', 'w') as f:
+
+        winners = defaultdict(list)
+
+        for entry in winners_entries:
+            flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+            flight_name = Style('NCBC2020').get_category_name(flight_number)
+            style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+            brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+            winners[f'{flight_number} {flight_name}'].append(['    ',
+                                                            f'{entry["place"]}',
+                                                            f'"{entry["entry_id"]}"',
+                                                            f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                            f'"{brewer["organization"]}"',
+                                                            f'"{entry["name"]}"'
+            ])
+            
+        for entry in entries:
+            flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+            flight_name = Style('NCBC2020').get_category_name(flight_number)
+            style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+            brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+            winners[f'{flight_number} {flight_name}'].append(['    ',
+                                                            f'',
+                                                            f'"{entry["entry_id"]}"',
+                                                            f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                            f'"{brewer["organization"]}"',
+                                                            f'"{entry["name"]}"'
+            ])        
+        
+        for cat in sorted(winners):
+            f.write(f'{cat}\n')
+            for entry in sorted(winners[cat], key = lambda x: x[1] if x[1] else f'z{x[2]}'):
+                f.write(f"{','.join(entry)}\n")
+
+def orgainzers_pull_list_by_brewery():
+
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True,)
+
+    brewers = defaultdict(list)
+    
+    with open(f'public/reports/Brewers pull list.csv', 'w') as f:
+
+
+            
+        for entry in entries:
+            flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+            flight_name = Style('NCBC2020').get_category_name(flight_number)
+            style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+            brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+            place = str(entry["place"])
+            brewers[f'{brewer["organization"]}'].append(['    ',
+                                                            f'' if place == '0' else place,
+                                                            f'"{entry["entry_id"]}"',
+                                                            f'"{flight_number}"',
+                                                            f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                            f'"{brewer["organization"]}"',
+                                                            f'"{entry["name"]}"'
+            ])        
+        
+        for brewer in sorted(brewers):
+            print(brewer)
+            f.write(f'{brewer}\n')
+            for entry in sorted(brewers[brewer], key = lambda x: x[1] if x[1] else f'z{x[2]}'):
+                f.write(f"{','.join(entry)}\n")
+
+
+
+
+def winner_report_with_entry_id():
+
+
+    flights = Flights().get_flights()
+    entries = Entrys().get_inventory(inventory=True, place=True)
+
+    sql = 'select * from entries where fk_competitions="6" and bos_place<>"0"'
+    uid = gen_uid()
+    bos = db.db_command(sql=sql, uid=uid).all(uid)
+
+    winners = []
+
+    if bos:
+        print('\nNCBC 2021 Best Of Show')
+    for entry in bos:
+
+        flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+        flight_name = Style('NCBC2020').get_category_name(flight_number)
+        style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+        brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+        winners.append(['    ',
+                                                        f'"{entry["entry_id"]}"',
+                                                        f'"{flight_name}"',
+                                                        f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                        f'BOS {entry["bos_place"]}',
+                                                        f'"{brewer["organization"]}"',
+                                                        f'"{entry["name"]}"',
+        ])
+        
+        
+    
+    for entry in sorted(winners, key = lambda x: x[4]):
+        print(','.join(entry))
+
+    print('\nNCBC 2021 Category Winners')
+
+    winners = defaultdict(list)
+
+    for entry in entries:
+        flight_number = Style('NCBC2020').get_judging_category(f'{entry["category"]}{entry["sub_category"]}')
+        flight_name = Style('NCBC2020').get_category_name(flight_number)
+        style_name = Style('NCBC2020').get_style_name(entry["category"], entry["sub_category"])
+        brewer = Entrys().get_brewer(entry['fk_brewers'])
+
+        winners[f'{flight_number} {flight_name}'].append(['    ',
+                                                        f'"{entry["entry_id"]}"',
+                                                        f'"{flight_name}"',
+                                                        f'"{entry["category"]}{entry["sub_category"]} {style_name}"',
+                                                        f'{entry["place"]}',
+                                                        f'"{brewer["organization"]}"',
+                                                        f'"{entry["name"]}"'
+        ])
+        
+        
+    
+    for cat in sorted(winners):
+        print(cat)
+        for entry in sorted(winners[cat], key = lambda x: int(x[4])):
+            print(','.join(entry))
+
 
 
 def place_pull_sheet():
@@ -720,9 +867,14 @@ if __name__ == '__main__':
     #mini_bos_flight()
     #get_completed_flight()
     #mark_bos_pulled()
+
+    winner_report_with_entry_id()
+    #orgainzers_pull_list()
+    #orgainzers_pull_list_by_brewery()
+
     #winner_report()
     #place_pull_sheet()
-    all_pull_sheet()
+    #all_pull_sheet()
 
     """
     result = Flights().auto_assign_judges(89)
