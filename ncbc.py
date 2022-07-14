@@ -4,7 +4,7 @@ import sys
 import datetime
 from csv import reader, QUOTE_NONE, QUOTE_ALL
 from time import sleep
-
+import argparse
 
 import qrcode
 #from qrcode.image.pure import PymagingImage
@@ -66,6 +66,11 @@ from MySql import local_host
 from Database import Database
 from Database import escape_sql
 
+DATABASE = 'ncbc-2022'
+NCBC_DB = 'ncbc-data-2022'
+
+""" 
+from git import Repo doesn't import correctly
 DATABASE = ''
 NCBC_DB = ''
 TEST_MODE = True
@@ -78,8 +83,6 @@ try:
     branch = repo.active_branch
     branch = branch.name
     if branch == 'master':
-        DATABASE = 'ncbc-2022'
-        NCBC_DB = 'ncbc-data-2022'
         TEST_MODE = False
     else:
         DATABASE = 'comp_test'
@@ -87,13 +90,24 @@ try:
         TEST_MODE = True
 except ImportError:
     pass
-
+"""
 
 db = Database(local_host['host'], local_host['user'], local_host['password'], NCBC_DB)
 
 comp_db = Database(local_host['host'], local_host['user'], local_host['password'], DATABASE)
 
 logger.info(f'NCBC DB: {NCBC_DB}, Competition DB: {DATABASE}')
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-e', '--entry', required=False, action='store_true', default=False, help='Process NCBC Entry Report')
+parser.add_argument('-v', '--volunteer', required=False, action='store_true', default=False, help='Process NCBC Volunteer Report')
+args = vars(parser.parse_args())
+
+report_type = 'entry'
+
+if args['volunteer']:
+    report_type = 'volunteer'
 
 class BottleLabelFPDF(FPDF, HTMLMixin):
 
@@ -501,24 +515,45 @@ class InvoiceFPDF(FPDF, HTMLMixin):
 
 class Ncbc:
 
-    def __init__(self, pkid=0):
+    def __init__(self, report_type=None):
 
-        logger.info('Initializing download of report for pkid: {}'.format(pkid))
-
-        self.pkid = pkid
+        self.url = ''
         self.auth = None
         self.name = ''
-        self.url = ''
         self.entries = []
         self.header = []
         self.person_fields = {}
         self.entry_fields = {}
 
-        if self.pkid:
-            self.get_current_competition()
+        if not report_type:
+            logger.error('No report type (entry, volunteer) was provided.')
+
+        else:
+            self.comp_pkid, self.competition_name = self.current_competition()
+            logger.info('Initializing download of report for: {}'.format(self.competition_name))
+
+            self.get_current_competition(report_type)
+
+            if self.url:
+                logger.info(f'Using {report_type} URL: {self.url}')
+            else:
+                logger.error(f'Unable to init URL for report type {report_type}')
 
 
-    def get_current_competition(self):
+    def current_competition(self):
+
+        sql = 'select pkid, description from competitions where current_pro = "1"'
+
+        uid = gen_uid()
+        result = db.db_command(sql=sql, uid=uid).one(uid)
+
+        if result:
+            return result['pkid'], result['description']
+
+        return None, None
+
+
+    def get_current_competition(self, report_type):
         """
         get the active commercial or homebrew competition
 
@@ -526,8 +561,8 @@ class Ncbc:
         :return:
         """
 
-        if self.pkid:
-            sql = 'select * from reports where pkid = "{}"'.format(self.pkid)
+        if self.comp_pkid:
+            sql = f'select * from reports where fk_competitions = "{self.comp_pkid}" and report_type = "{report_type}"'
 
             uid = gen_uid()
             result = db.db_command(sql=sql, uid=uid).one(uid)
@@ -541,10 +576,10 @@ class Ncbc:
                 self.url = result['url']
                 self.name = result['name']
             else:
-                logger.error('Unable to retrieve report info for pkid: {}'.format(self.pkid))
+                logger.error('Unable to retrieve report info for {}'.format(self.competition_name))
 
         else:
-            logger.error('Unable to get report login info for pkid: {}'.format(self.pkid))
+            logger.error('Unable to get report login info for {}'.format(self.competition_name))
 
 
     def get_csv(self):
@@ -623,14 +658,20 @@ class Ncbc:
 
             with requests.Session() as s:
                 logger.info('Attempting to authenticate using UID {}'.format(self.auth['Username']))
-                p = s.post('https://www.memberleap.com/members/gateway.php?org_id=NCCB', data=self.auth)
+
+                # p = s.post('https://www.memberleap.com/members/gateway.php?org_id=NCCB', data=self.auth)
+                p = s.post('https://memberleap.com/members/gateway.php', data=self.auth)
                 if p.status_code == 200:
+
                     logger.info('Attempting to generate {} report using URL: {}'.format(self.name, self.url))
                     r = s.get(self.url)
 
                     if r.status_code == 200:
                         # todo: find a way to handle commas within the fields - .replace(b'Make Art, Not Friends', b'Make Art\, Not Friends')
-                        entries = r.content.replace(b'\x00', b'').replace(b'Make Art, Not Friends', b'Make Art\, Not Friends').decode('ascii','ignore').splitlines()
+                        # .replace(b'Make Art, Not Friends', b'Make Art\, Not Friends')
+                        # entries = r.content.replace(b'\x00', b'').decode('ascii','ignore').splitlines()
+                        entries = r.content.splitlines()
+                        entries = [x.decode() for x in entries]
                         logger.info('Retrieved {} CSV file with {} lines including heading'.format(self.name, len(entries)))
 
                         header = True
@@ -638,13 +679,13 @@ class Ncbc:
                         #print(self.header)
                         #self.header = [x.decode('utf-8') for x in self.header]
 
-                        for e in reader(entries, escapechar='\\', doublequote=False, quotechar='"'):
+                        for entry in reader(entries, escapechar='\\', doublequote=False, quotechar='"'):
                             if header:
-                                self.header = [x.replace('""', '"').replace('"', r'\"') for x in e]
+                                self.header = entry
                                 #print(self.header)
                                 header = False
                             else:
-                                self.entries.append([x.replace('""', '"').replace('""', '"').replace('"', r'\"').strip() for x in e])
+                                self.entries.append(entry)
                                 #self.entries.append([re.sub(r'(.)\1{2,}', r'\1', x).replace('"', r'\"').strip() for x in e])
                                 #print([x.strip('\"').strip() for x in e])
                             pass
@@ -2086,9 +2127,23 @@ def validate_ncbc_old(pkid):
 
 if __name__ == '__main__':
 
+
+    n = Ncbc(report_type=report_type)
+    n.get_csv_2()
+
+    print(n.header)
+    print(n.entries)
+
+
+    n = Ncbc(report_type='volunteer')
+    n.get_csv_2()
+
+    print(n.header)
+    print(n.entries)
+
     #process_new_entries(pkid=8)
 
-    process_new_volunteers(pkid=9)
+    # process_new_volunteers(pkid=9)
 
     #validate_ncbc(pkid=1)
 
