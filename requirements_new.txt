@@ -50,5 +50,5 @@ smmap==4.0.0
 smmap2==2.0.4
 tempora==1.13
 uritemplate==3.0.0
-urllib3==1.23
+urllib3==1.26.5
 zc.lockfile==1.3.0
